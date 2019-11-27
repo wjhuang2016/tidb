@@ -44,6 +44,7 @@ import (
 	"github.com/pingcap/tidb/config"
 	"github.com/pingcap/tidb/domain"
 	"github.com/pingcap/tidb/executor"
+	"github.com/pingcap/tidb/infoschema"
 	"github.com/pingcap/tidb/kv"
 	"github.com/pingcap/tidb/meta"
 	"github.com/pingcap/tidb/metrics"
@@ -317,7 +318,7 @@ func (s *session) StoreQueryFeedback(feedback interface{}) {
 
 // FieldList returns fields list of a table.
 func (s *session) FieldList(tableName string) ([]*ast.ResultField, error) {
-	is := executor.GetInfoSchema(s)
+	is := infoschema.GetInfoSchema(s)
 	dbName := model.NewCIStr(s.GetSessionVars().CurrentDB)
 	tName := model.NewCIStr(tableName)
 	table, err := is.TableByName(dbName, tName)
@@ -732,6 +733,10 @@ func (s *session) ExecRestrictedSQLWithSnapshot(sctx sessionctx.Context, sql str
 	}
 	// Set snapshot.
 	if snapshot != 0 {
+		se.GetSessionVars().SnapshotInfoschema, err = domain.GetDomain(s).GetSnapshotInfoSchema(snapshot)
+		if err != nil {
+			return nil, nil, err
+		}
 		if err := se.sessionVars.SetSystemVar(variable.TiDBSnapshot, strconv.FormatUint(snapshot, 10)); err != nil {
 			return nil, nil, err
 		}
@@ -739,6 +744,7 @@ func (s *session) ExecRestrictedSQLWithSnapshot(sctx sessionctx.Context, sql str
 			if err := se.sessionVars.SetSystemVar(variable.TiDBSnapshot, ""); err != nil {
 				logutil.Logger(context.Background()).Error("set tidbSnapshot error", zap.Error(err))
 			}
+			se.sessionVars.SnapshotInfoschema = nil
 		}()
 	}
 	return execRestrictedSQL(ctx, se, sql)
@@ -1166,7 +1172,7 @@ func (s *session) PrepareStmt(sql string) (stmtID uint32, paramCount int, fields
 	// NewPrepareExec may need startTS to build the executor, for example prepare statement has subquery in int.
 	// So we have to call PrepareTxnCtx here.
 	s.PrepareTxnCtx(ctx)
-	prepareExec := executor.NewPrepareExec(s, executor.GetInfoSchema(s), sql)
+	prepareExec := executor.NewPrepareExec(s, infoschema.GetInfoSchema(s), sql)
 	err = prepareExec.Next(ctx, nil)
 	if err != nil {
 		return

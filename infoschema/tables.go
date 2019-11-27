@@ -14,8 +14,11 @@
 package infoschema
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/pingcap/tidb/util/logutil"
+	"go.uber.org/zap"
 	"sort"
 	"sync"
 	"time"
@@ -1794,8 +1797,22 @@ func (s schemasSorter) Less(i, j int) bool {
 	return s[i].Name.L < s[j].Name.L
 }
 
+// GetInfoSchema gets TxnCtx InfoSchema if snapshot schema is not set,
+// Otherwise, snapshot schema is returned.
+func GetInfoSchema(ctx sessionctx.Context) InfoSchema {
+	sessVar := ctx.GetSessionVars()
+	var is InfoSchema
+	if snap := sessVar.SnapshotInfoschema; snap != nil {
+		is = snap.(InfoSchema)
+		logutil.Logger(context.Background()).Info("use snapshot schema", zap.Uint64("conn", sessVar.ConnectionID), zap.Int64("schemaVersion", is.SchemaMetaVersion()))
+	} else {
+		is = sessVar.TxnCtx.InfoSchema.(InfoSchema)
+	}
+	return is
+}
+
 func (it *infoschemaTable) getRows(ctx sessionctx.Context, cols []*table.Column) (fullRows [][]types.Datum, err error) {
-	is := ctx.GetSessionVars().TxnCtx.InfoSchema.(InfoSchema)
+	is := it.handle.Get()
 	dbs := is.AllSchemas()
 	sort.Sort(schemasSorter(dbs))
 	switch it.meta.Name.O {

@@ -280,7 +280,7 @@ func CompileExecutePreparedStmt(ctx context.Context, sctx sessionctx.Context, ID
 	for i, val := range args {
 		execStmt.UsingVars[i] = ast.NewValueExpr(val)
 	}
-	is := GetInfoSchema(sctx)
+	is := infoschema.GetInfoSchema(sctx)
 	execPlan, err := planner.Optimize(ctx, sctx, execStmt, is)
 	if err != nil {
 		return nil, err
