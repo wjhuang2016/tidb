@@ -292,7 +292,7 @@ func (s *testSuite2) TestJoinCast(c *C) {
 	tk.MustExec("insert into t1 values (1, 2), (1, NULL)")
 	result = tk.MustQuery("select * from t a , t1 b where (a.c1, a.c2) = (b.c1, b.c2);")
 	result.Check(testkit.Rows("1 2 1 2"))
-
+	
 	tk.MustExec("drop table if exists t")
 	tk.MustExec("drop table if exists t1")
 	tk.MustExec("create table t(c1 int)")
