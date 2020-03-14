@@ -3108,6 +3108,10 @@ func (d *ddl) RenameTable(ctx sessionctx.Context, oldIdent, newIdent ast.Ident, 
 		Query:      query,
 	}
 
+	if ctx.Value(sessionctx.QueryString).(string) != query {
+		logutil.Logger(context.Background()).Info("the QueryString in sessionContext changed", zap.String("QueryString", ctx.Value(sessionctx.QueryString).(string)), zap.String("query", query))
+	}
+
 	err = d.doDDLJob(ctx, job)
 	err = d.callHookOnChanged(err)
 	return errors.Trace(err)

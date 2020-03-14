@@ -88,7 +88,7 @@ func (e *DDLExec) Next(ctx context.Context, req *chunk.Chunk) (err error) {
 	qs := e.ctx.Value(sessionctx.QueryString).(string)
 	if qs != e.stmt.Text() {
 		e.ctx.SetValue(sessionctx.QueryString, e.stmt.Text())
-		logutil.Logger(context.Background()).Warn("the QueryString in sessionContext is not equal to the stmt.text()", zap.String("QueryString", qs), zap.String("stmt.text()", e.stmt.Text()))
+		logutil.Logger(context.Background()).Info("the QueryString in sessionContext is not equal to the stmt.text()", zap.String("QueryString", qs), zap.String("stmt.text()", e.stmt.Text()))
 	}
 
 	switch x := e.stmt.(type) {
