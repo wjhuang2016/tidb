@@ -1866,6 +1866,7 @@ func logStmt(node ast.StmtNode, vars *variable.SessionVars) {
 				zap.String("sql", stmt.Text()),
 				zap.Stringer("user", user))
 		}
+		logutil.Logger(context.Background()).Info("", zap.String("query", node.Text()))
 	default:
 		logQuery(node.Text(), vars)
 	}
