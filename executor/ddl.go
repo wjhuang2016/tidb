@@ -146,7 +146,7 @@ func (e *DDLExec) executeRenameTable(s *ast.RenameTableStmt) error {
 	oldIdent := ast.Ident{Schema: s.OldTable.Schema, Name: s.OldTable.Name}
 	newIdent := ast.Ident{Schema: s.NewTable.Schema, Name: s.NewTable.Name}
 	isAlterTable := false
-	err := domain.GetDomain(e.ctx).DDL().RenameTable(e.ctx, oldIdent, newIdent, isAlterTable, "")
+	err := domain.GetDomain(e.ctx).DDL().RenameTable(e.ctx, oldIdent, newIdent, isAlterTable, e.stmt.Text())
 	return err
 }
 
