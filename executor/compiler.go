@@ -15,7 +15,10 @@ package executor
 
 import (
 	"context"
+	"fmt"
+	"github.com/pingcap/tidb/sessionctx/variable"
 	"strings"
+	"sync/atomic"
 
 	"github.com/opentracing/opentracing-go"
 	"github.com/pingcap/parser"
@@ -73,6 +76,10 @@ func (c *Compiler) compile(ctx context.Context, stmtNode ast.StmtNode, skipBind 
 	infoSchema := GetInfoSchema(c.Ctx)
 	if err := plannercore.Preprocess(c.Ctx, stmtNode, infoSchema); err != nil {
 		return nil, err
+	}
+
+	if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
+		logutil.Logger(ctx).Info("GENERAL_LOG", zap.String("nodeType", fmt.Sprintf("%T", stmtNode)), zap.String("nodeText", stmtNode.Text()))
 	}
 
 	finalPlan, err := planner.Optimize(ctx, c.Ctx, stmtNode, infoSchema)
