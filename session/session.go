@@ -1035,7 +1035,8 @@ func (s *session) execute(ctx context.Context, sql string) (recordSets []sqlexec
 	var tempStmtNodes []ast.StmtNode
 	compiler := executor.Compiler{Ctx: s}
 	multiQuery := len(stmtNodes) > 1
-	for idx, stmtNode := range stmtNodes {
+	for idx, sn := range stmtNodes {
+		stmtNode := sn
 		s.PrepareTxnCtx(ctx)
 
 		// Step2: Transform abstract syntax tree to a physical plan(stored in executor.ExecStmt).
@@ -1869,6 +1870,9 @@ func logStmt(node ast.StmtNode, vars *variable.SessionVars) {
 		}
 	default:
 		logQuery(node.Text(), vars)
+	}
+	if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 && !vars.InRestrictedSQL {
+		logutil.Logger(context.Background()).Info("GENERAL_LOG", zap.String("noteType", fmt.Sprintf("%T", node)))
 	}
 }
 
