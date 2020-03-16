@@ -78,7 +78,7 @@ func (c *Compiler) compile(ctx context.Context, stmtNode ast.StmtNode, skipBind 
 		return nil, err
 	}
 
-	if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
+	if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 && !c.Ctx.GetSessionVars().InRestrictedSQL {
 		logutil.Logger(ctx).Info("GENERAL_LOG", zap.String("nodeType", fmt.Sprintf("%T", stmtNode)), zap.String("nodeText", stmtNode.Text()))
 	}
 
