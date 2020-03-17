@@ -79,7 +79,7 @@ func (c *Compiler) compile(ctx context.Context, stmtNode ast.StmtNode, skipBind 
 	}
 
 	if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
-		logutil.Logger(ctx).Info("GENERAL_LOG", zap.String("nodeType", fmt.Sprintf("%T", stmtNode)), zap.String("nodeText", stmtNode.Text()), zap.Bool("InRestrictedSQL", c.Ctx.GetSessionVars().InRestrictedSQL))
+		logutil.Logger(ctx).Info("GENERAL_LOG", zap.Uint64("conn", c.Ctx.GetSessionVars().ConnectionID), zap.String("nodeType", fmt.Sprintf("%T", stmtNode)), zap.String("nodeText", stmtNode.Text()), zap.Bool("InRestrictedSQL", c.Ctx.GetSessionVars().InRestrictedSQL))
 	}
 
 	finalPlan, err := planner.Optimize(ctx, c.Ctx, stmtNode, infoSchema)

@@ -951,6 +951,9 @@ func (s *session) SetProcessInfo(sql string, t time.Time, command byte, maxExecu
 
 func (s *session) executeStatement(ctx context.Context, connID uint64, stmtNode ast.StmtNode, stmt sqlexec.Statement, recordSets []sqlexec.RecordSet, inMulitQuery bool) ([]sqlexec.RecordSet, error) {
 	s.SetValue(sessionctx.QueryString, stmt.OriginText())
+	if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
+		logutil.Logger(context.Background()).Info("GENERAL_LOG", zap.Uint64("conn", s.sessionVars.ConnectionID), zap.String("nodeType", fmt.Sprintf("%T", stmt)), zap.String("query", stmt.OriginText()))
+	}
 	if _, ok := stmtNode.(ast.DDLNode); ok {
 		s.SetValue(sessionctx.LastExecuteDDL, true)
 	} else {
@@ -1046,11 +1049,11 @@ func (s *session) execute(ctx context.Context, sql string) (recordSets []sqlexec
 			return nil, err
 		}
 		if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
-			logutil.Logger(ctx).Info("GENERAL_LOG", zap.String("nodeType", fmt.Sprintf("%T", stmtNode)), zap.String("nodeText", stmtNode.Text()), zap.Bool("InRestrictedSQL", s.sessionVars.InRestrictedSQL), zap.Int("idx", idx))
+			logutil.Logger(ctx).Info("GENERAL_LOG", zap.Uint64("conn", s.sessionVars.ConnectionID), zap.String("nodeType", fmt.Sprintf("%T", stmtNode)), zap.String("nodeText", stmtNode.Text()), zap.Bool("InRestrictedSQL", s.sessionVars.InRestrictedSQL), zap.Int("idx", idx))
 		}
 		stmt, err := compiler.Compile(ctx, stmtNode)
 		if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
-			logutil.Logger(ctx).Info("GENERAL_LOG", zap.String("nodeType in ExecStmt", fmt.Sprintf("%T", stmt.StmtNode)), zap.String("nodeText in ExecStmt", stmt.Text), zap.Bool("InRestrictedSQL", s.sessionVars.InRestrictedSQL), zap.Int("idx", idx))
+			logutil.Logger(ctx).Info("GENERAL_LOG", zap.Uint64("conn", s.sessionVars.ConnectionID), zap.String("nodeType in ExecStmt", fmt.Sprintf("%T", stmt.StmtNode)), zap.String("nodeText in ExecStmt", stmt.Text), zap.Bool("InRestrictedSQL", s.sessionVars.InRestrictedSQL), zap.Int("idx", idx))
 		}
 		if err != nil {
 			if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
@@ -1085,6 +1088,9 @@ func (s *session) execute(ctx context.Context, sql string) (recordSets []sqlexec
 		// Step3: Execute the physical plan.
 		if recordSets, err = s.executeStatement(ctx, connID, stmtNode, stmt, recordSets, multiQuery); err != nil {
 			return nil, err
+		}
+		if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
+			logutil.Logger(ctx).Info("GENERAL_LOG", zap.Uint64("conn", s.sessionVars.ConnectionID), zap.String("nodeType", fmt.Sprintf("%T", stmtNode)), zap.String("nodeText", stmtNode.Text()), zap.Bool("InRestrictedSQL", s.sessionVars.InRestrictedSQL), zap.Int("idx", idx))
 		}
 	}
 
@@ -1881,7 +1887,7 @@ func logStmt(node ast.StmtNode, vars *variable.SessionVars) {
 		logQuery(node.Text(), vars)
 	}
 	if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
-		logutil.Logger(context.Background()).Info("GENERAL_LOG", zap.String("nodeType", fmt.Sprintf("%T", node)), zap.Bool("InRestrictedSQL", vars.InRestrictedSQL))
+		logutil.Logger(context.Background()).Info("GENERAL_LOG", zap.Uint64("conn", vars.ConnectionID), zap.String("nodeType", fmt.Sprintf("%T", node)), zap.Bool("InRestrictedSQL", vars.InRestrictedSQL))
 	}
 }
 

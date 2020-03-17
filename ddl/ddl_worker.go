@@ -189,6 +189,9 @@ func (d *ddl) addDDLJob(ctx sessionctx.Context, job *model.Job) error {
 	startTime := time.Now()
 	job.Version = currentVersion
 	job.Query, _ = ctx.Value(sessionctx.QueryString).(string)
+	if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
+		logutil.Logger(context.Background()).Info("GENERAL_LOG", zap.Uint64("conn", ctx.GetSessionVars().ConnectionID), zap.String("query", ctx.Value(sessionctx.QueryString).(string)))
+	}
 	err := kv.RunInNewTxn(d.store, true, func(txn kv.Transaction) error {
 		t := newMetaWithQueueTp(txn, job.Type.String())
 		var err error
