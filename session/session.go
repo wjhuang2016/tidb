@@ -1045,14 +1045,17 @@ func (s *session) execute(ctx context.Context, sql string) (recordSets []sqlexec
 		if err := executor.ResetContextOfStmt(s, stmtNode); err != nil {
 			return nil, err
 		}
-		if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 && !s.sessionVars.InRestrictedSQL {
-			logutil.Logger(ctx).Info("GENERAL_LOG", zap.String("nodeType", fmt.Sprintf("%T", stmtNode)), zap.String("nodeText", stmtNode.Text()))
+		if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
+			logutil.Logger(ctx).Info("GENERAL_LOG", zap.String("nodeType", fmt.Sprintf("%T", stmtNode)), zap.String("nodeText", stmtNode.Text()), zap.Bool("InRestrictedSQL", s.sessionVars.InRestrictedSQL), zap.Int("idx", idx))
 		}
 		stmt, err := compiler.Compile(ctx, stmtNode)
-		if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 && !s.sessionVars.InRestrictedSQL {
-			logutil.Logger(ctx).Info("GENERAL_LOG", zap.String("nodeType in ExecStmt", fmt.Sprintf("%T", stmt.StmtNode)), zap.String("nodeText in ExecStmt", stmt.Text))
+		if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
+			logutil.Logger(ctx).Info("GENERAL_LOG", zap.String("nodeType in ExecStmt", fmt.Sprintf("%T", stmt.StmtNode)), zap.String("nodeText in ExecStmt", stmt.Text), zap.Bool("InRestrictedSQL", s.sessionVars.InRestrictedSQL), zap.Int("idx", idx))
 		}
 		if err != nil {
+			if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
+				logutil.Logger(ctx).Info("Compile failed", zap.String("err", err.Error()))
+			}
 			if tempStmtNodes == nil {
 				tempStmtNodes, warns, err = s.ParseSQL(ctx, sql, charsetInfo, collation)
 				if err != nil || warns != nil {
@@ -1877,8 +1880,8 @@ func logStmt(node ast.StmtNode, vars *variable.SessionVars) {
 	default:
 		logQuery(node.Text(), vars)
 	}
-	if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 && !vars.InRestrictedSQL {
-		logutil.Logger(context.Background()).Info("GENERAL_LOG", zap.String("nodeType", fmt.Sprintf("%T", node)))
+	if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
+		logutil.Logger(context.Background()).Info("GENERAL_LOG", zap.String("nodeType", fmt.Sprintf("%T", node)), zap.Bool("InRestrictedSQL", vars.InRestrictedSQL))
 	}
 }
 
@@ -1891,7 +1894,9 @@ func logQuery(query string, vars *variable.SessionVars) {
 			zap.Int64("schemaVersion", vars.TxnCtx.SchemaVersion),
 			zap.Uint64("txnStartTS", vars.TxnCtx.StartTS),
 			zap.String("current_db", vars.CurrentDB),
-			zap.String("sql", query+vars.PreparedParams.String()))
+			zap.String("sql", query+vars.PreparedParams.String()),
+			zap.Bool("InRestrictedSQL", vars.InRestrictedSQL),
+			zap.String("prevStmt", vars.PrevStmt.String()))
 	}
 }
 

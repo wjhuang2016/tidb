@@ -250,6 +250,9 @@ func (a *ExecStmt) Exec(ctx context.Context) (_ sqlexec.RecordSet, err error) {
 		}()
 	}
 
+	if atomic.LoadUint32(&variable.ProcessGeneralLog) != 0 {
+		logutil.Logger(context.Background()).Info("GENERAL_LOG", zap.String("stmtNodeType", fmt.Sprintf("%T", a.StmtNode)), zap.String("Text", a.Text), zap.String("plan", fmt.Sprintf("%T", a.Plan)))
+	}
 	e, err := a.buildExecutor()
 	if err != nil {
 		return nil, err
