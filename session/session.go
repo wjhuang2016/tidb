@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -1902,7 +1903,8 @@ func logQuery(query string, vars *variable.SessionVars) {
 			zap.String("current_db", vars.CurrentDB),
 			zap.String("sql", query+vars.PreparedParams.String()),
 			zap.Bool("InRestrictedSQL", vars.InRestrictedSQL),
-			zap.String("prevStmt", vars.PrevStmt.String()))
+			zap.String("prevStmt", vars.PrevStmt.String()),
+			zap.String("stack", string(debug.Stack())))
 	}
 }
 
