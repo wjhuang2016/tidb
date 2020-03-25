@@ -169,7 +169,10 @@ func (p *baseLogicalPlan) findBestTask(prop *property.PhysicalProperty) (bestTas
 		// Next, get the bestTask with enforced prop
 		prop.Items = []property.Item{}
 	}
-	physicalPlans := p.self.exhaustPhysicalPlans(prop)
+	physicalPlans, err := p.self.exhaustPhysicalPlans(prop)
+	if err != nil {
+		return nil, err
+	}
 	prop.Items = oldPropCols
 
 	for _, pp := range physicalPlans {

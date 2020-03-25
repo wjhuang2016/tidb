@@ -146,7 +146,7 @@ func deriveCoercibilityForColumn(c *Column) Coercibility {
 }
 
 // DeriveCollationFromExprs derives collation information from these expressions.
-func DeriveCollationFromExprs(ctx sessionctx.Context, exprs ...Expression) (dstCharset, dstCollation string, dstFlen int) {
+func DeriveCollationFromExprs(ctx sessionctx.Context, exprs ...Expression) (dstCharset, dstCollation string, dstFlen int, err error) {
 	curCoer := CoercibilityCoercible
 	dstCharset, dstCollation = charset.GetDefaultCharsetAndCollate()
 	if ctx != nil && ctx.GetSessionVars() != nil {

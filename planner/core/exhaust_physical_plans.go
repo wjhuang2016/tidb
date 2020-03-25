@@ -36,13 +36,13 @@ import (
 	"go.uber.org/zap"
 )
 
-func (p *LogicalUnionScan) exhaustPhysicalPlans(prop *property.PhysicalProperty) []PhysicalPlan {
+func (p *LogicalUnionScan) exhaustPhysicalPlans(prop *property.PhysicalProperty) ([]PhysicalPlan, error) {
 	childProp := prop.Clone()
 	us := PhysicalUnionScan{
 		Conditions: p.conditions,
 		HandleCol:  p.handleCol,
 	}.Init(p.ctx, p.stats, p.blockOffset, childProp)
-	return []PhysicalPlan{us}
+	return []PhysicalPlan{us}, nil
 }
 
 func getMaxSortPrefix(sortCols, allCols []*expression.Column) []int {
@@ -1264,7 +1264,7 @@ func (ijHelper *indexJoinBuildHelper) buildTemplateRange(matchedKeyCnt int, eqAn
 
 // tryToGetIndexJoin will get index join by hints. If we can generate a valid index join by hint, the second return value
 // will be true, which means we force to choose this index join. Otherwise we will select a join algorithm with min-cost.
-func (p *LogicalJoin) tryToGetIndexJoin(prop *property.PhysicalProperty) (indexJoins []PhysicalPlan, forced bool) {
+func (p *LogicalJoin) tryToGetIndexJoin(prop *property.PhysicalProperty) (indexJoins []PhysicalPlan, forced bool, err error) {
 	inljRightOuter := (p.preferJoinType & preferLeftAsINLJInner) > 0
 	inljLeftOuter := (p.preferJoinType & preferRightAsINLJInner) > 0
 	hasINLJHint := inljLeftOuter || inljRightOuter
@@ -1351,9 +1351,9 @@ func (p *LogicalJoin) tryToGetIndexJoin(prop *property.PhysicalProperty) (indexJ
 		}
 		switch {
 		case len(forcedLeftOuterJoins) == 0 && !supportRightOuter:
-			return allLeftOuterJoins, false
+			return allLeftOuterJoins, false, nil
 		case len(forcedLeftOuterJoins) != 0 && (!supportRightOuter || (forceLeftOuter && !forceRightOuter)):
-			return forcedLeftOuterJoins, true
+			return forcedLeftOuterJoins, true, nil
 		}
 	}
 	if supportRightOuter {
@@ -1377,9 +1377,9 @@ func (p *LogicalJoin) tryToGetIndexJoin(prop *property.PhysicalProperty) (indexJ
 		}
 		switch {
 		case len(forcedRightOuterJoins) == 0 && !supportLeftOuter:
-			return allRightOuterJoins, false
+			return allRightOuterJoins, false, nil
 		case len(forcedRightOuterJoins) != 0 && (!supportLeftOuter || (forceRightOuter && !forceLeftOuter)):
-			return forcedRightOuterJoins, true
+			return forcedRightOuterJoins, true, nil
 		}
 	}
 
@@ -1387,35 +1387,38 @@ func (p *LogicalJoin) tryToGetIndexJoin(prop *property.PhysicalProperty) (indexJ
 	canForceRight := len(forcedRightOuterJoins) != 0 && forceRightOuter
 	forced = canForceLeft || canForceRight
 	if forced {
-		return append(forcedLeftOuterJoins, forcedRightOuterJoins...), true
+		return append(forcedLeftOuterJoins, forcedRightOuterJoins...), true, nil
 	}
-	return append(allLeftOuterJoins, allRightOuterJoins...), false
+	return append(allLeftOuterJoins, allRightOuterJoins...), false, nil
 }
 
 // LogicalJoin can generates hash join, index join and sort merge join.
 // Firstly we check the hint, if hint is figured by user, we force to choose the corresponding physical plan.
 // If the hint is not matched, it will get other candidates.
 // If the hint is not figured, we will pick all candidates.
-func (p *LogicalJoin) exhaustPhysicalPlans(prop *property.PhysicalProperty) []PhysicalPlan {
+func (p *LogicalJoin) exhaustPhysicalPlans(prop *property.PhysicalProperty) ([]PhysicalPlan, error) {
 	mergeJoins := p.GetMergeJoin(prop, p.schema, p.Stats(), p.children[0].statsInfo(), p.children[1].statsInfo())
 	if (p.preferJoinType & preferMergeJoin) > 0 {
-		return mergeJoins
+		return mergeJoins, nil
 	}
 	joins := make([]PhysicalPlan, 0, 5)
 	joins = append(joins, mergeJoins...)
 
-	indexJoins, forced := p.tryToGetIndexJoin(prop)
+	indexJoins, forced, err := p.tryToGetIndexJoin(prop)
+	if err != nil {
+		return nil, err
+	}
 	if forced {
-		return indexJoins
+		return indexJoins, nil
 	}
 	joins = append(joins, indexJoins...)
 
 	hashJoins := p.getHashJoins(prop)
 	if (p.preferJoinType & preferHashJoin) > 0 {
-		return hashJoins
+		return hashJoins, nil
 	}
 	joins = append(joins, hashJoins...)
-	return joins
+	return joins, nil
 }
 
 // TryToGetChildProp will check if this sort property can be pushed or not.
@@ -1437,10 +1440,10 @@ func (p *LogicalProjection) TryToGetChildProp(prop *property.PhysicalProperty) (
 	return newProp, true
 }
 
-func (p *LogicalProjection) exhaustPhysicalPlans(prop *property.PhysicalProperty) []PhysicalPlan {
+func (p *LogicalProjection) exhaustPhysicalPlans(prop *property.PhysicalProperty) ([]PhysicalPlan, error) {
 	newProp, ok := p.TryToGetChildProp(prop)
 	if !ok {
-		return nil
+		return nil, nil
 	}
 	proj := PhysicalProjection{
 		Exprs:                p.Exprs,
@@ -1448,7 +1451,7 @@ func (p *LogicalProjection) exhaustPhysicalPlans(prop *property.PhysicalProperty
 		AvoidColumnEvaluator: p.AvoidColumnEvaluator,
 	}.Init(p.ctx, p.stats.ScaleByExpectCnt(prop.ExpectedCnt), p.blockOffset, newProp)
 	proj.SetSchema(p.schema)
-	return []PhysicalPlan{proj}
+	return []PhysicalPlan{proj}, nil
 }
 
 func (lt *LogicalTopN) getPhysTopN() []PhysicalPlan {
@@ -1496,11 +1499,11 @@ func MatchItems(p *property.PhysicalProperty, items []*ByItems) bool {
 	return true
 }
 
-func (lt *LogicalTopN) exhaustPhysicalPlans(prop *property.PhysicalProperty) []PhysicalPlan {
+func (lt *LogicalTopN) exhaustPhysicalPlans(prop *property.PhysicalProperty) ([]PhysicalPlan, error) {
 	if MatchItems(prop, lt.ByItems) {
-		return append(lt.getPhysTopN(), lt.getPhysLimits()...)
+		return append(lt.getPhysTopN(), lt.getPhysLimits()...), nil
 	}
-	return nil
+	return nil, nil
 }
 
 // GetHashJoin is public for cascades planner.
@@ -1508,9 +1511,9 @@ func (la *LogicalApply) GetHashJoin(prop *property.PhysicalProperty) *PhysicalHa
 	return la.LogicalJoin.getHashJoin(prop, 1, false)
 }
 
-func (la *LogicalApply) exhaustPhysicalPlans(prop *property.PhysicalProperty) []PhysicalPlan {
+func (la *LogicalApply) exhaustPhysicalPlans(prop *property.PhysicalProperty) ([]PhysicalPlan, error) {
 	if !prop.AllColsFromSchema(la.children[0].Schema()) { // for convenient, we don't pass through any prop
-		return nil
+		return nil, nil
 	}
 	join := la.GetHashJoin(prop)
 	apply := PhysicalApply{
@@ -1522,16 +1525,16 @@ func (la *LogicalApply) exhaustPhysicalPlans(prop *property.PhysicalProperty) []
 		&property.PhysicalProperty{ExpectedCnt: math.MaxFloat64, Items: prop.Items},
 		&property.PhysicalProperty{ExpectedCnt: math.MaxFloat64})
 	apply.SetSchema(la.schema)
-	return []PhysicalPlan{apply}
+	return []PhysicalPlan{apply}, nil
 }
 
-func (p *LogicalWindow) exhaustPhysicalPlans(prop *property.PhysicalProperty) []PhysicalPlan {
+func (p *LogicalWindow) exhaustPhysicalPlans(prop *property.PhysicalProperty) ([]PhysicalPlan, error) {
 	var byItems []property.Item
 	byItems = append(byItems, p.PartitionBy...)
 	byItems = append(byItems, p.OrderBy...)
 	childProperty := &property.PhysicalProperty{ExpectedCnt: math.MaxFloat64, Items: byItems, Enforced: true}
 	if !prop.IsPrefix(childProperty) {
-		return nil
+		return nil, nil
 	}
 	window := PhysicalWindow{
 		WindowFuncDescs: p.WindowFuncDescs,
@@ -1540,11 +1543,11 @@ func (p *LogicalWindow) exhaustPhysicalPlans(prop *property.PhysicalProperty) []
 		Frame:           p.Frame,
 	}.Init(p.ctx, p.stats.ScaleByExpectCnt(prop.ExpectedCnt), p.blockOffset, childProperty)
 	window.SetSchema(p.Schema())
-	return []PhysicalPlan{window}
+	return []PhysicalPlan{window}, nil
 }
 
 // exhaustPhysicalPlans is only for implementing interface. DataSource and Dual generate task in `findBestTask` directly.
-func (p *baseLogicalPlan) exhaustPhysicalPlans(_ *property.PhysicalProperty) []PhysicalPlan {
+func (p *baseLogicalPlan) exhaustPhysicalPlans(_ *property.PhysicalProperty) ([]PhysicalPlan, error) {
 	panic("baseLogicalPlan.exhaustPhysicalPlans() should never be called.")
 }
 
@@ -1671,7 +1674,7 @@ func (la *LogicalAggregation) ResetHintIfConflicted() (preferHash bool, preferSt
 	return
 }
 
-func (la *LogicalAggregation) exhaustPhysicalPlans(prop *property.PhysicalProperty) []PhysicalPlan {
+func (la *LogicalAggregation) exhaustPhysicalPlans(prop *property.PhysicalProperty) ([]PhysicalPlan, error) {
 	if la.aggHints.preferAggToCop {
 		if !la.canPushToCop() {
 			errMsg := "Optimizer Hint AGG_TO_COP is inapplicable"
@@ -1685,12 +1688,12 @@ func (la *LogicalAggregation) exhaustPhysicalPlans(prop *property.PhysicalProper
 
 	hashAggs := la.getHashAggs(prop)
 	if hashAggs != nil && preferHash {
-		return hashAggs
+		return hashAggs, nil
 	}
 
 	streamAggs := la.getStreamAggs(prop)
 	if streamAggs != nil && preferStream {
-		return streamAggs
+		return streamAggs, nil
 	}
 
 	if streamAggs == nil && preferStream {
@@ -1702,20 +1705,20 @@ func (la *LogicalAggregation) exhaustPhysicalPlans(prop *property.PhysicalProper
 	aggs := make([]PhysicalPlan, 0, len(hashAggs)+len(streamAggs))
 	aggs = append(aggs, hashAggs...)
 	aggs = append(aggs, streamAggs...)
-	return aggs
+	return aggs, nil
 }
 
-func (p *LogicalSelection) exhaustPhysicalPlans(prop *property.PhysicalProperty) []PhysicalPlan {
+func (p *LogicalSelection) exhaustPhysicalPlans(prop *property.PhysicalProperty) ([]PhysicalPlan, error) {
 	childProp := prop.Clone()
 	sel := PhysicalSelection{
 		Conditions: p.Conditions,
 	}.Init(p.ctx, p.stats.ScaleByExpectCnt(prop.ExpectedCnt), p.blockOffset, childProp)
-	return []PhysicalPlan{sel}
+	return []PhysicalPlan{sel}, nil
 }
 
-func (p *LogicalLimit) exhaustPhysicalPlans(prop *property.PhysicalProperty) []PhysicalPlan {
+func (p *LogicalLimit) exhaustPhysicalPlans(prop *property.PhysicalProperty) ([]PhysicalPlan, error) {
 	if !prop.IsEmpty() {
-		return nil
+		return nil, nil
 	}
 	ret := make([]PhysicalPlan, 0, len(wholeTaskTypes))
 	for _, tp := range wholeTaskTypes {
@@ -1726,23 +1729,23 @@ func (p *LogicalLimit) exhaustPhysicalPlans(prop *property.PhysicalProperty) []P
 		}.Init(p.ctx, p.stats, p.blockOffset, resultProp)
 		ret = append(ret, limit)
 	}
-	return ret
+	return ret, nil
 }
 
-func (p *LogicalLock) exhaustPhysicalPlans(prop *property.PhysicalProperty) []PhysicalPlan {
+func (p *LogicalLock) exhaustPhysicalPlans(prop *property.PhysicalProperty) ([]PhysicalPlan, error) {
 	childProp := prop.Clone()
 	lock := PhysicalLock{
 		Lock:             p.Lock,
 		TblID2Handle:     p.tblID2Handle,
 		PartitionedTable: p.partitionedTable,
 	}.Init(p.ctx, p.stats.ScaleByExpectCnt(prop.ExpectedCnt), childProp)
-	return []PhysicalPlan{lock}
+	return []PhysicalPlan{lock}, nil
 }
 
-func (p *LogicalUnionAll) exhaustPhysicalPlans(prop *property.PhysicalProperty) []PhysicalPlan {
+func (p *LogicalUnionAll) exhaustPhysicalPlans(prop *property.PhysicalProperty) ([]PhysicalPlan, error) {
 	// TODO: UnionAll can not pass any order, but we can change it to sort merge to keep order.
 	if !prop.IsEmpty() {
-		return nil
+		return nil, nil
 	}
 	chReqProps := make([]*property.PhysicalProperty, 0, len(p.children))
 	for range p.children {
@@ -1750,7 +1753,7 @@ func (p *LogicalUnionAll) exhaustPhysicalPlans(prop *property.PhysicalProperty) 
 	}
 	ua := PhysicalUnionAll{}.Init(p.ctx, p.stats.ScaleByExpectCnt(prop.ExpectedCnt), p.blockOffset, chReqProps...)
 	ua.SetSchema(p.Schema())
-	return []PhysicalPlan{ua}
+	return []PhysicalPlan{ua}, nil
 }
 
 func (ls *LogicalSort) getPhysicalSort(prop *property.PhysicalProperty) *PhysicalSort {
@@ -1768,7 +1771,7 @@ func (ls *LogicalSort) getNominalSort(reqProp *property.PhysicalProperty) *Nomin
 	return ps
 }
 
-func (ls *LogicalSort) exhaustPhysicalPlans(prop *property.PhysicalProperty) []PhysicalPlan {
+func (ls *LogicalSort) exhaustPhysicalPlans(prop *property.PhysicalProperty) ([]PhysicalPlan, error) {
 	if MatchItems(prop, ls.ByItems) {
 		ret := make([]PhysicalPlan, 0, 2)
 		ret = append(ret, ls.getPhysicalSort(prop))
@@ -1776,15 +1779,15 @@ func (ls *LogicalSort) exhaustPhysicalPlans(prop *property.PhysicalProperty) []P
 		if ns != nil {
 			ret = append(ret, ns)
 		}
-		return ret
+		return ret, nil
 	}
-	return nil
+	return nil, nil
 }
 
-func (p *LogicalMaxOneRow) exhaustPhysicalPlans(prop *property.PhysicalProperty) []PhysicalPlan {
+func (p *LogicalMaxOneRow) exhaustPhysicalPlans(prop *property.PhysicalProperty) ([]PhysicalPlan, error) {
 	if !prop.IsEmpty() {
-		return nil
+		return nil, nil
 	}
 	mor := PhysicalMaxOneRow{}.Init(p.ctx, p.stats, p.blockOffset, &property.PhysicalProperty{ExpectedCnt: 2})
-	return []PhysicalPlan{mor}
+	return []PhysicalPlan{mor}, nil
 }

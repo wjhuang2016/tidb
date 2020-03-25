@@ -3727,7 +3727,10 @@ func (b *PlanBuilder) buildWindowFunctionFrameBound(ctx context.Context, spec *a
 		for i, item := range orderByItems {
 			col := item.Col
 			bound.CalcFuncs[i] = col
-			bound.CmpFuncs[i] = expression.GetCmpFunction(b.ctx, col, col)
+			bound.CmpFuncs[i], err := expression.GetCmpFunction(b.ctx, col, col)
+			if err != nil {
+				return nli, err
+			}
 		}
 		return bound, nil
 	}
@@ -3775,8 +3778,8 @@ func (b *PlanBuilder) buildWindowFunctionFrameBound(ctx context.Context, spec *a
 		if err != nil {
 			return nil, err
 		}
-		bound.CmpFuncs[0] = expression.GetCmpFunction(b.ctx, orderByItems[0].Col, bound.CalcFuncs[0])
-		return bound, nil
+		bound.CmpFuncs[0], err = expression.GetCmpFunction(b.ctx, orderByItems[0].Col, bound.CalcFuncs[0])
+		return bound, err
 	}
 	// When the order is asc:
 	//   `+` for following, and `-` for the preceding
@@ -3789,8 +3792,8 @@ func (b *PlanBuilder) buildWindowFunctionFrameBound(ctx context.Context, spec *a
 	if err != nil {
 		return nil, err
 	}
-	bound.CmpFuncs[0] = expression.GetCmpFunction(b.ctx, orderByItems[0].Col, bound.CalcFuncs[0])
-	return bound, nil
+	bound.CmpFuncs[0], err = expression.GetCmpFunction(b.ctx, orderByItems[0].Col, bound.CalcFuncs[0])
+	return bound, err
 }
 
 // paramMarkerInPrepareChecker checks whether the given ast tree has paramMarker and is in prepare statement.

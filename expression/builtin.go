@@ -86,11 +86,14 @@ func (b *baseBuiltinFunc) collator() collate.Collator {
 	return b.ctor
 }
 
-func newBaseBuiltinFunc(ctx sessionctx.Context, args []Expression) baseBuiltinFunc {
+func newBaseBuiltinFunc(ctx sessionctx.Context, args []Expression) (baseBuiltinFunc, error) {
 	if ctx == nil {
 		panic("ctx should not be nil")
 	}
-	derivedCharset, derivedCollate, derivedFlen := DeriveCollationFromExprs(ctx, args...)
+	derivedCharset, derivedCollate, derivedFlen, err := DeriveCollationFromExprs(ctx, args...)
+	if err != nil {
+		return baseBuiltinFunc{}, err
+	}
 	bf := baseBuiltinFunc{
 		bufAllocator:           newLocalSliceBuffer(len(args)),
 		childrenVectorizedOnce: new(sync.Once),
@@ -102,13 +105,13 @@ func newBaseBuiltinFunc(ctx sessionctx.Context, args []Expression) baseBuiltinFu
 	}
 	bf.SetCharsetAndCollation(derivedCharset, derivedCollate, derivedFlen)
 	bf.setCollator(collate.GetCollator(derivedCollate))
-	return bf
+	return bf, nil
 }
 
 // newBaseBuiltinFuncWithTp creates a built-in function signature with specified types of arguments and the return type of the function.
 // argTps indicates the types of the args, retType indicates the return type of the built-in function.
 // Every built-in function needs determined argTps and retType when we create it.
-func newBaseBuiltinFuncWithTp(ctx sessionctx.Context, args []Expression, retType types.EvalType, argTps ...types.EvalType) (bf baseBuiltinFunc) {
+func newBaseBuiltinFuncWithTp(ctx sessionctx.Context, args []Expression, retType types.EvalType, argTps ...types.EvalType) (bf baseBuiltinFunc, err error) {
 	if len(args) != len(argTps) {
 		panic("unexpected length of args and argTps")
 	}
@@ -139,7 +142,10 @@ func newBaseBuiltinFuncWithTp(ctx sessionctx.Context, args []Expression, retType
 
 	// derive collation information for string function, and we must do it
 	// before doing implicit cast.
-	derivedCharset, derivedCollate, derivedFlen := DeriveCollationFromExprs(ctx, args...)
+	derivedCharset, derivedCollate, derivedFlen, err := DeriveCollationFromExprs(ctx, args...)
+	if err != nil {
+		return baseBuiltinFunc{}, err
+	}
 	var fieldType *types.FieldType
 	switch retType {
 	case types.ETInt:
@@ -216,7 +222,7 @@ func newBaseBuiltinFuncWithTp(ctx sessionctx.Context, args []Expression, retType
 	}
 	bf.SetCharsetAndCollation(derivedCharset, derivedCollate, derivedFlen)
 	bf.setCollator(collate.GetCollator(derivedCollate))
-	return bf
+	return bf, nil
 }
 
 func (b *baseBuiltinFunc) getArgs() []Expression {

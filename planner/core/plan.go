@@ -177,7 +177,7 @@ type LogicalPlan interface {
 	PreparePossibleProperties(schema *expression.Schema, childrenProperties ...[][]*expression.Column) [][]*expression.Column
 
 	// exhaustPhysicalPlans generates all possible plans that can match the required property.
-	exhaustPhysicalPlans(*property.PhysicalProperty) []PhysicalPlan
+	exhaustPhysicalPlans(*property.PhysicalProperty) ([]PhysicalPlan, error)
 
 	// ExtractCorrelatedCols extracts correlated columns inside the LogicalPlan.
 	ExtractCorrelatedCols() []*expression.CorrelatedColumn
