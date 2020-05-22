@@ -61,6 +61,13 @@ func (b *Buffer) Reset() {
 	b.key = b.key[:0]
 }
 
+// SetByte set bytes.
+func (b *Buffer) SetByte(by []byte) []byte {
+	b.init()
+	b.key = append(b.key, by...)
+	return b.key
+}
+
 // Collator provides functionality for comparing strings for a given
 // collation order.
 type Collator interface {

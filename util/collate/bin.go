@@ -64,8 +64,8 @@ func (bpc *binPaddingCollator) Key(str string) []byte {
 // valid until the next call to buf.Reset().
 func (bpc *binPaddingCollator) KeyByBytes(buf *Buffer, str []byte) []byte {
 	buf.init()
+	str = truncateTailingSpaceByBytes(str)
 	buf.key = append(buf.key, str...)
-	truncateTailingSpaceByBytes(buf.key)
 	return buf.key
 }
 
