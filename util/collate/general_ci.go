@@ -165,6 +165,24 @@ func (gc *generalCICollator) Key(str string) []byte {
 	return buf
 }
 
+// KeyByBytes returns the collation key for str.
+// Passing the buffer buf may avoid memory allocations.
+// The returned slice will point to an allocation in Buffer and will remain
+// valid until the next call to buf.Reset().
+func (gc *generalCICollator) KeyByBytes(buf *Buffer, str []byte) []byte {
+	buf.init()
+	str = truncateTailingSpaceByBytes(str)
+	i := 0
+	strLen := len(str)
+	for i < strLen {
+		r, rLen := utf8.DecodeRune(str[i:])
+		u16 := convertRune(r)
+		buf.key = append(buf.key, byte(u16>>8), byte(u16))
+		i += rLen
+	}
+	return buf.key
+}
+
 // Pattern implements Collator interface.
 func (gc *generalCICollator) Pattern() WildcardPattern {
 	return &ciPattern{}

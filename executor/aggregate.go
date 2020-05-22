@@ -17,6 +17,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/pingcap/tidb/util/collate"
 	"sync"
 
 	"github.com/cznic/mathutil"
@@ -1258,12 +1259,13 @@ func (e *vecGroupChecker) evalGroupItemsAndResolveGroups(item expression.Express
 			lastRowDatum.SetMysqlJSON(col.GetJSON(numRows - 1).Copy())
 		}
 	case types.ETString:
-		previousKey := codec.ConvertByCollationStr(col.GetString(0), tp)
+		previousKey := col.GetString(0)
+		ctor := collate.GetCollator(tp.Collate)
 		for i := 1; i < numRows; i++ {
-			key := codec.ConvertByCollationStr(col.GetString(i), tp)
+			key := col.GetString(i)
 			isNull := col.IsNull(i)
 			if e.sameGroup[i] {
-				if isNull != previousIsNull || previousKey != key {
+				if isNull != previousIsNull || ctor.Compare(previousKey, key) != 0 {
 					e.sameGroup[i] = false
 				}
 			}
