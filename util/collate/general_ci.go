@@ -211,8 +211,10 @@ func (gc *generalCICollator) KeyByBytes(buf *Buffer, str []byte) []byte {
 	str = truncateTailingSpaceByBytes(str)
 	strLen := len(str)
 	var u16 uint16
+	var r rune
+	var rLen int
 	for i := 0; i < strLen; {
-		r, rLen := decodeUTF8(str[i:])
+		r, rLen = decodeUTF8(str[i:])
 		if r > 0xFFFF {
 			u16 = 0xFFFD
 		} else {
