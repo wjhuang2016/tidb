@@ -173,8 +173,7 @@ func (gc *generalCICollator) Key(str string) []byte {
 func (gc *generalCICollator) KeyByBytes(buf *Buffer, str []byte) []byte {
 	buf.init()
 	for _, r := range []rune(hack.String(truncateTailingSpaceByBytes(str))) {
-		u16 := convertRune(r)
-		buf.key = append(buf.key, byte(u16>>8), byte(u16))
+		buf.key = append(buf.key, convertBytes(r)...)
 	}
 	return buf.key
 }
@@ -199,15 +198,22 @@ func (p *ciPattern) DoMatch(str string) bool {
 	return doMatchGeneralCI(str, p.patChars, p.patTypes)
 }
 
+func convertBytes(r rune) []byte {
+	if r > 0xFFFF {
+		return []byte{0xff, 0xfd}
+	}
+	return mapTable[r]
+}
+
 func convertRune(r rune) uint16 {
 	if r > 0xFFFF {
 		return 0xFFFD
 	}
-	plane := &planeTable[r>>8]
+	plane := planeTable[r>>8]
 	if plane == nil {
 		return uint16(r)
 	}
-	return (*plane)[r&0xFF]
+	return plane[r&0xFF]
 }
 
 var (
