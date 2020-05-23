@@ -183,22 +183,22 @@ func (gc *generalCICollator) Key(str string) []byte {
 	return buf
 }
 
-func decodeUTF8(b []byte) (rune, int) {
-	switch b0 := b[0]; {
+func decodeUTF8(b []byte, start int) (rune, int) {
+	switch b0 := b[0+start]; {
 	case b0 < 0x80:
 		return rune(b0), 1
 	case b0 < 0xE0:
 		return rune(b0&b2Mask)<<6 |
-			rune(b[1]&mbMask), 2
+			rune(b[1+start]&mbMask), 2
 	case b0 < 0xF0:
 		return rune(b0&b3Mask)<<12 |
-			rune(b[1]&mbMask)<<6 |
-			rune(b[2]&mbMask), 3
+			rune(b[1+start]&mbMask)<<6 |
+			rune(b[2+start]&mbMask), 3
 	default:
 		return rune(b0&b4Mask)<<18 |
-			rune(b[1]&mbMask)<<12 |
-			rune(b[2]&mbMask)<<6 |
-			rune(b[3]&mbMask), 4
+			rune(b[1+start]&mbMask)<<12 |
+			rune(b[2+start]&mbMask)<<6 |
+			rune(b[3+start]&mbMask), 4
 	}
 }
 
@@ -211,10 +211,8 @@ func (gc *generalCICollator) KeyByBytes(buf *Buffer, str []byte) []byte {
 	str = truncateTailingSpaceByBytes(str)
 	strLen := len(str)
 	var u16 uint16
-	var r rune
-	var rLen int
 	for i := 0; i < strLen; {
-		r, rLen = decodeUTF8(str[i:])
+		r, rLen := decodeUTF8(str, i)
 		if r > 0xFFFF {
 			u16 = 0xFFFD
 		} else {
