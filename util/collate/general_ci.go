@@ -19,6 +19,24 @@ import (
 	"github.com/pingcap/tidb/util/stringutil"
 )
 
+const (
+	// first byte of a 2-byte encoding starts 110 and carries 5 bits of data
+	b2Lead = 0xC0 // 1100 0000
+	b2Mask = 0x1F // 0001 1111
+
+	// first byte of a 3-byte encoding starts 1110 and carries 4 bits of data
+	b3Lead = 0xE0 // 1110 0000
+	b3Mask = 0x0F // 0000 1111
+
+	// first byte of a 4-byte encoding starts 11110 and carries 3 bits of data
+	b4Lead = 0xF0 // 1111 0000
+	b4Mask = 0x07 // 0000 0111
+
+	// non-first bytes start 10 and carry 6 bits of data
+	mbLead = 0x80 // 1000 0000
+	mbMask = 0x3F // 0011 1111
+)
+
 type generalCICollator struct {
 }
 
@@ -165,6 +183,25 @@ func (gc *generalCICollator) Key(str string) []byte {
 	return buf
 }
 
+func decodeUTF8(b []byte) (rune, int) {
+	switch b0 := b[0]; {
+	case b0 < 0x80:
+		return rune(b0), 1
+	case b0 < 0xE0:
+		return rune(b0&b2Mask)<<6 |
+			rune(b[1]&mbMask), 2
+	case b0 < 0xF0:
+		return rune(b0&b3Mask)<<12 |
+			rune(b[1]&mbMask)<<6 |
+			rune(b[2]&mbMask), 3
+	default:
+		return rune(b0&b4Mask)<<18 |
+			rune(b[1]&mbMask)<<12 |
+			rune(b[2]&mbMask)<<6 |
+			rune(b[3]&mbMask), 4
+	}
+}
+
 // KeyByBytes returns the collation key for str.
 // Passing the buffer buf may avoid memory allocations.
 // The returned slice will point to an allocation in Buffer and will remain
@@ -175,11 +212,12 @@ func (gc *generalCICollator) KeyByBytes(buf *Buffer, str []byte) []byte {
 	strLen := len(str)
 	var u16 uint16
 	for i := 0; i < strLen; {
-		r, rLen := utf8.DecodeRune(str[i:])
+		r, rLen := decodeUTF8(str[i:])
 		if r > 0xFFFF {
 			u16 = 0xFFFD
+		} else {
+			u16 = mapTable[r]
 		}
-		u16 = mapTable[r]
 		buf.key = append(buf.key, byte(u16>>8), byte(u16))
 		i += rLen
 	}
