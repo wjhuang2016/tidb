@@ -173,9 +173,13 @@ func (gc *generalCICollator) KeyByBytes(buf *Buffer, str []byte) []byte {
 	buf.init()
 	str = truncateTailingSpaceByBytes(str)
 	strLen := len(str)
+	var u16 uint16
 	for i := 0; i < strLen; {
 		r, rLen := utf8.DecodeRune(str[i:])
-		u16 := convertRune(r)
+		if r > 0xFFFF {
+			u16 = 0xFFFD
+		}
+		u16 = mapTable[r]
 		buf.key = append(buf.key, byte(u16>>8), byte(u16))
 		i += rLen
 	}
