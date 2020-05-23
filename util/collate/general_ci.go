@@ -14,7 +14,6 @@
 package collate
 
 import (
-	"github.com/pingcap/tidb/util/hack"
 	"unicode/utf8"
 
 	"github.com/pingcap/tidb/util/stringutil"
@@ -172,9 +171,13 @@ func (gc *generalCICollator) Key(str string) []byte {
 // valid until the next call to buf.Reset().
 func (gc *generalCICollator) KeyByBytes(buf *Buffer, str []byte) []byte {
 	buf.init()
-	for _, r := range []rune(hack.String(truncateTailingSpaceByBytes(str))) {
+	str = truncateTailingSpaceByBytes(str)
+	strLen := len(str)
+	for i := 0; i < strLen; {
+		r, rLen := utf8.DecodeRune(str[i:])
 		u16 := convertRune(r)
 		buf.key = append(buf.key, byte(u16>>8), byte(u16))
+		i += rLen
 	}
 	return buf.key
 }
