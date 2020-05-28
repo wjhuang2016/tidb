@@ -293,6 +293,9 @@ func createStoreAndDomain() {
 	terror.MustNil(err)
 	// Bootstrap a session to load information schema.
 	dom, err = session.BootstrapSession(storage)
+	if err != nil {
+		logutil.BgLogger().Warn("fail", zap.String("error stk", fmt.Sprintf("%+v", err)))
+	}
 	terror.MustNil(err)
 }
 
