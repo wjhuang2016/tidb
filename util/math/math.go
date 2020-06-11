@@ -15,10 +15,12 @@ package math
 
 import "math"
 
-// Abs implement the abs function according to http://cavaliercoder.com/blog/optimized-abs-for-int64-in-go.html
+// Abs implement the abs function for int64.
 func Abs(n int64) int64 {
-	y := n >> 63
-	return (n ^ y) - y
+	if n < 0 {
+		return -n
+	}
+	return n
 }
 
 // uintSizeTable is used as a table to do comparison to get uint length is faster than doing loop on division with 10
