@@ -163,6 +163,8 @@ func (p *UserPrivileges) ConnectionVerification(user, host string, authenticatio
 		return
 	}
 
+	logutil.BgLogger().Warn("record", zap.String("user", record.User), zap.String("host", record.Host))
+
 	u = record.User
 	h = record.Host
 

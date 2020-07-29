@@ -1591,6 +1591,7 @@ func (s *session) Auth(user *auth.UserIdentity, authentication []byte, salt []by
 	// Check IP or localhost.
 	var success bool
 	user.AuthUsername, user.AuthHostname, success = pm.ConnectionVerification(user.Username, user.Hostname, authentication, salt, s.sessionVars.TLSConnectionState)
+	logutil.BgLogger().Warn("ConnectionVerification", zap.String("username", user.AuthUsername), zap.String("username", user.AuthHostname), zap.Bool("success", success))
 	if success {
 		s.sessionVars.User = user
 		s.sessionVars.ActiveRoles = pm.GetDefaultRoles(user.AuthUsername, user.AuthHostname)
@@ -1602,6 +1603,7 @@ func (s *session) Auth(user *auth.UserIdentity, authentication []byte, salt []by
 	// Check Hostname.
 	for _, addr := range getHostByIP(user.Hostname) {
 		u, h, success := pm.ConnectionVerification(user.Username, addr, authentication, salt, s.sessionVars.TLSConnectionState)
+		logutil.BgLogger().Warn("ConnectionVerification", zap.String("username", user.AuthUsername), zap.String("username", user.AuthHostname), zap.Bool("success", success))
 		if success {
 			s.sessionVars.User = &auth.UserIdentity{
 				Username:     user.Username,
