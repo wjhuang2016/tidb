@@ -34,7 +34,6 @@ import (
 	"github.com/pingcap/tidb/kv"
 	"github.com/pingcap/tidb/metrics"
 	"github.com/pingcap/tidb/store/tikv/tikvrpc"
-	"github.com/pingcap/tidb/util/execdetails"
 	"github.com/pingcap/tidb/util/logutil"
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
@@ -311,16 +310,6 @@ func (c *rpcClient) SendRequest(ctx context.Context, addr string, req *tikvrpc.R
 		ctx = opentracing.ContextWithSpan(ctx, span1)
 	}
 
-	start := time.Now()
-	defer func() {
-		stmtExec := ctx.Value(execdetails.StmtExecDetailKey)
-		if stmtExec != nil {
-			detail := stmtExec.(*execdetails.StmtExecDetails)
-			atomic.AddInt64(&detail.WaitKVRespDuration, int64(time.Since(start)))
-		}
-		c.updateTiKVSendReqHistogram(req, start)
-	}()
-
 	if atomic.CompareAndSwapUint32(&c.idleNotify, 1, 0) {
 		c.recycleIdleConnArray()
 	}
@@ -336,7 +325,7 @@ func (c *rpcClient) SendRequest(ctx context.Context, addr string, req *tikvrpc.R
 	// request to TiDB is not high frequency.
 	if config.GetGlobalConfig().TiKVClient.MaxBatchSize > 0 && enableBatch {
 		if batchReq := req.ToBatchCommandsRequest(); batchReq != nil {
-			return sendBatchRequest(ctx, addr, connArray.batchConn, batchReq, timeout)
+			return sendBatchRequest(ctx, addr, connArray.batchConn, batchReq, timeout, req)
 		}
 	}
 

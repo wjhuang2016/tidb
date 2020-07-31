@@ -16,7 +16,9 @@ package tikv
 
 import (
 	"context"
+	"github.com/pingcap/tidb/util/execdetails"
 	"math"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -586,13 +588,7 @@ func removeCanceledRequests(entries []*batchCommandsEntry,
 	return validEntries, validRequests
 }
 
-func sendBatchRequest(
-	ctx context.Context,
-	addr string,
-	batchConn *batchConn,
-	req *tikvpb.BatchCommandsRequest_Request,
-	timeout time.Duration,
-) (*tikvrpc.Response, error) {
+func sendBatchRequest(ctx context.Context, addr string, batchConn *batchConn, req *tikvpb.BatchCommandsRequest_Request, timeout time.Duration, reqq *tikvrpc.Request, ) (*tikvrpc.Response, error) {
 	entry := &batchCommandsEntry{
 		ctx:      ctx,
 		req:      req,
@@ -602,6 +598,8 @@ func sendBatchRequest(
 	}
 	timer := time.NewTimer(timeout)
 	defer timer.Stop()
+
+	start := time.Now()
 
 	select {
 	case batchConn.batchCommandsCh <- entry:
@@ -618,6 +616,25 @@ func sendBatchRequest(
 		if !ok {
 			return nil, errors.Trace(entry.err)
 		}
+		stmtExec := ctx.Value(execdetails.StmtExecDetailKey)
+		if stmtExec != nil {
+			detail := stmtExec.(*execdetails.StmtExecDetails)
+			atomic.AddInt64(&detail.WaitKVRespDuration, int64(time.Since(start)))
+		}
+		key := sendReqHistCacheKey{
+			reqq.Type,
+			reqq.Context.GetPeer().GetStoreId(),
+		}
+
+		v, ok := sendReqHistCache.Load(key)
+		if !ok {
+			reqType := reqq.Type.String()
+			storeID := strconv.FormatUint(reqq.Context.GetPeer().GetStoreId(), 10)
+			v = metrics.TiKVSendReqHistogram.WithLabelValues(reqType, storeID)
+			sendReqHistCache.Store(key, v)
+		}
+
+		v.(prometheus.Observer).Observe(time.Since(start).Seconds())
 		return tikvrpc.FromBatchCommandsResponse(res)
 	case <-ctx.Done():
 		atomic.StoreInt32(&entry.canceled, 1)
