@@ -957,6 +957,7 @@ func (p *MySQLPrivilege) RequestVerification(activeRoles []*auth.RoleIdentity, u
 
 // DBIsVisible checks whether the user can see the db.
 func (p *MySQLPrivilege) DBIsVisible(user, host, db string) bool {
+	logutil.BgLogger().Warn("enter DBIsVisible")
 	if record := p.matchUser(user, host); record != nil {
 		if record.Privileges&globalDBVisible > 0 {
 			return true
@@ -992,6 +993,7 @@ func (p *MySQLPrivilege) DBIsVisible(user, host, db string) bool {
 		}
 	}
 
+	logutil.BgLogger().Warn("leave DBIsVisible with false")
 	return false
 }
 

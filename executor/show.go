@@ -18,6 +18,8 @@ import (
 	"context"
 	gjson "encoding/json"
 	"fmt"
+	"github.com/pingcap/tidb/util/logutil"
+	"go.uber.org/zap"
 	"sort"
 	"strconv"
 	"strings"
@@ -311,12 +313,16 @@ func moveInfoSchemaToFront(dbs []string) {
 
 func (e *ShowExec) fetchShowDatabases() error {
 	dbs := e.is.AllSchemaNames()
+	for _, db := range dbs {
+		logutil.BgLogger().Warn("dbs", zap.String("db name", db))
+	}
 	checker := privilege.GetPrivilegeManager(e.ctx)
 	sort.Strings(dbs)
 	// let information_schema be the first database
 	moveInfoSchemaToFront(dbs)
 	for _, d := range dbs {
 		if checker != nil && !checker.DBIsVisible(e.ctx.GetSessionVars().ActiveRoles, d) {
+			logutil.BgLogger().Warn("DBIsVisible false")
 			continue
 		}
 		e.appendRow([]interface{}{
