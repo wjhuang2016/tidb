@@ -599,8 +599,6 @@ func sendBatchRequest(ctx context.Context, addr string, batchConn *batchConn, re
 	timer := time.NewTimer(timeout)
 	defer timer.Stop()
 
-	start := time.Now()
-
 	select {
 	case batchConn.batchCommandsCh <- entry:
 	case <-ctx.Done():
@@ -611,11 +609,13 @@ func sendBatchRequest(ctx context.Context, addr string, batchConn *batchConn, re
 		return nil, context.DeadlineExceeded
 	}
 
+	start := time.Now()
 	select {
 	case res, ok := <-entry.res:
 		if !ok {
 			return nil, errors.Trace(entry.err)
 		}
+		t := time.Since(start).Seconds()
 		stmtExec := ctx.Value(execdetails.StmtExecDetailKey)
 		if stmtExec != nil {
 			detail := stmtExec.(*execdetails.StmtExecDetails)
@@ -634,7 +634,7 @@ func sendBatchRequest(ctx context.Context, addr string, batchConn *batchConn, re
 			sendReqHistCache.Store(key, v)
 		}
 
-		v.(prometheus.Observer).Observe(time.Since(start).Seconds())
+		v.(prometheus.Observer).Observe(t)
 		return tikvrpc.FromBatchCommandsResponse(res)
 	case <-ctx.Done():
 		atomic.StoreInt32(&entry.canceled, 1)
