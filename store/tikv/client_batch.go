@@ -16,6 +16,7 @@ package tikv
 
 import (
 	"context"
+	"github.com/opentracing/opentracing-go"
 	"github.com/pingcap/tidb/util/execdetails"
 	"math"
 	"strconv"
@@ -609,11 +610,19 @@ func sendBatchRequest(ctx context.Context, addr string, batchConn *batchConn, re
 		return nil, context.DeadlineExceeded
 	}
 
+	var span1 opentracing.Span
+	if span := opentracing.SpanFromContext(ctx); span != nil && span.Tracer() != nil {
+		span1 = span.Tracer().StartSpan("sendBatchRequest", opentracing.ChildOf(span.Context()))
+		ctx = opentracing.ContextWithSpan(ctx, span1)
+	}
 	start := time.Now()
 	select {
 	case res, ok := <-entry.res:
 		if !ok {
 			return nil, errors.Trace(entry.err)
+		}
+		if span := opentracing.SpanFromContext(ctx); span != nil && span.Tracer() != nil {
+			span1.Finish()
 		}
 		t := time.Since(start).Seconds()
 		stmtExec := ctx.Value(execdetails.StmtExecDetailKey)
