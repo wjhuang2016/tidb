@@ -206,6 +206,7 @@ type batchCommandsClient struct {
 
 	tikvClientCfg config.TiKVClient
 	tikvLoad      *uint64
+	dialTimeout   time.Duration
 
 	// closed indicates the batch client is closed explicitly or not.
 	closed int32
@@ -282,7 +283,7 @@ func (c *batchCommandsClient) waitConnReady() (err error) {
 	defer func() {
 		metrics.TiKVBatchClientWaitEstablish.Observe(time.Since(start).Seconds())
 	}()
-	dialCtx, cancel := context.WithTimeout(context.Background(), dialTimeout)
+	dialCtx, cancel := context.WithTimeout(context.Background(), c.dialTimeout)
 	for {
 		s := c.conn.GetState()
 		if s == connectivity.Ready {
@@ -607,7 +608,7 @@ func sendBatchRequest(ctx context.Context, addr string, batchConn *batchConn, re
 			zap.String("to", addr), zap.String("cause", ctx.Err().Error()))
 		return nil, errors.Trace(ctx.Err())
 	case <-timer.C:
-		return nil, context.DeadlineExceeded
+		return nil, errors.SuspendStack(errors.Annotate(context.DeadlineExceeded, "wait sendLoop"))
 	}
 
 	var span1 opentracing.Span
@@ -651,7 +652,7 @@ func sendBatchRequest(ctx context.Context, addr string, batchConn *batchConn, re
 			zap.String("to", addr), zap.String("cause", ctx.Err().Error()))
 		return nil, errors.Trace(ctx.Err())
 	case <-timer.C:
-		return nil, context.DeadlineExceeded
+		return nil, errors.SuspendStack(errors.Annotate(context.DeadlineExceeded, "wait recvLoop"))
 	}
 }
 
