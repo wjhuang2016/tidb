@@ -625,7 +625,6 @@ func sendBatchRequest(ctx context.Context, addr string, batchConn *batchConn, re
 		if span := opentracing.SpanFromContext(ctx); span != nil && span.Tracer() != nil {
 			span1.Finish()
 		}
-		t := time.Since(start).Seconds()
 		stmtExec := ctx.Value(execdetails.StmtExecDetailKey)
 		if stmtExec != nil {
 			detail := stmtExec.(*execdetails.StmtExecDetails)
@@ -644,7 +643,7 @@ func sendBatchRequest(ctx context.Context, addr string, batchConn *batchConn, re
 			sendReqHistCache.Store(key, v)
 		}
 
-		v.(prometheus.Observer).Observe(t)
+		v.(prometheus.Observer).Observe(time.Since(start).Seconds())
 		return tikvrpc.FromBatchCommandsResponse(res)
 	case <-ctx.Done():
 		atomic.StoreInt32(&entry.canceled, 1)
