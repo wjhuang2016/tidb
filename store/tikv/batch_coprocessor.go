@@ -243,6 +243,7 @@ func (b *batchCopIterator) Next(ctx context.Context) (kv.ResultSubset, error) {
 	// Get next fetched resp from chan
 	resp, ok, closed = b.recvFromRespCh(ctx)
 	if !ok || closed {
+		logutil.BgLogger().Error("batchCopIterator", zap.Bool("ok", ok), zap.Bool("closed", closed))
 		return nil, nil
 	}
 

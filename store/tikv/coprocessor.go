@@ -644,11 +644,13 @@ func (it *copIterator) Next(ctx context.Context) (kv.ResultSubset, error) {
 		// Get next fetched resp from chan
 		resp, ok, closed = it.recvFromRespCh(ctx, it.respChan)
 		if !ok || closed {
+			logutil.BgLogger().Error("copIterator", zap.Bool("ok", ok), zap.Bool("closed", closed))
 			return nil, nil
 		}
 	} else {
 		for {
 			if it.curr >= len(it.tasks) {
+				logutil.BgLogger().Error("copIterator", zap.Int("it.curr", it.curr), zap.Int("len(it.tasks)", len(it.tasks)))
 				// Resp will be nil if iterator is finishCh.
 				return nil, nil
 			}
@@ -656,6 +658,7 @@ func (it *copIterator) Next(ctx context.Context) (kv.ResultSubset, error) {
 			resp, ok, closed = it.recvFromRespCh(ctx, task.respChan)
 			if closed {
 				// Close() is already called, so Next() is invalid.
+				logutil.BgLogger().Error("copIterator", zap.Bool("ok", ok), zap.Bool("closed", closed))
 				return nil, nil
 			}
 			if ok {

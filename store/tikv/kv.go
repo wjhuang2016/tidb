@@ -179,6 +179,8 @@ func (s *tikvStore) CheckVisibility(startTime uint64) error {
 	s.spMutex.RUnlock()
 	diff := time.Since(cachedTime)
 
+	logutil.BgLogger().Error("CheckVisibility", zap.Uint64("startTime", startTime), zap.Uint64("cachedSafePoint", cachedSafePoint))
+
 	if diff > (GcSafePointCacheInterval - gcCPUTimeInaccuracyBound) {
 		return ErrPDServerTimeout.GenWithStackByArgs("start timestamp may fall behind safe point")
 	}

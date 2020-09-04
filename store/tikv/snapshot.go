@@ -127,6 +127,7 @@ func (s *tikvSnapshot) BatchGet(ctx context.Context, keys []kv.Key) (map[string]
 	s.mu.RUnlock()
 
 	if len(keys) == 0 {
+		logutil.BgLogger().Error("tikvSnapshot BatchGet")
 		return m, nil
 	}
 
