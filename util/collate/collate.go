@@ -248,4 +248,8 @@ func init() {
 	newCollatorIDMap[int(mysql.CollationNames["utf8mb4_unicode_ci"])] = &unicodeCICollator{}
 	newCollatorMap["utf8_unicode_ci"] = &unicodeCICollator{}
 	newCollatorIDMap[int(mysql.CollationNames["utf8_unicode_ci"])] = &unicodeCICollator{}
+	newCollatorMap["gbk_bin"] = &binCollator{}
+	newCollatorIDMap[int(mysql.CollationNames["gbk_bin"])] = &binCollator{}
+	newCollatorMap["gb18030_bin"] = &binCollator{}
+	newCollatorIDMap[int(mysql.CollationNames["gb18030_bin"])] = &binCollator{}
 }

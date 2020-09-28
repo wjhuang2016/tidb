@@ -674,6 +674,16 @@ github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijb
 github.com/urfave/cli v1.22.2/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/urfave/cli/v2 v2.1.1/go.mod h1:SE9GqnLQmjVa0iPEY0f1w3ygNIYcIJ0OKPMoW2caLfQ=
 github.com/urfave/negroni v0.3.0/go.mod h1:Meg73S6kFm/4PpbYdq35yYWoCZ9mS/YSx+lKnmiohz4=
+github.com/wjhuang2016/parser v0.0.0-20200914073025-f5073acbd7ee h1:+p6EElyCtbmrx0x5zQGFrQTt5s0koNtCp0qz9NPp5ZY=
+github.com/wjhuang2016/parser v0.0.0-20200914073025-f5073acbd7ee/go.mod h1:RlLfMRJwFBSiXd2lUaWdV5pSXtrpyvZM8k5bbZWsheU=
+github.com/wjhuang2016/parser v0.0.0-20200928094751-9fb5d6e08023 h1:CVdBGerYIIRPplQwhcxuiVOlztUfJx4jV/O66tJBV28=
+github.com/wjhuang2016/parser v0.0.0-20200928094751-9fb5d6e08023/go.mod h1:RlLfMRJwFBSiXd2lUaWdV5pSXtrpyvZM8k5bbZWsheU=
+github.com/wjhuang2016/parser v0.0.0-20200928095710-49a9672ce8a5 h1:Y6Lowt/sL5hpsGXyg+oWPq5yr5eluwyiqWhSrNhSd+U=
+github.com/wjhuang2016/parser v0.0.0-20200928095710-49a9672ce8a5/go.mod h1:RlLfMRJwFBSiXd2lUaWdV5pSXtrpyvZM8k5bbZWsheU=
+github.com/wjhuang2016/parser v0.0.0-20200928100644-21245b1ff31e h1:aIi6TeUmDcLDPpWGu1ZbfI6TREA1YDDHUfV0r4LQn4I=
+github.com/wjhuang2016/parser v0.0.0-20200928100644-21245b1ff31e/go.mod h1:RlLfMRJwFBSiXd2lUaWdV5pSXtrpyvZM8k5bbZWsheU=
+github.com/wjhuang2016/parser v0.0.0-20200928104524-2cb29e6e4772 h1:gitA9n+w6MsYyR4g/M5KKcbehJqCARIKKCHvzvq8kIg=
+github.com/wjhuang2016/parser v0.0.0-20200928104524-2cb29e6e4772/go.mod h1:RlLfMRJwFBSiXd2lUaWdV5pSXtrpyvZM8k5bbZWsheU=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2 h1:eY9dn8+vbi4tKz5Qo6v2eYzo7kUS51QINcR5jNpbZS8=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
