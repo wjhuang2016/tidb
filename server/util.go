@@ -43,11 +43,14 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/pingcap/errors"
 	"github.com/pingcap/parser/mysql"
 	"github.com/pingcap/tidb/config"
 	"github.com/pingcap/tidb/types"
 	"github.com/pingcap/tidb/util/chunk"
 	"github.com/pingcap/tidb/util/hack"
+	"golang.org/x/text/encoding"
+	"golang.org/x/text/transform"
 )
 
 func parseNullTermString(b []byte) (str []byte, remain []byte) {
@@ -267,7 +270,7 @@ func dumpBinaryRow(buffer []byte, columns []*ColumnInfo, row chunk.Row) ([]byte,
 	return buffer, nil
 }
 
-func dumpTextRow(buffer []byte, columns []*ColumnInfo, row chunk.Row) ([]byte, error) {
+func dumpTextRow(buffer []byte, columns []*ColumnInfo, row chunk.Row, encoder *encoding.Encoder) ([]byte, error) {
 	tmp := make([]byte, 0, 20)
 	for i, col := range columns {
 		if row.IsNull(i) {
@@ -310,7 +313,17 @@ func dumpTextRow(buffer []byte, columns []*ColumnInfo, row chunk.Row) ([]byte, e
 			buffer = dumpLengthEncodedString(buffer, tmp)
 		case mysql.TypeNewDecimal:
 			buffer = dumpLengthEncodedString(buffer, hack.Slice(row.GetMyDecimal(i).String()))
-		case mysql.TypeString, mysql.TypeVarString, mysql.TypeVarchar, mysql.TypeBit,
+		case mysql.TypeString, mysql.TypeVarString, mysql.TypeVarchar:
+			if encoder != nil {
+				str, _, err := transform.String(encoder, row.GetString(i))
+				if err != nil {
+					return nil, errors.Trace(err)
+				}
+				buffer = dumpLengthEncodedString(buffer, hack.Slice(str))
+			} else {
+				buffer = dumpLengthEncodedString(buffer, row.GetBytes(i))
+			}
+		case mysql.TypeBit,
 			mysql.TypeTinyBlob, mysql.TypeMediumBlob, mysql.TypeLongBlob, mysql.TypeBlob:
 			buffer = dumpLengthEncodedString(buffer, row.GetBytes(i))
 		case mysql.TypeDate, mysql.TypeDatetime, mysql.TypeTimestamp:

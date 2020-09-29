@@ -81,7 +81,7 @@ func (cc *clientConn) handleStmtPrepare(ctx context.Context, sql string) error {
 	if len(params) > 0 {
 		for i := 0; i < len(params); i++ {
 			data = data[0:4]
-			data = params[i].Dump(data)
+			data = params[i].Dump(data, nil)
 
 			if err := cc.writePacket(data); err != nil {
 				return err
@@ -96,7 +96,7 @@ func (cc *clientConn) handleStmtPrepare(ctx context.Context, sql string) error {
 	if len(columns) > 0 {
 		for i := 0; i < len(columns); i++ {
 			data = data[0:4]
-			data = columns[i].Dump(data)
+			data = columns[i].Dump(data, nil)
 
 			if err := cc.writePacket(data); err != nil {
 				return err
@@ -200,7 +200,7 @@ func (cc *clientConn) handleStmtExecute(ctx context.Context, data []byte) (err e
 	// Tell the client cursor exists in server by setting proper serverStatus.
 	if useCursor {
 		stmt.StoreResultSet(rs)
-		err = cc.writeColumnInfo(rs.Columns(), mysql.ServerStatusCursorExists)
+		err = cc.writeColumnInfo(rs.Columns(), mysql.ServerStatusCursorExists, nil)
 		if err != nil {
 			return err
 		}

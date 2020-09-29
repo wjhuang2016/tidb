@@ -58,6 +58,7 @@ import (
 	"github.com/pingcap/parser"
 	"github.com/pingcap/parser/ast"
 	"github.com/pingcap/parser/auth"
+	"github.com/pingcap/parser/charset"
 	"github.com/pingcap/parser/mysql"
 	"github.com/pingcap/parser/terror"
 	"github.com/pingcap/tidb/config"
@@ -81,6 +82,7 @@ import (
 	"github.com/pingcap/tidb/util/sqlexec"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
+	"golang.org/x/text/encoding"
 )
 
 const (
@@ -1592,7 +1594,7 @@ func (cc *clientConn) handleFieldList(ctx context.Context, sql string) (err erro
 		column.DefaultValue = []byte{}
 
 		data = data[0:4]
-		data = column.Dump(data)
+		data = column.Dump(data, nil)
 		if err := cc.writePacket(data); err != nil {
 			return err
 		}
@@ -1637,7 +1639,7 @@ func (cc *clientConn) writeResultset(ctx context.Context, rs ResultSet, binary b
 	return cc.flush(ctx)
 }
 
-func (cc *clientConn) writeColumnInfo(columns []*ColumnInfo, serverStatus uint16) error {
+func (cc *clientConn) writeColumnInfo(columns []*ColumnInfo, serverStatus uint16, decoder *encoding.Encoder) error {
 	data := cc.alloc.AllocWithLen(4, 1024)
 	data = dumpLengthEncodedInt(data, uint64(len(columns)))
 	if err := cc.writePacket(data); err != nil {
@@ -1645,7 +1647,7 @@ func (cc *clientConn) writeColumnInfo(columns []*ColumnInfo, serverStatus uint16
 	}
 	for _, v := range columns {
 		data = data[0:4]
-		data = v.Dump(data)
+		data = v.Dump(data, decoder)
 		if err := cc.writePacket(data); err != nil {
 			return err
 		}
@@ -1666,6 +1668,19 @@ func (cc *clientConn) writeChunks(ctx context.Context, rs ResultSet, binary bool
 		stmtDetail = stmtDetailRaw.(*execdetails.StmtExecDetails)
 	}
 
+	resultCharset, ok := cc.ctx.GetSessionVars().GetSystemVar("character_set_results")
+	var encoder *encoding.Encoder
+	if ok && (resultCharset == charset.CharsetGBK || resultCharset == charset.CharsetGB18030) {
+		e, _ := charset.Lookup(resultCharset)
+		// However, if `b.tp.Charset` is abnormally set to a wrong charset, we still
+		// return with error.
+		if e == nil {
+			logutil.BgLogger().Error("get encoding fails", zap.String("client charset", resultCharset))
+			errors.New("shouldn't not happened")
+		}
+		encoder = e.NewEncoder()
+	}
+
 	for {
 		// Here server.tidbResultSet implements Next method.
 		err := rs.Next(ctx, req)
@@ -1676,7 +1691,7 @@ func (cc *clientConn) writeChunks(ctx context.Context, rs ResultSet, binary bool
 			// We need to call Next before we get columns.
 			// Otherwise, we will get incorrect columns info.
 			columns := rs.Columns()
-			err = cc.writeColumnInfo(columns, serverStatus)
+			err = cc.writeColumnInfo(columns, serverStatus, encoder)
 			if err != nil {
 				return err
 			}
@@ -1693,7 +1708,7 @@ func (cc *clientConn) writeChunks(ctx context.Context, rs ResultSet, binary bool
 			if binary {
 				data, err = dumpBinaryRow(data, rs.Columns(), req.GetRow(i))
 			} else {
-				data, err = dumpTextRow(data, rs.Columns(), req.GetRow(i))
+				data, err = dumpTextRow(data, rs.Columns(), req.GetRow(i), encoder)
 			}
 			if err != nil {
 				reg.End()

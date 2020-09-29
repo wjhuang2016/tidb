@@ -15,6 +15,9 @@ package server
 
 import (
 	"github.com/pingcap/parser/mysql"
+	"github.com/pingcap/tidb/util/hack"
+	"golang.org/x/text/encoding"
+	"golang.org/x/text/transform"
 )
 
 const maxColumnNameSize = 256
@@ -36,7 +39,7 @@ type ColumnInfo struct {
 }
 
 // Dump dumps ColumnInfo to bytes.
-func (column *ColumnInfo) Dump(buffer []byte) []byte {
+func (column *ColumnInfo) Dump(buffer []byte, encoder *encoding.Encoder) []byte {
 	nameDump, orgnameDump := []byte(column.Name), []byte(column.OrgName)
 	if len(nameDump) > maxColumnNameSize {
 		nameDump = nameDump[0:maxColumnNameSize]
@@ -44,13 +47,27 @@ func (column *ColumnInfo) Dump(buffer []byte) []byte {
 	if len(orgnameDump) > maxColumnNameSize {
 		orgnameDump = orgnameDump[0:maxColumnNameSize]
 	}
-	buffer = dumpLengthEncodedString(buffer, []byte("def"))
-	buffer = dumpLengthEncodedString(buffer, []byte(column.Schema))
-	buffer = dumpLengthEncodedString(buffer, []byte(column.Table))
-	buffer = dumpLengthEncodedString(buffer, []byte(column.OrgTable))
-	buffer = dumpLengthEncodedString(buffer, nameDump)
-	buffer = dumpLengthEncodedString(buffer, orgnameDump)
-
+	if encoder != nil {
+		str, _, _ := transform.String(encoder, "def")
+		buffer = dumpLengthEncodedString(buffer, hack.Slice(str))
+		str, _, _ = transform.String(encoder, column.Schema)
+		buffer = dumpLengthEncodedString(buffer, hack.Slice(str))
+		str, _, _ = transform.String(encoder, column.Table)
+		buffer = dumpLengthEncodedString(buffer, hack.Slice(str))
+		str, _, _ = transform.String(encoder, column.OrgTable)
+		buffer = dumpLengthEncodedString(buffer, hack.Slice(str))
+		str, _, _ = transform.String(encoder, string(nameDump))
+		buffer = dumpLengthEncodedString(buffer, hack.Slice(str))
+		str, _, _ = transform.String(encoder, string(orgnameDump))
+		buffer = dumpLengthEncodedString(buffer, hack.Slice(str))
+	} else {
+		buffer = dumpLengthEncodedString(buffer, []byte("def"))
+		buffer = dumpLengthEncodedString(buffer, []byte(column.Schema))
+		buffer = dumpLengthEncodedString(buffer, []byte(column.Table))
+		buffer = dumpLengthEncodedString(buffer, []byte(column.OrgTable))
+		buffer = dumpLengthEncodedString(buffer, nameDump)
+		buffer = dumpLengthEncodedString(buffer, orgnameDump)
+	}
 	buffer = append(buffer, 0x0c)
 
 	buffer = dumpUint16(buffer, column.Charset)
