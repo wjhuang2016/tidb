@@ -15,8 +15,7 @@ package tables
 
 import (
 	"context"
-	"io"
-
+	"fmt"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pingcap/errors"
 	"github.com/pingcap/parser/model"
@@ -27,6 +26,8 @@ import (
 	"github.com/pingcap/tidb/tablecodec"
 	"github.com/pingcap/tidb/types"
 	"github.com/pingcap/tidb/util/codec"
+	"github.com/sirupsen/logrus"
+	"io"
 )
 
 // indexIter is for KV store index iterator.
@@ -137,6 +138,17 @@ func (c *index) GenIndexKey(sc *stmtctx.StatementContext, indexedValues []types.
 	return tablecodec.GenIndexKey(sc, c.tblInfo, c.idxInfo, idxTblID, indexedValues, h, buf)
 }
 
+func fmtBytes(b []byte) string {
+	str := "["
+	for _, i := range b {
+		str += fmt.Sprintf("0x%x", i)
+		str += ", "
+	}
+	str = str[0:len(str)-2]
+	str += "]"
+	return str
+}
+
 // Create creates a new entry in the kvIndex data.
 // If the index is unique and there is an existing entry with the same key,
 // Create will return the existing entry's handle as the first return value, ErrKeyExists as the second return value.
@@ -191,6 +203,7 @@ func (c *index) Create(sctx sessionctx.Context, us kv.UnionStore, indexedValues 
 	writeBufs := vars.GetWriteStmtBufs()
 	skipCheck := vars.StmtCtx.BatchCheck
 	key, distinct, err := c.GenIndexKey(vars.StmtCtx, indexedValues, h, writeBufs.IndexKeyBuf)
+	logrus.Warnf("index name: %s, key: %s", c.idxInfo.Name, fmtBytes(key))
 	if err != nil {
 		return nil, err
 	}
@@ -216,6 +229,8 @@ func (c *index) Create(sctx sessionctx.Context, us kv.UnionStore, indexedValues 
 	if err != nil {
 		return nil, err
 	}
+	logrus.Warnf("value: %s", fmtBytes(idxVal))
+
 
 	if !distinct || skipCheck || opt.Untouched {
 		err = us.GetMemBuffer().Set(key, idxVal)
