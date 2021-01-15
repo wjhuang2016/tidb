@@ -2408,6 +2408,10 @@ func (b *PlanBuilder) buildSelect(ctx context.Context, sel *ast.SelectStmt) (p L
 		gbyCols                       []expression.Expression
 	)
 
+	if sel.With != nil {
+		b.outerCTEs = append(b.outerCTEs, sel.With.CTEs...)
+	}
+
 	if sel.From != nil {
 		p, err = b.buildResultSetNode(ctx, sel.From.TableRefs)
 		if err != nil {
@@ -2611,10 +2615,30 @@ func getStatsTable(ctx sessionctx.Context, tblInfo *model.TableInfo, pid int64) 
 	return statsTbl
 }
 
+func (b *PlanBuilder) buildDataSourceFromCTE(ctx context.Context, cte *ast.CommonTableExpression) (LogicalPlan, error) {
+	p, err := b.buildResultSetNode(ctx, cte.Query.Query)
+	if err != nil {
+		return nil, err
+	}
+	names := make([]*types.FieldName, 0, len(cte.NameList))
+	for _, n := range cte.NameList {
+		names = append(names, &types.FieldName{Hidden: false, TblName: cte.Name, ColName: n.Name})
+	}
+	p.SetOutputNames(names)
+	return p, nil
+}
+
 func (b *PlanBuilder) buildDataSource(ctx context.Context, tn *ast.TableName, asName *model.CIStr) (LogicalPlan, error) {
 	dbName := tn.Schema
 	sessionVars := b.ctx.GetSessionVars()
 	if dbName.L == "" {
+		// Try CTE
+		for _, cte := range b.outerCTEs {
+			if cte.Name.L == tn.Name.L {
+				return b.buildDataSourceFromCTE(ctx, cte)
+			}
+		}
+
 		dbName = model.NewCIStr(sessionVars.CurrentDB)
 	}
 
