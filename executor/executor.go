@@ -1585,6 +1585,7 @@ func ResetContextOfStmt(ctx sessionctx.Context, s ast.StmtNode) (err error) {
 		MemTracker:  memory.NewTracker(memory.LabelForSQLText, vars.MemQuotaQuery),
 		DiskTracker: disk.NewTracker(memory.LabelForSQLText, -1),
 		TaskID:      stmtctx.AllocateTaskID(),
+        CTEStorageMap: map[int]*CTEStorages{},
 	}
 	sc.MemTracker.AttachToGlobalTracker(GlobalMemoryUsageTracker)
 	globalConfig := config.GetGlobalConfig()

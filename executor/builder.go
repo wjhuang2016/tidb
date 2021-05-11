@@ -80,19 +80,17 @@ type executorBuilder struct {
 	snapshotTSCached bool
 	err              error // err is set when there is error happened during Executor building process.
 	hasLock          bool
-	cteStorageMap    map[int]*cteStorages // Different CTE may use same storage.
 }
 
-type cteStorages struct {
-	resTbl    CTEStorage
-	iterInTbl CTEStorage
+type CTEStorages struct {
+	ResTbl    CTEStorage
+	IterInTbl CTEStorage
 }
 
 func newExecutorBuilder(ctx sessionctx.Context, is infoschema.InfoSchema) *executorBuilder {
 	return &executorBuilder{
 		ctx:           ctx,
 		is:            is,
-		cteStorageMap: map[int]*cteStorages{},
 	}
 }
 
@@ -4058,15 +4056,20 @@ func (b *executorBuilder) buildCTE(v *plannercore.PhysicalCTE) Executor {
 	// because recursive part may also use storage.
 	var resTbl CTEStorage = nil
 	var iterInTbl CTEStorage = nil
-	storages, ok := b.cteStorageMap[v.CTE.IDForStorage]
+    storageMap, ok := b.ctx.GetSessionVars().StmtCtx.CTEStorageMap.(map[int]*CTEStorages)
+    if !ok {
+        b.err = errors.Trace(errors.New("type assertion for CTEStorageMap failed"))
+        return nil
+    }
+	storages, ok := storageMap[v.CTE.IDForStorage]
 	if ok {
 		// storage already setup.
-		resTbl = storages.resTbl
-		iterInTbl = storages.iterInTbl
+		resTbl = storages.ResTbl
+		iterInTbl = storages.IterInTbl
 	} else {
 		resTbl = NewCTEStorageRC(b.ctx.GetSessionVars().StmtCtx, v.CTE.IsDistinct)
 		iterInTbl = NewCTEStorageRC(b.ctx.GetSessionVars().StmtCtx, v.CTE.IsDistinct)
-		b.cteStorageMap[v.CTE.IDForStorage] = &cteStorages{resTbl: resTbl, iterInTbl: iterInTbl}
+		storageMap[v.CTE.IDForStorage] = &CTEStorages{ResTbl: resTbl, IterInTbl: iterInTbl}
 	}
 
 	// 3. build recursive part.
@@ -4075,7 +4078,7 @@ func (b *executorBuilder) buildCTE(v *plannercore.PhysicalCTE) Executor {
 		return nil
 	}
 
-	return &CTEExec{
+    return &CTEExec{
 		baseExecutor:  newBaseExecutor(b.ctx, v.Schema(), v.ID()),
 		seedExec:      seedExec,
 		recursiveExec: recursiveExec,
@@ -4088,7 +4091,12 @@ func (b *executorBuilder) buildCTE(v *plannercore.PhysicalCTE) Executor {
 }
 
 func (b *executorBuilder) buildCTETableReader(v *plannercore.PhysicalCTETable) Executor {
-	storages, ok := b.cteStorageMap[v.IDForStorage]
+    storageMap, ok := b.ctx.GetSessionVars().StmtCtx.CTEStorageMap.(map[int]*CTEStorages)
+    if !ok {
+        b.err = errors.Trace(errors.New("type assertion for CTEStorageMap failed"))
+        return nil
+    }
+	storages, ok := storageMap[v.IDForStorage]
 	if !ok {
 		// TODO: we can add name in PhysicalCTETable, so the error msg will be more readable.
 		b.err = errors.Errorf("iterInTbl should already be set up by CTEExec(id: %d)", v.IDForStorage)
@@ -4096,7 +4104,7 @@ func (b *executorBuilder) buildCTETableReader(v *plannercore.PhysicalCTETable) E
 	}
 	return &CTETableReaderExec{
 		baseExecutor: newBaseExecutor(b.ctx, v.Schema(), v.ID()),
-		iterInTbl:    storages.iterInTbl,
+		iterInTbl:    storages.IterInTbl,
 		chkIdx:       0,
 	}
 }

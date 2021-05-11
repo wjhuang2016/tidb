@@ -164,6 +164,7 @@ type StatementContext struct {
 	TblInfo2UnionScan     map[*model.TableInfo]bool
 	TaskID                uint64 // unique ID for an execution of a statement
 	TaskMapBakTS          uint64 // counter for
+    CTEStorageMap interface{}
 }
 
 // StmtHints are SessionVars related sql hints.

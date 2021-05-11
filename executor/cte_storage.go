@@ -65,6 +65,9 @@ type CTEStorage interface {
 	SetDone()
     // TODO: too trichy
     GetBegCh() chan struct{}
+    // TODO: We put CTEStorage on StmtCtx, and when SQL is finished, we close all storage, instread of using ref count
+    // This is for subquery case. Need more research.
+    ForceClose() error
 
 	ResetData() error
 	NumChunks() int
@@ -121,20 +124,36 @@ func (s *CTEStorageRC) OpenAndRef(fieldType []*types.FieldType, chkSize int) (er
 
 // DerefAndClose impl CTEStorage DerefAndClose interface
 func (s *CTEStorageRC) DerefAndClose() (err error) {
+    // TODO:  do nothing
+	// if !s.valid() {
+	// 	return errors.Trace(errors.New("CTEStorage not opend yet"))
+	// }
+	// s.refCnt -= 1
+	// if s.refCnt == 0 {
+    //     // TODO: unreg memtracker
+	// 	if err = s.rc.Close(); err != nil {
+	// 		return err
+	// 	}
+	// 	if err = s.resetAll(); err != nil {
+	// 		return err
+	// 	}
+	// }
+	return nil
+}
+
+func (s *CTEStorageRC) ForceClose() (err error) {
+    // TODO:  do nothing
 	if !s.valid() {
 		return errors.Trace(errors.New("CTEStorage not opend yet"))
-	}
-	s.refCnt -= 1
-	if s.refCnt == 0 {
-        // TODO: unreg memtracker
-		if err = s.rc.Close(); err != nil {
-			return err
-		}
-		if err = s.resetAll(); err != nil {
-			return err
-		}
-	}
-	return nil
+    }
+    // TODO: unreg memtracker
+    if err = s.rc.Close(); err != nil {
+        return err
+    }
+    if err = s.resetAll(); err != nil {
+        return err
+    }
+    return nil
 }
 
 // Swap impl CTEStorage Swap interface
