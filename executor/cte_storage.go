@@ -70,6 +70,7 @@ type CTEStorage interface {
     ForceClose() error
 
 	ResetData() error
+	Reopen() error
 	NumChunks() int
 
 	GetMemTracker() *memory.Tracker
@@ -84,15 +85,18 @@ type CTEStorage interface {
 type CTEStorageRC struct {
 	// meta info
 	mu        sync.Mutex
-    begCh       chan struct{}
 	refCnt    int
-	done      bool
-	iter      int
 	filterDup bool
 	sc        *stmtctx.StatementContext
+	tp []*types.FieldType
+    chkSize int
 
 	// data info
-	tp []*types.FieldType
+    begCh       chan struct{}
+	done      bool
+	iter      int
+
+    // data
 	rc *chunk.RowContainer
 	// TODO: also track mem usage of ht
 	ht baseHashTable
@@ -109,6 +113,7 @@ func (s *CTEStorageRC) OpenAndRef(fieldType []*types.FieldType, chkSize int) (er
 			return errors.Trace(errors.New("chunk field types are nil"))
 		}
 		s.tp = fieldType
+        s.chkSize = chkSize
 		s.rc = chunk.NewRowContainer(fieldType, chkSize)
 		s.refCnt = 1
         s.begCh = make(chan struct{})
@@ -220,6 +225,22 @@ func (s *CTEStorageRC) ResetData() error {
 		s.ht = newConcurrentMapHashTable()
 	}
 	return s.rc.Reset()
+}
+
+func (s *CTEStorageRC) Reopen() (err error) {
+	if s.filterDup {
+		s.ht = newConcurrentMapHashTable()
+	}
+	if err = s.rc.Reset(); err != nil {
+        return err
+    }
+    s.iter = 0
+    s.begCh = make(chan struct{})
+    s.done = false
+    // Create a new RowContainer. Because some meta infos in old RowContainer are not resetted.
+    // Such as memTracker/actionSpill etc. So we just use a new one.
+    s.rc = chunk.NewRowContainer(s.tp, s.chkSize)
+    return nil
 }
 
 func (s *CTEStorageRC) NumChunks() int {
