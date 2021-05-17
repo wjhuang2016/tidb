@@ -54,6 +54,7 @@ import (
 	"github.com/pingcap/tidb/util/ranger"
 	"github.com/pingcap/tidb/util/rowcodec"
 	"github.com/pingcap/tidb/util/timeutil"
+	"github.com/pingcap/tidb/util/cte_storage"
 	"github.com/pingcap/tipb/go-tipb"
 	"go.uber.org/zap"
 )
@@ -82,10 +83,15 @@ type executorBuilder struct {
 	hasLock          bool
 }
 
+type CTEStorages struct {
+	ResTbl    cte_storage.CTEStorage
+	IterInTbl cte_storage.CTEStorage
+}
+
 func newExecutorBuilder(ctx sessionctx.Context, is infoschema.InfoSchema) *executorBuilder {
 	return &executorBuilder{
-		ctx: ctx,
-		is:  is,
+		ctx:           ctx,
+		is:            is,
 	}
 }
 
@@ -234,6 +240,10 @@ func (b *executorBuilder) build(p plannercore.Plan) Executor {
 		return b.buildAdminShowTelemetry(v)
 	case *plannercore.AdminResetTelemetryID:
 		return b.buildAdminResetTelemetryID(v)
+	case *plannercore.PhysicalCTE:
+		return b.buildCTE(v)
+	case *plannercore.PhysicalCTETable:
+		return b.buildCTETableReader(v)
 	default:
 		if mp, ok := p.(MockPhysicalPlan); ok {
 			return mp.GetExecutor()
@@ -4031,4 +4041,85 @@ func (b *executorBuilder) buildTableSample(v *plannercore.PhysicalTableSample) *
 			v.TableSampleInfo.FullSchema, e.retFieldTypes, v.Desc)
 	}
 	return e
+}
+
+func (b *executorBuilder) buildCTE(v *plannercore.PhysicalCTE) Executor {
+	// 1. build seedPlan.
+	seedExec := b.build(v.SeedPlan)
+	if b.err != nil {
+		return nil
+	}
+
+	// 2. build iterIntTbl.
+    chkSize := b.ctx.GetSessionVars().MaxChunkSize
+    tps := seedExec.base().retFieldTypes
+	iterOutTbl := cte_storage.NewCTEStorageRC(tps, chkSize)
+    if err := iterOutTbl.OpenAndRef(); err != nil {
+        b.err = err
+        return nil
+    }
+
+	// We need build all storages first before build recursive part,
+	// because recursive part may also use storage.
+	var resTbl cte_storage.CTEStorage = nil
+	var iterInTbl cte_storage.CTEStorage = nil
+    storageMap, ok := b.ctx.GetSessionVars().StmtCtx.CTEStorageMap.(map[int]*CTEStorages)
+    if !ok {
+        b.err = errors.Trace(errors.New("type assertion for CTEStorageMap failed"))
+        return nil
+    }
+	storages, ok := storageMap[v.CTE.IDForStorage]
+	if ok {
+		// storage already setup.
+		resTbl = storages.ResTbl
+		iterInTbl = storages.IterInTbl
+	} else {
+        resTbl = cte_storage.NewCTEStorageRC(tps, chkSize)
+        if err := resTbl.OpenAndRef(); err != nil {
+            b.err = err
+            return nil
+        }
+        iterInTbl = cte_storage.NewCTEStorageRC(tps, chkSize)
+        if err := iterInTbl.OpenAndRef(); err != nil {
+            b.err = err
+            return nil
+        }
+		storageMap[v.CTE.IDForStorage] = &CTEStorages{ResTbl: resTbl, IterInTbl: iterInTbl}
+	}
+
+	// 3. build recursive part.
+	recursiveExec := b.build(v.RecurPlan)
+	if b.err != nil {
+		return nil
+	}
+
+    return &CTEExec{
+		baseExecutor:  newBaseExecutor(b.ctx, v.Schema(), v.ID()),
+		seedExec:      seedExec,
+		recursiveExec: recursiveExec,
+		resTbl:        resTbl,
+		iterInTbl:     iterInTbl,
+		iterOutTbl:    iterOutTbl,
+		chkIdx:        0,
+		isDistinct:    v.CTE.IsDistinct,
+	}
+}
+
+func (b *executorBuilder) buildCTETableReader(v *plannercore.PhysicalCTETable) Executor {
+    storageMap, ok := b.ctx.GetSessionVars().StmtCtx.CTEStorageMap.(map[int]*CTEStorages)
+    if !ok {
+        b.err = errors.Trace(errors.New("type assertion for CTEStorageMap failed"))
+        return nil
+    }
+	storages, ok := storageMap[v.IDForStorage]
+	if !ok {
+		// TODO: we can add name in PhysicalCTETable, so the error msg will be more readable.
+		b.err = errors.Errorf("iterInTbl should already be set up by CTEExec(id: %d)", v.IDForStorage)
+		return nil
+	}
+	return &CTETableReaderExec{
+		baseExecutor: newBaseExecutor(b.ctx, v.Schema(), v.ID()),
+		iterInTbl:    storages.IterInTbl,
+		chkIdx:       0,
+	}
 }

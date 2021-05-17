@@ -110,7 +110,7 @@ func (c *RowContainer) Reset() error {
 	return nil
 }
 
-// alreadySpilled indicates that records have spilled out into disk.
+// AlreadySpilled indicates that records have spilled out into disk.
 func (c *RowContainer) alreadySpilled() bool {
 	return c.m.recordsInDisk != nil
 }
@@ -253,6 +253,10 @@ func (c *RowContainer) ActionSpillForTest() *SpillDiskAction {
 		},
 		cond: spillStatusCond{sync.NewCond(new(sync.Mutex)), notSpilled},
 	}
+	return c.actionSpill
+}
+
+func (c *RowContainer) GetActionSpillForTest() *SpillDiskAction {
 	return c.actionSpill
 }
 

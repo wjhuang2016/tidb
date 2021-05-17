@@ -184,6 +184,10 @@ func (e *baseExecutor) Schema() *expression.Schema {
 	return e.schema
 }
 
+func NewFirstChunk(e Executor) *chunk.Chunk {
+	return newFirstChunk(e)
+}
+
 // newFirstChunk creates a new chunk to buffer current executor's result.
 func newFirstChunk(e Executor) *chunk.Chunk {
 	base := e.base()
@@ -1140,7 +1144,7 @@ func init() {
 			ctx = opentracing.ContextWithSpan(ctx, span1)
 		}
 
-		e := &executorBuilder{is: is, ctx: sctx}
+		e := newExecutorBuilder(sctx, is)
 		exec := e.build(p)
 		if e.err != nil {
 			return nil, e.err
@@ -1581,6 +1585,7 @@ func ResetContextOfStmt(ctx sessionctx.Context, s ast.StmtNode) (err error) {
 		MemTracker:  memory.NewTracker(memory.LabelForSQLText, vars.MemQuotaQuery),
 		DiskTracker: disk.NewTracker(memory.LabelForSQLText, -1),
 		TaskID:      stmtctx.AllocateTaskID(),
+        CTEStorageMap: map[int]*CTEStorages{},
 	}
 	sc.MemTracker.AttachToGlobalTracker(GlobalMemoryUsageTracker)
 	globalConfig := config.GetGlobalConfig()

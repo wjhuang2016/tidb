@@ -1579,7 +1579,27 @@ type execStmtResult struct {
 func (rs *execStmtResult) Close() error {
 	se := rs.se
 	err := rs.RecordSet.Close()
+    if err = resetCTEStorageMap(se); err != nil {
+        return err
+    }
 	return finishStmt(context.Background(), se, err, rs.sql)
+}
+
+func resetCTEStorageMap(se *session) error {
+    storageMap, ok := se.GetSessionVars().StmtCtx.CTEStorageMap.(map[int]*executor.CTEStorages)
+    if !ok {
+        return errors.Trace(errors.New("type assertion for CTEStorageMap failed"))
+    }
+    for _, v := range storageMap {
+        if err := v.ResTbl.DerefAndClose(); err != nil {
+            return err
+        }
+        if err := v.IterInTbl.DerefAndClose(); err != nil {
+            return err
+        }
+    }
+    se.GetSessionVars().StmtCtx.CTEStorageMap = nil
+    return nil
 }
 
 // rollbackOnError makes sure the next statement starts a new transaction with the latest InfoSchema.
@@ -2547,6 +2567,7 @@ var builtinGlobalVariable = []string{
 	variable.TiDBEnableExchangePartition,
 	variable.TiDBAllowFallbackToTiKV,
 	variable.TiDBEnableDynamicPrivileges,
+	variable.CTEMaxRecursionDepth,
 }
 
 // loadCommonGlobalVariablesIfNeeded loads and applies commonly used global variables for the session.

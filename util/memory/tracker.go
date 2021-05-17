@@ -491,4 +491,6 @@ const (
 	LabelForApplyCache int = -17
 	// LabelForSimpleTask represents the label of the simple task
 	LabelForSimpleTask int = -18
+	// LabelForSimpleTask represents the label of the temporary storage of CTE
+	LabelForCTEStorage int = -19
 )
