@@ -11,49 +11,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package executor_test
+package cte_storage
 
 import (
 	"reflect"
 
 	"github.com/pingcap/check"
 	"github.com/pingcap/parser/mysql"
-	"github.com/pingcap/tidb/executor"
-	"github.com/pingcap/tidb/kv"
-	"github.com/pingcap/tidb/session"
-	"github.com/pingcap/tidb/store/mockstore"
 	"github.com/pingcap/tidb/types"
 	"github.com/pingcap/tidb/util/chunk"
 )
 
 var _ = check.Suite(&CTEStorageRCTestSuite{})
 
-type CTEStorageRCTestSuite struct {
-	store   kv.Storage
-	session session.Session
-}
-
-func (test *CTEStorageRCTestSuite) SetUpSuite(c *check.C) {
-	var err error
-	test.store, err = mockstore.NewMockStore()
-	c.Assert(err, check.IsNil)
-
-	test.session, err = session.CreateSession4Test(test.store)
-	c.Assert(err, check.IsNil)
-	test.session.SetConnectionID(0)
-}
+type CTEStorageRCTestSuite struct {}
 
 func (test *CTEStorageRCTestSuite) TestCTEStorageBasic(c *check.C) {
-	storage := executor.NewCTEStorageRC(nil, false)
+	fields := []*types.FieldType{types.NewFieldType(mysql.TypeLong)}
+	chkSize := 1
+	storage := NewCTEStorageRC(fields, chkSize)
 	c.Assert(storage, check.NotNil)
 
 	// close before open
 	err := storage.DerefAndClose()
 	c.Assert(err, check.NotNil)
 
-	fields := []*types.FieldType{types.NewFieldType(mysql.TypeLong)}
-	chkSize := 1
-	err = storage.OpenAndRef(fields, chkSize)
+	err = storage.OpenAndRef()
 	c.Assert(err, check.IsNil)
 
 	err = storage.DerefAndClose()
@@ -63,9 +46,9 @@ func (test *CTEStorageRCTestSuite) TestCTEStorageBasic(c *check.C) {
 	c.Assert(err, check.NotNil)
 
 	// open twice
-	err = storage.OpenAndRef(fields, chkSize)
+	err = storage.OpenAndRef()
 	c.Assert(err, check.IsNil)
-	err = storage.OpenAndRef(fields, chkSize)
+	err = storage.OpenAndRef()
 	c.Assert(err, check.IsNil)
 	err = storage.DerefAndClose()
 	c.Assert(err, check.IsNil)
@@ -76,12 +59,12 @@ func (test *CTEStorageRCTestSuite) TestCTEStorageBasic(c *check.C) {
 }
 
 func (test *CTEStorageRCTestSuite) TestOpenAndClose(c *check.C) {
-	storage := executor.NewCTEStorageRC(nil, false)
-
 	fields := []*types.FieldType{types.NewFieldType(mysql.TypeLong)}
 	chkSize := 1
+	storage := NewCTEStorageRC(fields, chkSize)
+
 	for i := 0; i < 10; i++ {
-		err := storage.OpenAndRef(fields, chkSize)
+		err := storage.OpenAndRef()
 		c.Assert(err, check.IsNil)
 	}
 
@@ -94,27 +77,26 @@ func (test *CTEStorageRCTestSuite) TestOpenAndClose(c *check.C) {
 
 	err = storage.DerefAndClose()
 	c.Assert(err, check.NotNil)
-
 }
 
 func (test *CTEStorageRCTestSuite) TestAddAndGetChunk(c *check.C) {
-	storage := executor.NewCTEStorageRC(test.session.GetSessionVars().StmtCtx, false)
-
 	fields := []*types.FieldType{types.NewFieldType(mysql.TypeLong)}
 	chkSize := 10
+
+	storage := NewCTEStorageRC(fields, chkSize)
 
 	inChk := chunk.NewChunkWithCapacity(fields, chkSize)
 	for i := 0; i < chkSize; i++ {
 		inChk.AppendInt64(0, int64(i))
 	}
 
-	_, err := storage.Add(inChk)
+	err := storage.Add(inChk)
 	c.Assert(err, check.NotNil)
 
-	err = storage.OpenAndRef(fields, chkSize)
+	err = storage.OpenAndRef()
 	c.Assert(err, check.IsNil)
 
-	_, err = storage.Add(inChk)
+	err = storage.Add(inChk)
 	c.Assert(err, check.IsNil)
 
 	outChk, err1 := storage.GetChunk(0)
@@ -126,7 +108,7 @@ func (test *CTEStorageRCTestSuite) TestAddAndGetChunk(c *check.C) {
 	c.Assert(reflect.DeepEqual(in64s, out64s), check.IsTrue)
 }
 
-func testFilterDuplicated(c *check.C, storage executor.CTEStorage) {
+func testFilterDuplicated(c *check.C, storage CTEStorage) {
 	fields := []*types.FieldType{types.NewFieldType(mysql.TypeLong)}
 	chkSize := 10
 
@@ -136,7 +118,7 @@ func testFilterDuplicated(c *check.C, storage executor.CTEStorage) {
 		inChk.AppendInt64(0, int64(0))
 	}
 
-	_, err := storage.Add(inChk)
+	err := storage.Add(inChk)
 	c.Assert(err, check.IsNil)
 
 	outChk, err := storage.GetChunk(0)
@@ -153,7 +135,7 @@ func testFilterDuplicated(c *check.C, storage executor.CTEStorage) {
 		inChk.AppendInt64(0, int64(1))
 	}
 
-	_, err = storage.Add(inChk)
+	err = storage.Add(inChk)
 	outChk, err = storage.GetChunk(1)
 	c.Assert(err, check.IsNil)
 	tmpOut64s := outChk.Column(0).Int64s()
@@ -174,7 +156,7 @@ func testFilterDuplicated(c *check.C, storage executor.CTEStorage) {
 		inChk.AppendInt64(0, int64(2))
 	}
 
-	_, err = storage.Add(inChk)
+	err = storage.Add(inChk)
 	outChk, err = storage.GetChunk(2)
 	c.Assert(err, check.IsNil)
 	tmpOut64s = outChk.Column(0).Int64s()
@@ -185,36 +167,35 @@ func testFilterDuplicated(c *check.C, storage executor.CTEStorage) {
 }
 
 func (test *CTEStorageRCTestSuite) TestFilterDuplicated(c *check.C) {
-	storage := executor.NewCTEStorageRC(test.session.GetSessionVars().StmtCtx, true)
 	fields := []*types.FieldType{types.NewFieldType(mysql.TypeLong)}
 	chkSize := 10
-	err := storage.OpenAndRef(fields, chkSize)
+	storage := NewCTEStorageRC(fields, chkSize)
+	err := storage.OpenAndRef()
 	c.Assert(err, check.IsNil)
 	testFilterDuplicated(c, storage)
 }
 
 func (test *CTEStorageRCTestSuite) TestSpillToDisk(c *check.C) {
-	storage := executor.NewCTEStorageRC(test.session.GetSessionVars().StmtCtx, false)
-	var tmp interface{} = storage
-
 	fields := []*types.FieldType{types.NewFieldType(mysql.TypeLong)}
 	chkSize := 10
+	storage := NewCTEStorageRC(fields, chkSize)
+	var tmp interface{} = storage
 
 	inChk := chunk.NewChunkWithCapacity(fields, chkSize)
 	for i := 0; i < chkSize; i++ {
 		inChk.AppendInt64(0, int64(i))
 	}
 
-	err := storage.OpenAndRef(fields, chkSize)
+	err := storage.OpenAndRef()
 	c.Assert(err, check.IsNil)
 
 	memTracker := storage.GetMemTracker()
 	memTracker.SetBytesLimit(inChk.MemoryUsage() + 1)
-	memTracker.FallbackOldAndSetNewAction(tmp.(*executor.CTEStorageRC).ActionSpillForTest())
+	memTracker.FallbackOldAndSetNewAction(tmp.(*CTEStorageRC).ActionSpillForTest())
 	diskTracker := storage.GetDiskTracker()
 
 	// all in memory
-	_, err = storage.Add(inChk)
+	err = storage.Add(inChk)
 	c.Assert(err, check.IsNil)
 	outChk, err1 := storage.GetChunk(0)
 	c.Assert(err1, check.IsNil)
@@ -228,9 +209,9 @@ func (test *CTEStorageRCTestSuite) TestSpillToDisk(c *check.C) {
 	c.Assert(diskTracker.MaxConsumed(), check.Equals, int64(0))
 
 	// add again, will trigger spill to disk
-	_, err = storage.Add(inChk)
+	err = storage.Add(inChk)
 	c.Assert(err, check.IsNil)
-	tmp.(*executor.CTEStorageRC).GetRCForTest().GetActionSpillForTest().WaitForTest()
+	tmp.(*CTEStorageRC).GetRCForTest().GetActionSpillForTest().WaitForTest()
 	c.Assert(memTracker.BytesConsumed(), check.Equals, int64(0))
 	c.Assert(memTracker.MaxConsumed(), check.Greater, int64(0))
 	c.Assert(diskTracker.BytesConsumed(), check.Greater, int64(0))

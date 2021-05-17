@@ -54,6 +54,7 @@ import (
 	"github.com/pingcap/tidb/util/ranger"
 	"github.com/pingcap/tidb/util/rowcodec"
 	"github.com/pingcap/tidb/util/timeutil"
+	"github.com/pingcap/tidb/util/cte_storage"
 	"github.com/pingcap/tipb/go-tipb"
 	"go.uber.org/zap"
 )
@@ -83,8 +84,8 @@ type executorBuilder struct {
 }
 
 type CTEStorages struct {
-	ResTbl    CTEStorage
-	IterInTbl CTEStorage
+	ResTbl    cte_storage.CTEStorage
+	IterInTbl cte_storage.CTEStorage
 }
 
 func newExecutorBuilder(ctx sessionctx.Context, is infoschema.InfoSchema) *executorBuilder {
@@ -4050,12 +4051,18 @@ func (b *executorBuilder) buildCTE(v *plannercore.PhysicalCTE) Executor {
 	}
 
 	// 2. build iterIntTbl.
-	iterOutTbl := NewCTEStorageRC(b.ctx.GetSessionVars().StmtCtx, v.CTE.IsDistinct)
+    chkSize := b.ctx.GetSessionVars().MaxChunkSize
+    tps := seedExec.base().retFieldTypes
+	iterOutTbl := cte_storage.NewCTEStorageRC(tps, chkSize)
+    if err := iterOutTbl.OpenAndRef(); err != nil {
+        b.err = err
+        return nil
+    }
 
 	// We need build all storages first before build recursive part,
 	// because recursive part may also use storage.
-	var resTbl CTEStorage = nil
-	var iterInTbl CTEStorage = nil
+	var resTbl cte_storage.CTEStorage = nil
+	var iterInTbl cte_storage.CTEStorage = nil
     storageMap, ok := b.ctx.GetSessionVars().StmtCtx.CTEStorageMap.(map[int]*CTEStorages)
     if !ok {
         b.err = errors.Trace(errors.New("type assertion for CTEStorageMap failed"))
@@ -4067,8 +4074,16 @@ func (b *executorBuilder) buildCTE(v *plannercore.PhysicalCTE) Executor {
 		resTbl = storages.ResTbl
 		iterInTbl = storages.IterInTbl
 	} else {
-		resTbl = NewCTEStorageRC(b.ctx.GetSessionVars().StmtCtx, v.CTE.IsDistinct)
-		iterInTbl = NewCTEStorageRC(b.ctx.GetSessionVars().StmtCtx, v.CTE.IsDistinct)
+        resTbl = cte_storage.NewCTEStorageRC(tps, chkSize)
+        if err := resTbl.OpenAndRef(); err != nil {
+            b.err = err
+            return nil
+        }
+        iterInTbl = cte_storage.NewCTEStorageRC(tps, chkSize)
+        if err := iterInTbl.OpenAndRef(); err != nil {
+            b.err = err
+            return nil
+        }
 		storageMap[v.CTE.IDForStorage] = &CTEStorages{ResTbl: resTbl, IterInTbl: iterInTbl}
 	}
 

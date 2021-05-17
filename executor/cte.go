@@ -14,6 +14,8 @@
 package executor
 
 import (
+	"hash"
+	"hash/fnv"
 	"context"
 
 	"github.com/pingcap/errors"
@@ -21,6 +23,8 @@ import (
 	"github.com/pingcap/tidb/sessionctx"
 	"github.com/pingcap/tidb/util/chunk"
 	"github.com/pingcap/tidb/util/memory"
+	"github.com/pingcap/tidb/util/codec"
+	"github.com/pingcap/tidb/util/cte_storage"
 )
 
 // Following diagram describes how CTEExec works.
@@ -60,9 +64,12 @@ type CTEExec struct {
 
 	// resTbl and iterInTbl are shared by all CTEExec which reference to same CTE.
 	// iterInTbl is also shared by CTETableReaderExec.
-	resTbl     CTEStorage
-	iterInTbl  CTEStorage
-	iterOutTbl CTEStorage
+	resTbl     cte_storage.CTEStorage
+	iterInTbl  cte_storage.CTEStorage
+	iterOutTbl cte_storage.CTEStorage
+
+    resHashTbl baseHashTable
+    iterInHashTbl baseHashTable
 
 	// idx of chunk to read from resTbl.
 	chkIdx int
@@ -85,23 +92,23 @@ func (e *CTEExec) Open(ctx context.Context) (err error) {
 		return err
 	}
 
-	seedTypes := e.seedExec.base().retFieldTypes
-	if err = e.resTbl.OpenAndRef(seedTypes, e.maxChunkSize); err != nil {
-		return err
-	}
-	if err = e.iterInTbl.OpenAndRef(seedTypes, e.maxChunkSize); err != nil {
-		return err
-	}
-
 	if e.recursiveExec != nil {
 		if err = e.recursiveExec.Open(ctx); err != nil {
 			return err
 		}
-		if err = e.iterOutTbl.OpenAndRef(seedTypes, e.maxChunkSize); err != nil {
-			return err
-		}
+        recursiveTypes := e.recursiveExec.base().retFieldTypes
+        e.iterOutTbl = cte_storage.NewCTEStorageRC(recursiveTypes, e.maxChunkSize)
+        if err = e.iterOutTbl.OpenAndRef(); err != nil {
+            return err
+        }
+
         setupCTEStorageTracker(e.iterOutTbl, e.ctx)
 	}
+
+    if e.isDistinct {
+        e.resHashTbl = newConcurrentMapHashTable()
+        e.iterInHashTbl = newConcurrentMapHashTable()
+    }
 	return nil
 }
 
@@ -117,7 +124,7 @@ func (e *CTEExec) Next(ctx context.Context, req *chunk.Chunk) (err error) {
 
         if err = e.computeSeedPart(ctx); err != nil {
             // Don't put it in defer.
-            // Because it should be called only when the filling is not completed.
+            // Because it should be called only when the filling process is not completed.
             if err1 := e.reopenTbls(); err1 != nil {
                 return err1
             }
@@ -153,15 +160,6 @@ func (e *CTEExec) Close() (err error) {
 		if err = e.recursiveExec.Close(); err != nil {
 			return err
 		}
-        if err = e.iterOutTbl.DerefAndClose(); err != nil {
-            return err
-        }
-	}
-	if err = e.resTbl.DerefAndClose(); err != nil {
-		return err
-	}
-	if err = e.iterInTbl.DerefAndClose(); err != nil {
-		return err
 	}
 
 	return e.baseExecutor.Close()
@@ -181,16 +179,16 @@ func (e *CTEExec) computeSeedPart(ctx context.Context) (err error) {
         if chk.NumRows() == 0 {
             break
         }
-        if chk, err = e.iterInTbl.Add(chk); err != nil {
+        if chk, err = e.tryFilterAndAdd(chk, e.iterInTbl, e.iterInHashTbl); err != nil {
             return err
         }
-        if _, err = e.resTbl.Add(chk); err != nil {
+        if _, err = e.tryFilterAndAdd(chk, e.resTbl, e.resHashTbl); err != nil {
             return err
         }
     }
     e.curIter++
 
-    // TODO: This means iterInTbl fill done. But too tricky.
+    // TODO: This means iterInTbl's can be read. But too tricky.
     close(e.iterInTbl.GetBegCh())
     return nil
 }
@@ -206,19 +204,7 @@ func (e *CTEExec) computeRecursivePart(ctx context.Context) (err error) {
             return err
         }
         if chk.NumRows() == 0 {
-            e.iterInTbl.Reopen()
-            for i := 0; i < e.iterOutTbl.NumChunks(); i++ {
-                if chk, err = e.iterOutTbl.GetChunk(i); err != nil {
-                    return err
-                }
-                if chk, err = e.resTbl.Add(chk); err != nil {
-                    return err
-                }
-                if _, err = e.iterInTbl.Add(chk); err != nil {
-                    return err
-                }
-            }
-            if err = e.iterOutTbl.Reopen(); err != nil {
+            if err = e.setupTblsForNewIteration(); err != nil {
                 return err
             }
             if e.iterInTbl.NumChunks() == 0 {
@@ -240,7 +226,7 @@ func (e *CTEExec) computeRecursivePart(ctx context.Context) (err error) {
                 }
             }
         } else {
-            if _, err = e.iterOutTbl.Add(chk); err != nil {
+            if err = e.iterOutTbl.Add(chk); err != nil {
                 return err
             }
         }
@@ -248,9 +234,50 @@ func (e *CTEExec) computeRecursivePart(ctx context.Context) (err error) {
     return nil
 }
 
+func (e *CTEExec) setupTblsForNewIteration() (err error) {
+    num := e.iterOutTbl.NumChunks()
+    chks := make([]*chunk.Chunk, 0, num)
+    // Setup resTbl's data.
+    var chk *chunk.Chunk = nil
+    for i := 0; i < num; i++ {
+        if chk, err = e.iterOutTbl.GetChunk(i); err != nil {
+            return err
+        }
+        if chk, err = e.tryFilterAndAdd(chk, e.resTbl, e.resHashTbl); err != nil {
+            return err
+        }
+        chks = append(chks, chk)
+    }
+
+    // Setup new iteration data in iterInTbl.
+    if err = e.iterInTbl.Reopen(); err != nil {
+        return err
+    }
+    if e.isDistinct {
+        for _, chk := range chks {
+            if _, err = e.tryFilterAndAdd(chk, e.iterInTbl, e.iterInHashTbl); err != nil {
+                return err
+            }
+        }
+    } else {
+        if err = e.iterInTbl.SwapData(e.iterOutTbl); err != nil {
+            return err
+        }
+    }
+    close(e.iterInTbl.GetBegCh())
+
+    // Clear data in iterOutTbl.
+    if err = e.iterOutTbl.Reopen(); err != nil {
+        return err
+    }
+    return nil
+}
+
 func (e *CTEExec) reset() {
     e.curIter = 0
     e.chkIdx = 0
+    e.iterInHashTbl = nil
+    e.resHashTbl = nil
 }
 
 func (e *CTEExec) reopenTbls() (err error) {
@@ -263,7 +290,7 @@ func (e *CTEExec) reopenTbls() (err error) {
     return nil
 }
 
-func setupCTEStorageTracker(tbl CTEStorage, ctx sessionctx.Context) {
+func setupCTEStorageTracker(tbl cte_storage.CTEStorage, ctx sessionctx.Context) {
     memTracker := tbl.GetMemTracker()
     memTracker.SetLabel(memory.LabelForCTEStorage)
     memTracker.AttachTo(ctx.GetSessionVars().StmtCtx.MemTracker)
@@ -276,4 +303,128 @@ func setupCTEStorageTracker(tbl CTEStorage, ctx sessionctx.Context) {
         actionSpill := tbl.ActionSpill()
         ctx.GetSessionVars().StmtCtx.MemTracker.FallbackOldAndSetNewAction(actionSpill)
     }
+}
+
+func (e *CTEExec) tryFilterAndAdd(chk *chunk.Chunk,
+                                  storage cte_storage.CTEStorage,
+                                  hashtbl baseHashTable) (res *chunk.Chunk, err error) {
+    if e.isDistinct {
+        if chk, err = e.filterAndAddHashTable(chk, storage, hashtbl); err != nil {
+            return nil, err
+        }
+    }
+    if chk.NumRows() == 0 {
+        return chk, nil
+    }
+    return chk, storage.Add(chk)
+}
+
+func (e *CTEExec) filterAndAddHashTable(chk *chunk.Chunk,
+                                        storage cte_storage.CTEStorage,
+                                        hashtbl baseHashTable) (finalChkNoDup *chunk.Chunk, err error) {
+	rows := chk.NumRows()
+    if rows == 0 {
+        return chk, nil
+    }
+
+	buf := make([]byte, 1)
+	isNull := make([]bool, rows)
+	hasher := make([]hash.Hash64, rows)
+	for i := 0; i < rows; i++ {
+		// TODO: fnv.New64() just returns a int64 constant,
+		// but we can avoid calling it every time this func is called.
+		hasher[i] = fnv.New64()
+	}
+
+    tps := e.base().retFieldTypes
+	for i := 0; i < chk.NumCols(); i++ {
+		err = codec.HashChunkColumns(e.ctx.GetSessionVars().StmtCtx, hasher, chk, tps[i], i, buf, isNull)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+	}
+	tmpChkNoDup := chunk.NewChunkWithCapacity(tps, chk.Capacity())
+	chkHashTbl := newConcurrentMapHashTable()
+	idxForOriRows := make([]int, 0, chk.NumRows())
+
+	// filter rows duplicated in cur chk
+	for i := 0; i < rows; i++ {
+		key := hasher[i].Sum64()
+		row := chk.GetRow(i)
+
+		hasDup, err := e.checkHasDup(key, row, chk, storage, chkHashTbl)
+		if err != nil {
+			return nil, err
+		}
+		if hasDup {
+			continue
+		}
+
+		tmpChkNoDup.AppendRow(row)
+
+		rowPtr := chunk.RowPtr{ChkIdx: uint32(0), RowIdx: uint32(i)}
+		chkHashTbl.Put(key, rowPtr)
+		idxForOriRows = append(idxForOriRows, i)
+	}
+
+	// filter rows duplicated in RowContainer
+	chkIdx := storage.NumChunks()
+	finalChkNoDup = chunk.NewChunkWithCapacity(tps, chk.Capacity())
+	for i := 0; i < tmpChkNoDup.NumRows(); i++ {
+		key := hasher[idxForOriRows[i]].Sum64()
+		row := tmpChkNoDup.GetRow(i)
+
+		hasDup, err := e.checkHasDup(key, row, nil, storage, hashtbl)
+		if err != nil {
+			return nil, err
+		}
+		if hasDup {
+			continue
+		}
+
+		rowIdx := finalChkNoDup.NumRows()
+		finalChkNoDup.AppendRow(row)
+
+		rowPtr := chunk.RowPtr{ChkIdx: uint32(chkIdx), RowIdx: uint32(rowIdx)}
+		hashtbl.Put(key, rowPtr)
+	}
+	return finalChkNoDup, nil
+}
+
+func (e *CTEExec) checkHasDup(probeKey uint64,
+                              row chunk.Row,
+                              curChk *chunk.Chunk,
+                              storage cte_storage.CTEStorage,
+                              hashtbl baseHashTable) (hasDup bool, err error) {
+	ptrs := hashtbl.Get(probeKey)
+
+	if len(ptrs) == 0 {
+		return false, nil
+	}
+
+	colIdx := make([]int, row.Len())
+	for i := range colIdx {
+		colIdx[i] = i
+	}
+
+    tps := e.base().retFieldTypes
+	for _, ptr := range ptrs {
+		var matchedRow chunk.Row
+		if curChk != nil {
+			matchedRow = curChk.GetRow(int(ptr.RowIdx))
+		} else {
+			matchedRow, err = storage.GetRow(ptr)
+		}
+		if err != nil {
+			return false, err
+		}
+		isEqual, err := codec.EqualChunkRow(e.ctx.GetSessionVars().StmtCtx, row, tps, colIdx, matchedRow, tps, colIdx)
+		if err != nil {
+			return false, err
+		}
+		if isEqual {
+			return true, nil
+		}
+	}
+	return false, nil
 }

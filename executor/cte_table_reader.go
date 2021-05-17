@@ -18,22 +18,19 @@ import (
 
 	"github.com/pingcap/errors"
 	"github.com/pingcap/tidb/util/chunk"
+	"github.com/pingcap/tidb/util/cte_storage"
 )
 
 type CTETableReaderExec struct {
 	baseExecutor
 
-	iterInTbl CTEStorage
+	iterInTbl cte_storage.CTEStorage
 	chkIdx    int
 	curIter   int
 }
 
 func (e *CTETableReaderExec) Open(ctx context.Context) error {
     e.reset()
-	seedTypes := e.base().retFieldTypes
-	if err := e.iterInTbl.OpenAndRef(seedTypes, e.maxChunkSize); err != nil {
-		return err
-	}
 	return e.baseExecutor.Open(ctx)
 }
 
@@ -67,9 +64,6 @@ func (e *CTETableReaderExec) Next(ctx context.Context, req *chunk.Chunk) (err er
 
 func (e *CTETableReaderExec) Close() (err error) {
     e.reset()
-	if err = e.iterInTbl.DerefAndClose(); err != nil {
-		return err
-	}
 	return e.baseExecutor.Close()
 }
 

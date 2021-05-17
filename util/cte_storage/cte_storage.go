@@ -11,18 +11,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package executor
+package cte_storage
 
 import (
-	"hash"
-	"hash/fnv"
 	"sync"
 
 	"github.com/pingcap/errors"
 	"github.com/pingcap/tidb/sessionctx/stmtctx"
 	"github.com/pingcap/tidb/types"
 	"github.com/pingcap/tidb/util/chunk"
-	"github.com/pingcap/tidb/util/codec"
 	"github.com/pingcap/tidb/util/disk"
 	"github.com/pingcap/tidb/util/memory"
 )
@@ -41,7 +38,7 @@ var _ CTEStorage = &CTEStorageRC{}
 //  read data from storage
 type CTEStorage interface {
 	// If is first called, will open underlying storage. Otherwise will add ref count by one.
-	OpenAndRef(fieldType []*types.FieldType, chkSize int) error
+	OpenAndRef() error
 
 	// Minus ref count by one, if ref count is zero, close underlying storage.
 	DerefAndClose() (err error)
@@ -54,10 +51,13 @@ type CTEStorage interface {
 	Reopen() error
 
     // Add chunk into underlying storage.
-	Add(chk *chunk.Chunk) (*chunk.Chunk, error)
+	Add(chk *chunk.Chunk) error
 
     // Get Chunk by index.
 	GetChunk(chkIdx int) (*chunk.Chunk, error)
+
+    // Get row by RowPtr.
+	GetRow(ptr chunk.RowPtr) (chunk.Row, error)
 
     // NumChunks return chunk number of the underlying storage. 
 	NumChunks() int
@@ -92,7 +92,6 @@ type CTEStorageRC struct {
 	// meta info
 	mu        sync.Mutex
 	refCnt    int
-	filterDup bool
 	sc        *stmtctx.StatementContext
 	tp []*types.FieldType
     chkSize int
@@ -104,29 +103,20 @@ type CTEStorageRC struct {
 
     // data
 	rc *chunk.RowContainer
-	ht baseHashTable
 }
 
 // NewCTEStorageRC create a new CTEStorageRC.
-func NewCTEStorageRC(sc *stmtctx.StatementContext, filterDup bool) *CTEStorageRC {
-    return &CTEStorageRC{sc: sc, filterDup: filterDup}
+func NewCTEStorageRC(tp []*types.FieldType, chkSize int) *CTEStorageRC {
+    return &CTEStorageRC{tp: tp, chkSize: chkSize}
 }
 
 // OpenAndRef impls CTEStorage OpenAndRef interface.
-func (s *CTEStorageRC) OpenAndRef(fieldType []*types.FieldType, chkSize int) (err error) {
+func (s *CTEStorageRC) OpenAndRef() (err error) {
 	if !s.valid() {
-		if fieldType == nil {
-			return errors.Trace(errors.New("chunk field types are nil"))
-		}
-		s.tp = fieldType
-        s.chkSize = chkSize
-		s.rc = chunk.NewRowContainer(fieldType, chkSize)
+		s.rc = chunk.NewRowContainer(s.tp, s.chkSize)
 		s.refCnt = 1
         s.begCh = make(chan struct{})
         s.iter = 0
-		if s.filterDup {
-			s.ht = newConcurrentMapHashTable()
-		}
 	} else {
 		s.refCnt += 1
 	}
@@ -159,22 +149,15 @@ func (s *CTEStorageRC) SwapData(other CTEStorage) (err error) {
 	if !ok {
 		return errors.Trace(errors.New("cannot swap if underlying storages are different"))
 	}
-	if s.filterDup != otherRC.filterDup {
-		return errors.Trace(errors.New("cannot swap if filterDup flags are different"))
-	}
 	s.tp, otherRC.tp = otherRC.tp, s.tp
 	s.chkSize, otherRC.chkSize = otherRC.chkSize, s.chkSize
 
 	s.rc, otherRC.rc = otherRC.rc, s.rc
-	s.ht, otherRC.ht = otherRC.ht, s.ht
 	return nil
 }
 
 // Reopen impls CTEStorage Reopen interface.
 func (s *CTEStorageRC) Reopen() (err error) {
-	if s.filterDup {
-		s.ht = newConcurrentMapHashTable()
-	}
 	if err = s.rc.Reset(); err != nil {
         return err
     }
@@ -189,19 +172,14 @@ func (s *CTEStorageRC) Reopen() (err error) {
 }
 
 // Add impls CTEStorage Add interface.
-func (s *CTEStorageRC) Add(chk *chunk.Chunk) (addedChk *chunk.Chunk, err error) {
+func (s *CTEStorageRC) Add(chk *chunk.Chunk) (err error) {
 	if !s.valid() {
-		return nil, errors.Trace(errors.New("CTEStorage is not valid"))
-	}
-	if s.filterDup {
-		if chk, err = s.filterAndAddHashTable(s.sc, chk); err != nil {
-			return nil, err
-		}
+		return errors.Trace(errors.New("CTEStorage is not valid"))
 	}
     if chk.NumRows() == 0 {
-        return chk, nil
+        return nil
     }
-	return chk, s.rc.Add(chk)
+	return s.rc.Add(chk)
 }
 
 // GetChunk impls CTEStorage GetChunk interface.
@@ -210,6 +188,14 @@ func (s *CTEStorageRC) GetChunk(chkIdx int) (*chunk.Chunk, error) {
 		return nil, errors.Trace(errors.New("CTEStorage is not valid"))
 	}
 	return s.rc.GetChunk(chkIdx)
+}
+
+// GetRow impls CTEStorage GetRow interface.
+func (s *CTEStorageRC) GetRow(ptr chunk.RowPtr) (chunk.Row, error) {
+	if !s.valid() {
+		return chunk.Row{}, errors.Trace(errors.New("CTEStorage is not valid"))
+	}
+	return s.rc.GetRow(ptr)
 }
 
 // NumChunks impls CTEStorage NumChunks interface.
@@ -283,10 +269,6 @@ func (s *CTEStorageRC) resetAll() error {
 	s.iter = 0
 	s.sc = nil
     s.begCh = nil
-	if s.filterDup {
-		s.ht = nil
-	}
-	s.filterDup = false
     if err := s.rc.Reset(); err != nil {
         return err
     }
@@ -298,104 +280,3 @@ func (s *CTEStorageRC) valid() bool {
 	return s.refCnt > 0 && s.rc != nil
 }
 
-func (s *CTEStorageRC) filterAndAddHashTable(sc *stmtctx.StatementContext, chk *chunk.Chunk) (finalChkNoDup *chunk.Chunk, err error) {
-	rows := chk.NumRows()
-    if rows == 0 {
-        return chk, nil
-    }
-
-	buf := make([]byte, 1)
-	isNull := make([]bool, rows)
-	hasher := make([]hash.Hash64, rows)
-	for i := 0; i < rows; i++ {
-		// TODO: fnv.New64() just returns a int64 constant,
-		// but we can avoid calling it every time this func is called.
-		hasher[i] = fnv.New64()
-	}
-
-	for i := 0; i < chk.NumCols(); i++ {
-		err = codec.HashChunkColumns(sc, hasher, chk, s.tp[i], i, buf, isNull)
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-	}
-	tmpChkNoDup := chunk.NewChunkWithCapacity(s.tp, chk.Capacity())
-	chkHt := newConcurrentMapHashTable()
-	idxForOriRows := make([]int, 0, chk.NumRows())
-
-	// filter rows duplicated in cur chk
-	for i := 0; i < rows; i++ {
-		key := hasher[i].Sum64()
-		row := chk.GetRow(i)
-
-		hasDup, err := s.checkHasDup(key, row, chkHt, chk)
-		if err != nil {
-			return nil, err
-		}
-		if hasDup {
-			continue
-		}
-
-		tmpChkNoDup.AppendRow(row)
-
-		rowPtr := chunk.RowPtr{ChkIdx: uint32(0), RowIdx: uint32(i)}
-		chkHt.Put(key, rowPtr)
-		idxForOriRows = append(idxForOriRows, i)
-	}
-
-	// filter rows duplicated in RowContainer
-	chkIdx := s.rc.NumChunks()
-	finalChkNoDup = chunk.NewChunkWithCapacity(s.tp, chk.Capacity())
-	for i := 0; i < tmpChkNoDup.NumRows(); i++ {
-		key := hasher[idxForOriRows[i]].Sum64()
-		row := tmpChkNoDup.GetRow(i)
-
-		hasDup, err := s.checkHasDup(key, row, s.ht, nil)
-		if err != nil {
-			return nil, err
-		}
-		if hasDup {
-			continue
-		}
-
-		rowIdx := finalChkNoDup.NumRows()
-		finalChkNoDup.AppendRow(row)
-
-		rowPtr := chunk.RowPtr{ChkIdx: uint32(chkIdx), RowIdx: uint32(rowIdx)}
-		s.ht.Put(key, rowPtr)
-	}
-	return finalChkNoDup, nil
-}
-
-func (s *CTEStorageRC) checkHasDup(probeKey uint64, row chunk.Row, ht baseHashTable, curChk *chunk.Chunk) (hasDup bool, err error) {
-	ptrs := ht.Get(probeKey)
-
-	if len(ptrs) == 0 {
-		return false, nil
-	}
-
-	colIdx := make([]int, row.Len())
-	for i := range colIdx {
-		colIdx[i] = i
-	}
-
-	for _, ptr := range ptrs {
-		var matchedRow chunk.Row
-		if curChk != nil {
-			matchedRow = curChk.GetRow(int(ptr.RowIdx))
-		} else {
-			matchedRow, err = s.rc.GetRow(ptr)
-		}
-		if err != nil {
-			return false, err
-		}
-		isEqual, err := codec.EqualChunkRow(s.sc, row, s.tp, colIdx, matchedRow, s.tp, colIdx)
-		if err != nil {
-			return false, err
-		}
-		if isEqual {
-			return true, nil
-		}
-	}
-	return false, nil
-}
