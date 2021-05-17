@@ -40,22 +40,30 @@ var _ CTEStorage = &CTEStorageRC{}
 //  storage.UnLock()
 //  read data from storage
 type CTEStorage interface {
-	// If is first called, will open underlying storage. Otherwise will add ref count by one
+	// If is first called, will open underlying storage. Otherwise will add ref count by one.
 	OpenAndRef(fieldType []*types.FieldType, chkSize int) error
 
-	// Minus ref count by one, if ref count is zero, close underlying storage
+	// Minus ref count by one, if ref count is zero, close underlying storage.
 	DerefAndClose() (err error)
 
-	// Swap data of two storage. Other metainfo is not touched, such ref count/done flag etc
+	// Swap data of two storage. Other metainfo is not touched, such ref count/done flag etc.
 	SwapData(other CTEStorage) error
 
-	// Data will first resides in RAM, when exceeds limit, will spill all data to disk automatically
-	// Memory limit is control by memTracker.
+    // Reopen reset storage and related info. 
+    // So the status of CTEStorage is like a new created one.
+	Reopen() error
+
+    // Add chunk into underlying storage.
 	Add(chk *chunk.Chunk) (*chunk.Chunk, error)
 
+    // Get Chunk by index.
 	GetChunk(chkIdx int) (*chunk.Chunk, error)
 
-	// CTEStorage is not thread-safe. By Lock(), users can achieve the purpose of ensuring thread safety
+    // NumChunks return chunk number of the underlying storage. 
+	NumChunks() int
+
+	// CTEStorage is not thread-safe.
+    // By using Lock(), users can achieve the purpose of ensuring thread safety.
 	Lock()
 	Unlock()
 
@@ -63,25 +71,23 @@ type CTEStorage interface {
 	// User can check whether CTEStorage is filled first, if not, they can fill it.
 	Done() bool
 	SetDone()
-    // TODO: too trichy
-    GetBegCh() chan struct{}
-    // TODO: We put CTEStorage on StmtCtx, and when SQL is finished, we close all storage, instread of using ref count
-    // This is for subquery case. Need more research.
-    ForceClose() error
 
-	ResetData() error
-	Reopen() error
-	NumChunks() int
+	SetIter(iter int)
+    // Readers use iter information to determine
+    // whether they need to read data from the beginning.
+	GetIter() int
+
+    // We use this channel to notify reader that CTEStorage is ready to read.
+    // It exists only to solve the special implementation of IndexLookUpJoin.
+    // We will find a better way and remove this later.
+    GetBegCh() chan struct{}
 
 	GetMemTracker() *memory.Tracker
 	GetDiskTracker() *disk.Tracker
 	ActionSpill() memory.ActionOnExceed
-
-	SetIter(iter int)
-	GetIter() int
 }
 
-// CTEStorage implementation using RowContainer
+// CTEStorage implementation using RowContainer.
 type CTEStorageRC struct {
 	// meta info
 	mu        sync.Mutex
@@ -98,15 +104,15 @@ type CTEStorageRC struct {
 
     // data
 	rc *chunk.RowContainer
-	// TODO: also track mem usage of ht
 	ht baseHashTable
 }
 
+// NewCTEStorageRC create a new CTEStorageRC.
 func NewCTEStorageRC(sc *stmtctx.StatementContext, filterDup bool) *CTEStorageRC {
     return &CTEStorageRC{sc: sc, filterDup: filterDup}
 }
 
-// OpenAndRef impl CTEStorage OpenAndRef interface
+// OpenAndRef impls CTEStorage OpenAndRef interface.
 func (s *CTEStorageRC) OpenAndRef(fieldType []*types.FieldType, chkSize int) (err error) {
 	if !s.valid() {
 		if fieldType == nil {
@@ -127,41 +133,27 @@ func (s *CTEStorageRC) OpenAndRef(fieldType []*types.FieldType, chkSize int) (er
 	return nil
 }
 
-// DerefAndClose impl CTEStorage DerefAndClose interface
+// DerefAndClose impls CTEStorage DerefAndClose interface.
 func (s *CTEStorageRC) DerefAndClose() (err error) {
-    // TODO:  do nothing
-	// if !s.valid() {
-	// 	return errors.Trace(errors.New("CTEStorage not opend yet"))
-	// }
-	// s.refCnt -= 1
-	// if s.refCnt == 0 {
-    //     // TODO: unreg memtracker
-	// 	if err = s.rc.Close(); err != nil {
-	// 		return err
-	// 	}
-	// 	if err = s.resetAll(); err != nil {
-	// 		return err
-	// 	}
-	// }
+	if !s.valid() {
+		return errors.Trace(errors.New("CTEStorage not opend yet"))
+	}
+	s.refCnt -= 1
+    if s.refCnt < 0 {
+        return errors.Trace(errors.New("CTEStorage ref count is less than zero"))
+    } else if s.refCnt == 0 {
+        // TODO: unreg memtracker
+		if err = s.rc.Close(); err != nil {
+			return err
+		}
+		if err = s.resetAll(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
-func (s *CTEStorageRC) ForceClose() (err error) {
-    // TODO:  do nothing
-	if !s.valid() {
-		return errors.Trace(errors.New("CTEStorage not opend yet"))
-    }
-    // TODO: unreg memtracker
-    if err = s.rc.Close(); err != nil {
-        return err
-    }
-    if err = s.resetAll(); err != nil {
-        return err
-    }
-    return nil
-}
-
-// Swap impl CTEStorage Swap interface
+// Swap impls CTEStorage Swap interface.
 func (s *CTEStorageRC) SwapData(other CTEStorage) (err error) {
 	otherRC, ok := other.(*CTEStorageRC)
 	if !ok {
@@ -170,13 +162,33 @@ func (s *CTEStorageRC) SwapData(other CTEStorage) (err error) {
 	if s.filterDup != otherRC.filterDup {
 		return errors.Trace(errors.New("cannot swap if filterDup flags are different"))
 	}
-	s.rc, otherRC.rc = otherRC.rc, s.rc
 	s.tp, otherRC.tp = otherRC.tp, s.tp
+	s.chkSize, otherRC.chkSize = otherRC.chkSize, s.chkSize
+
+	s.rc, otherRC.rc = otherRC.rc, s.rc
 	s.ht, otherRC.ht = otherRC.ht, s.ht
 	return nil
 }
 
-// Add impl CTEStorage Add interface
+// Reopen impls CTEStorage Reopen interface.
+func (s *CTEStorageRC) Reopen() (err error) {
+	if s.filterDup {
+		s.ht = newConcurrentMapHashTable()
+	}
+	if err = s.rc.Reset(); err != nil {
+        return err
+    }
+    s.iter = 0
+    s.begCh = make(chan struct{})
+    s.done = false
+    // Create a new RowContainer.
+    // Because some meta infos in old RowContainer are not resetted.
+    // Such as memTracker/actionSpill etc. So we just use a new one.
+    s.rc = chunk.NewRowContainer(s.tp, s.chkSize)
+    return nil
+}
+
+// Add impls CTEStorage Add interface.
 func (s *CTEStorageRC) Add(chk *chunk.Chunk) (addedChk *chunk.Chunk, err error) {
 	if !s.valid() {
 		return nil, errors.Trace(errors.New("CTEStorage is not valid"))
@@ -192,7 +204,7 @@ func (s *CTEStorageRC) Add(chk *chunk.Chunk) (addedChk *chunk.Chunk, err error) 
 	return chk, s.rc.Add(chk)
 }
 
-// GetChunk impl CTEStorage GetChunk interface
+// GetChunk impls CTEStorage GetChunk interface.
 func (s *CTEStorageRC) GetChunk(chkIdx int) (*chunk.Chunk, error) {
 	if !s.valid() {
 		return nil, errors.Trace(errors.New("CTEStorage is not valid"))
@@ -200,79 +212,69 @@ func (s *CTEStorageRC) GetChunk(chkIdx int) (*chunk.Chunk, error) {
 	return s.rc.GetChunk(chkIdx)
 }
 
-func (s *CTEStorageRC) Lock() {
-	s.mu.Lock()
-}
-
-func (s *CTEStorageRC) Unlock() {
-	s.mu.Unlock()
-}
-
-func (s *CTEStorageRC) Done() bool {
-	return s.done
-}
-
-func (s *CTEStorageRC) SetDone() {
-	s.done = true
-}
-
-func (s *CTEStorageRC) GetBegCh() chan struct{} {
-    return s.begCh
-}
-
-func (s *CTEStorageRC) ResetData() error {
-	if s.filterDup {
-		s.ht = newConcurrentMapHashTable()
-	}
-	return s.rc.Reset()
-}
-
-func (s *CTEStorageRC) Reopen() (err error) {
-	if s.filterDup {
-		s.ht = newConcurrentMapHashTable()
-	}
-	if err = s.rc.Reset(); err != nil {
-        return err
-    }
-    s.iter = 0
-    s.begCh = make(chan struct{})
-    s.done = false
-    // Create a new RowContainer. Because some meta infos in old RowContainer are not resetted.
-    // Such as memTracker/actionSpill etc. So we just use a new one.
-    s.rc = chunk.NewRowContainer(s.tp, s.chkSize)
-    return nil
-}
-
+// NumChunks impls CTEStorage NumChunks interface.
 func (s *CTEStorageRC) NumChunks() int {
 	return s.rc.NumChunks()
 }
 
-func (s *CTEStorageRC) GetMemTracker() *memory.Tracker {
-	return s.rc.GetMemTracker()
+// Lock impls CTEStorage Lock interface.
+func (s *CTEStorageRC) Lock() {
+	s.mu.Lock()
 }
 
-func (s *CTEStorageRC) GetDiskTracker() *memory.Tracker {
-	return s.rc.GetDiskTracker()
+// Unlock impls CTEStorage Unlock interface.
+func (s *CTEStorageRC) Unlock() {
+	s.mu.Unlock()
 }
 
-func (s *CTEStorageRC) ActionSpill() memory.ActionOnExceed {
-	return s.rc.ActionSpill()
+// Done impls CTEStorage Done interface.
+func (s *CTEStorageRC) Done() bool {
+	return s.done
 }
 
-func (s *CTEStorageRC) ActionSpillForTest() memory.ActionOnExceed {
-	return s.rc.ActionSpillForTest()
+// SetDone impls CTEStorage SetDone interface.
+func (s *CTEStorageRC) SetDone() {
+	s.done = true
 }
 
-func (s *CTEStorageRC) GetRCForTest() *chunk.RowContainer {
-	return s.rc
-}
-
+// SetIter impls CTEStorage SetIter interface.
 func (s *CTEStorageRC) SetIter(iter int) {
 	s.iter = iter
 }
 
+// GetIter impls CTEStorage GetIter interface.
 func (s *CTEStorageRC) GetIter() int {
 	return s.iter
+}
+
+// GetBegCh impls CTEStorage GetBegCh interface.
+func (s *CTEStorageRC) GetBegCh() chan struct{} {
+    return s.begCh
+}
+
+// GetMemTracker impls CTEStorage GetMemTracker interface.
+func (s *CTEStorageRC) GetMemTracker() *memory.Tracker {
+	return s.rc.GetMemTracker()
+}
+
+// GetDiskTracker impls CTEStorage GetDiskTracker interface.
+func (s *CTEStorageRC) GetDiskTracker() *memory.Tracker {
+	return s.rc.GetDiskTracker()
+}
+
+// ActionSpill impls CTEStorage ActionSpill interface.
+func (s *CTEStorageRC) ActionSpill() memory.ActionOnExceed {
+	return s.rc.ActionSpill()
+}
+
+// ActionSpillForTest is for test.
+func (s *CTEStorageRC) ActionSpillForTest() memory.ActionOnExceed {
+	return s.rc.ActionSpillForTest()
+}
+
+// GetRCForTest is for test.
+func (s *CTEStorageRC) GetRCForTest() *chunk.RowContainer {
+	return s.rc
 }
 
 func (s *CTEStorageRC) resetAll() error {

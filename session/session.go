@@ -1591,10 +1591,10 @@ func resetCTEStorageMap(se *session) error {
         return errors.Trace(errors.New("type assertion for CTEStorageMap failed"))
     }
     for _, v := range storageMap {
-        if err := v.ResTbl.ForceClose(); err != nil {
+        if err := v.ResTbl.DerefAndClose(); err != nil {
             return err
         }
-        if err := v.IterInTbl.ForceClose(); err != nil {
+        if err := v.IterInTbl.DerefAndClose(); err != nil {
             return err
         }
     }

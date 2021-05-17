@@ -206,7 +206,7 @@ func (e *CTEExec) computeRecursivePart(ctx context.Context) (err error) {
             return err
         }
         if chk.NumRows() == 0 {
-            e.iterInTbl.ResetData()
+            e.iterInTbl.Reopen()
             for i := 0; i < e.iterOutTbl.NumChunks(); i++ {
                 if chk, err = e.iterOutTbl.GetChunk(i); err != nil {
                     return err
@@ -218,7 +218,7 @@ func (e *CTEExec) computeRecursivePart(ctx context.Context) (err error) {
                     return err
                 }
             }
-            if err = e.iterOutTbl.ResetData(); err != nil {
+            if err = e.iterOutTbl.Reopen(); err != nil {
                 return err
             }
             if e.iterInTbl.NumChunks() == 0 {
