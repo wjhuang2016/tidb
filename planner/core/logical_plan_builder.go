@@ -3243,6 +3243,9 @@ func (b *PlanBuilder) pushTableHints(hints []*ast.TableOptimizerHint, currentLev
 }
 
 func (b *PlanBuilder) popVisitInfo() {
+	if len(b.visitInfo) == 0 {
+		return
+	}
 	b.visitInfo = b.visitInfo[:len(b.visitInfo)-1]
 }
 
@@ -4344,19 +4347,19 @@ func (b *PlanBuilder) buildUpdate(ctx context.Context, update *ast.UpdateStmt) (
 		b.popTableHints()
 	}()
 
-	// update subquery table should be forbidden
-	var asNameList []string
-	asNameList = extractTableSourceAsNames(update.TableRefs.TableRefs, asNameList, true)
-	for _, asName := range asNameList {
-		for _, assign := range update.List {
-			if assign.Column.Table.L == asName {
-				return nil, ErrNonUpdatableTable.GenWithStackByArgs(asName, "UPDATE")
-			}
-		}
-	}
-
 	b.inUpdateStmt = true
 	b.isForUpdateRead = true
+
+	if update.With != nil {
+		l := len(b.outerCTEs)
+		defer func() {
+			b.outerCTEs = b.outerCTEs[:l]
+		}()
+		err := b.buildWith(ctx, update.With)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	p, err := b.buildResultSetNode(ctx, update.TableRefs.TableRefs)
 	if err != nil {
@@ -4369,12 +4372,6 @@ func (b *PlanBuilder) buildUpdate(ctx context.Context, update *ast.UpdateStmt) (
 		dbName := t.Schema.L
 		if dbName == "" {
 			dbName = b.ctx.GetSessionVars().CurrentDB
-		}
-		if t.TableInfo.IsView() {
-			return nil, errors.Errorf("update view %s is not supported now.", t.Name.O)
-		}
-		if t.TableInfo.IsSequence() {
-			return nil, errors.Errorf("update sequence %s is not supported now.", t.Name.O)
 		}
 		b.visitInfo = appendVisitInfo(b.visitInfo, mysql.SelectPriv, dbName, t.Name.L, "", nil)
 	}
@@ -4419,9 +4416,13 @@ func (b *PlanBuilder) buildUpdate(ctx context.Context, update *ast.UpdateStmt) (
 	proj.SetChildren(p)
 	p = proj
 
+	// update subquery table should be forbidden
+	var notUpdatableTbl []string
+	notUpdatableTbl = extractTableSourceAsNames(update.TableRefs.TableRefs, notUpdatableTbl, true)
+
 	var updateTableList []*ast.TableName
 	updateTableList = extractTableList(update.TableRefs.TableRefs, updateTableList, true)
-	orderedList, np, allAssignmentsAreConstant, err := b.buildUpdateLists(ctx, updateTableList, update.List, p)
+	orderedList, np, allAssignmentsAreConstant, err := b.buildUpdateLists(ctx, updateTableList, update.List, p, notUpdatableTbl)
 	if err != nil {
 		return nil, err
 	}
@@ -4498,16 +4499,8 @@ func CheckUpdateList(assignFlags []int, updt *Update) error {
 	return nil
 }
 
-func (b *PlanBuilder) buildUpdateLists(
-	ctx context.Context,
-	tableList []*ast.TableName,
-	list []*ast.Assignment,
-	p LogicalPlan,
-) (newList []*expression.Assignment,
-	po LogicalPlan,
-	allAssignmentsAreConstant bool,
-	e error,
-) {
+func (b *PlanBuilder) buildUpdateLists(ctx context.Context, tableList []*ast.TableName, list []*ast.Assignment, p LogicalPlan,
+	notUpdatableTbl []string) (newList []*expression.Assignment, po LogicalPlan, allAssignmentsAreConstant bool, e error) {
 	b.curClause = fieldList
 	// modifyColumns indicates which columns are in set list,
 	// and if it is set to `DEFAULT`
@@ -4530,6 +4523,21 @@ func (b *PlanBuilder) buildUpdateLists(
 			columnsIdx[assign.Column] = idx
 		}
 		name := p.OutputNames()[idx]
+		for _, tl := range tableList {
+			if (tl.Schema.L == "" || tl.Schema.L == name.DBName.L) && (tl.Name.L == name.TblName.L) {
+				if tl.TableInfo == nil /*CTE*/ || tl.TableInfo.IsView() || tl.TableInfo.IsSequence() {
+					return nil, nil, false, ErrNonUpdatableTable.GenWithStackByArgs(name.TblName.O, "UPDATE")
+				}
+				// may be a subquery
+				if tl.Schema.L == "" {
+					for _, nTbl := range notUpdatableTbl {
+						if nTbl == name.TblName.L {
+							return nil, nil, false, ErrNonUpdatableTable.GenWithStackByArgs(name.TblName.O, "UPDATE")
+						}
+					}
+				}
+			}
+		}
 		columnFullName := fmt.Sprintf("%s.%s.%s", name.DBName.L, name.TblName.L, name.ColName.L)
 		// We save a flag for the column in map `modifyColumns`
 		// This flag indicated if assign keyword `DEFAULT` to the column
@@ -4543,8 +4551,19 @@ func (b *PlanBuilder) buildUpdateLists(
 	// If columns in set list contains generated columns, raise error.
 	// And, fill virtualAssignments here; that's for generated columns.
 	virtualAssignments := make([]*ast.Assignment, 0)
-
 	for _, tn := range tableList {
+		// Only generate virtual to updatable table, skip not updatable table(i.e. table in update's subQuery)
+		updatable := true
+		for _, nTbl := range notUpdatableTbl {
+			if tn.Name.L == nTbl {
+				updatable = false
+				break
+			}
+		}
+		if !updatable || tn.TableInfo == nil /*CTE*/ || tn.TableInfo.IsView() || tn.TableInfo.IsSequence() {
+			continue
+		}
+
 		tableInfo := tn.TableInfo
 		tableVal, found := b.is.TableByID(tableInfo.ID)
 		if !found {
@@ -4575,6 +4594,9 @@ func (b *PlanBuilder) buildUpdateLists(
 	newList = make([]*expression.Assignment, 0, p.Schema().Len())
 	tblDbMap := make(map[string]string, len(tableList))
 	for _, tbl := range tableList {
+		if tbl.TableInfo == nil { // exclude CTE
+			continue
+		}
 		tblDbMap[tbl.Name.L] = tbl.DBInfo.Name.L
 	}
 
@@ -4680,6 +4702,17 @@ func (b *PlanBuilder) buildDelete(ctx context.Context, delete *ast.DeleteStmt) (
 
 	b.inDeleteStmt = true
 	b.isForUpdateRead = true
+
+	if delete.With != nil {
+		l := len(b.outerCTEs)
+		defer func() {
+			b.outerCTEs = b.outerCTEs[:l]
+		}()
+		err := b.buildWith(ctx, delete.With)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	p, err := b.buildResultSetNode(ctx, delete.TableRefs.TableRefs)
 	if err != nil {
@@ -4807,6 +4840,9 @@ func (b *PlanBuilder) buildDelete(ctx context.Context, delete *ast.DeleteStmt) (
 		var tableList []*ast.TableName
 		tableList = extractTableList(delete.TableRefs.TableRefs, tableList, false)
 		for _, v := range tableList {
+			if v.TableInfo == nil { // CTE
+				return nil, ErrNonUpdatableTable.GenWithStackByArgs(v.Name.O, "DELETE")
+			}
 			if v.TableInfo.IsView() {
 				return nil, errors.Errorf("delete view %s is not supported now.", v.Name.O)
 			}
@@ -5616,10 +5652,13 @@ func collectTableName(node ast.ResultSetNode, updatableName *map[string]bool, in
 		if s, canUpdate = x.Source.(*ast.TableName); canUpdate {
 			if name == "" {
 				name = s.Schema.L + "." + s.Name.L
+				if s.Schema.L == "" { // CTE
+					name = s.Name.L
+				}
 			}
 			(*info)[name] = s
 		}
-		(*updatableName)[name] = canUpdate
+		(*updatableName)[name] = canUpdate && s.Schema.L != ""
 	}
 }
 
