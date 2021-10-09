@@ -56,7 +56,7 @@ func TestGetDDLInfo(t *testing.T) {
 	err = m.EnQueueDDLJob(job)
 	require.NoError(t, err)
 
-	info, err := GetDDLInfo(txn)
+	info, err := GetDDLInfo(txn, nil)
 	require.NoError(t, err)
 	require.Len(t, info.Jobs, 1)
 	require.Equal(t, job, info.Jobs[0])
@@ -67,7 +67,7 @@ func TestGetDDLInfo(t *testing.T) {
 	err = m.EnQueueDDLJob(job1)
 	require.NoError(t, err)
 
-	info, err = GetDDLInfo(txn)
+	info, err = GetDDLInfo(txn, nil)
 	require.NoError(t, err)
 	require.Len(t, info.Jobs, 2)
 	require.Equal(t, job, info.Jobs[0])
@@ -114,7 +114,7 @@ func TestGetDDLJobs(t *testing.T) {
 				}
 			}
 			return false, nil
-		})
+		}, nil)
 		require.NoError(t, err)
 		require.Len(t, currJobs2, i+1)
 	}

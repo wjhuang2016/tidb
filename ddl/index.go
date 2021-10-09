@@ -552,7 +552,7 @@ func (w *worker) onCreateIndex(d *ddlCtx, t *meta.Meta, job *model.Job, isPK boo
 		}
 
 		elements := []*meta.Element{{ID: indexInfo.ID, TypeKey: meta.IndexElementKey}}
-		reorgInfo, err := getReorgInfo(d, t, job, tbl, elements)
+		reorgInfo, err := getReorgInfo(d, t, job, tbl, elements, w)
 		if err != nil || reorgInfo.first {
 			// If we run reorg firstly, we should update the job snapshot version
 			// and then run the reorg next time.
@@ -574,7 +574,7 @@ func (w *worker) onCreateIndex(d *ddlCtx, t *meta.Meta, job *model.Job, isPK boo
 			if kv.ErrKeyExists.Equal(err) || errCancelledDDLJob.Equal(err) || errCantDecodeRecord.Equal(err) {
 				logutil.BgLogger().Warn("[ddl] run add index job failed, convert job to rollback", zap.String("job", job.String()), zap.Error(err))
 				ver, err = convertAddIdxJob2RollbackJob(t, job, tblInfo, indexInfo, err)
-				if err1 := t.RemoveDDLReorgHandle(job, reorgInfo.elements); err1 != nil {
+				if err1 := w.RemoveDDLReorgHandle(job, reorgInfo.elements); err1 != nil {
 					logutil.BgLogger().Warn("[ddl] run add index job failed, convert job to rollback, RemoveDDLReorgHandle failed", zap.String("job", job.String()), zap.Error(err1))
 				}
 			}
@@ -1414,7 +1414,7 @@ func (w *worker) updateReorgInfo(t table.PartitionedTable, reorg *reorgInfo) (bo
 	reorg.StartKey, reorg.EndKey, reorg.PhysicalTableID = start, end, pid
 
 	// Write the reorg info to store so the whole reorganize process can recover from panic.
-	err = reorg.UpdateReorgMeta(start)
+	err = reorg.UpdateReorgMeta(start, w)
 	logutil.BgLogger().Info("[ddl] job update reorgInfo",
 		zap.Int64("jobID", reorg.Job.ID),
 		zap.ByteString("elementType", reorg.currElement.TypeKey),
@@ -1595,7 +1595,7 @@ func (w *worker) updateReorgInfoForPartitions(t table.PartitionedTable, reorg *r
 	reorg.StartKey, reorg.EndKey, reorg.PhysicalTableID = start, end, pid
 
 	// Write the reorg info to store so the whole reorganize process can recover from panic.
-	err = reorg.UpdateReorgMeta(reorg.StartKey)
+	err = reorg.UpdateReorgMeta(reorg.StartKey, w)
 	logutil.BgLogger().Info("[ddl] job update reorgInfo", zap.Int64("jobID", reorg.Job.ID),
 		zap.ByteString("elementType", reorg.currElement.TypeKey), zap.Int64("elementID", reorg.currElement.ID),
 		zap.Int64("partitionTableID", pid), zap.String("startHandle", tryDecodeToHandleString(start)),

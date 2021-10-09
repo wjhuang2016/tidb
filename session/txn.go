@@ -561,3 +561,8 @@ func (s *session) StmtGetMutation(tableID int64) *binlog.TableMutation {
 	}
 	return st.mutations[tableID]
 }
+
+func (txn *LazyTxn) Reset() {
+	txn.stagingHandle = 0
+	txn.Transaction.Reset()
+}

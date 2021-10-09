@@ -6846,7 +6846,7 @@ func (s *testSerialDBSuite) TestCommitTxnWithIndexChange(c *C) {
 	tk.MustExec("admin check table t1")
 }
 
-// TestAddIndexFailOnCaseWhenCanExit is used to close #19325.
+// TestAddIndexFailOnCaseWhenCanExit is used to Close #19325.
 func (s *testSerialDBSuite) TestAddIndexFailOnCaseWhenCanExit(c *C) {
 	c.Assert(failpoint.Enable("github.com/pingcap/tidb/ddl/MockCaseWhenParseFailure", `return(true)`), IsNil)
 	defer func() {

@@ -448,8 +448,8 @@ type DDLJobRetriever struct {
 	cacheJobs      []*model.Job
 }
 
-func (e *DDLJobRetriever) initial(txn kv.Transaction) error {
-	jobs, err := admin.GetDDLJobs(txn)
+func (e *DDLJobRetriever) initial(txn kv.Transaction, sess sessionctx.Context) error {
+	jobs, err := admin.GetDDLJobsNew(sess)
 	if err != nil {
 		return err
 	}
@@ -536,7 +536,7 @@ func (e *ShowDDLJobQueriesExec) Open(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	jobs, err := admin.GetDDLJobs(txn)
+	jobs, err := admin.GetDDLJobsNew(e.ctx)
 	if err != nil {
 		return err
 	}
@@ -585,7 +585,7 @@ func (e *ShowDDLJobsExec) Open(ctx context.Context) error {
 	if e.jobNumber == 0 {
 		e.jobNumber = admin.DefNumHistoryJobs
 	}
-	err = e.DDLJobRetriever.initial(txn)
+	err = e.DDLJobRetriever.initial(txn, e.ctx)
 	if err != nil {
 		return err
 	}

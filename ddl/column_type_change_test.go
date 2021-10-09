@@ -1567,7 +1567,7 @@ func (s *testColumnTypeChangeSuite) TestUpdateDataAfterChangeTimestampToDate(c *
 	tk.MustExec("update t1 set col = '2002-12-31' where col1 = 1;")
 }
 
-// TestRowFormat is used to close issue #21391, the encoded row in column type change should be aware of the new row format.
+// TestRowFormat is used to Close issue #21391, the encoded row in column type change should be aware of the new row format.
 func (s *testColumnTypeChangeSuite) TestRowFormat(c *C) {
 	tk := testkit.NewTestKit(c, s.store)
 	tk.MustExec("use test")

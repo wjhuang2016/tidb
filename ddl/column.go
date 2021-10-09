@@ -1049,7 +1049,7 @@ func (w *worker) doModifyColumnTypeWithData(
 			return ver, errors.Trace(err)
 		}
 
-		reorgInfo, err := getReorgInfo(d, t, job, tbl, BuildElements(changingCol, changingIdxs))
+		reorgInfo, err := getReorgInfo(d, t, job, tbl, BuildElements(changingCol, changingIdxs), w)
 		if err != nil || reorgInfo.first {
 			// If we run reorg firstly, we should update the job snapshot version
 			// and then run the reorg next time.
@@ -1081,7 +1081,7 @@ func (w *worker) doModifyColumnTypeWithData(
 				w.reorgCtx.cleanNotifyReorgCancel()
 				return ver, errors.Trace(err)
 			}
-			if err1 := t.RemoveDDLReorgHandle(job, reorgInfo.elements); err1 != nil {
+			if err1 := w.RemoveDDLReorgHandle(job, reorgInfo.elements); err1 != nil {
 				logutil.BgLogger().Warn("[ddl] run modify column job failed, RemoveDDLReorgHandle failed, can't convert job to rollback",
 					zap.String("job", job.String()), zap.Error(err1))
 			}
@@ -1219,7 +1219,7 @@ func (w *worker) updateColumnAndIndexes(t table.Table, oldCol, col *model.Column
 		// Update the element in the reorgInfo for updating the reorg meta below.
 		reorgInfo.currElement = reorgInfo.elements[i+1]
 		// Write the reorg info to store so the whole reorganize process can recover from panic.
-		err := reorgInfo.UpdateReorgMeta(reorgInfo.StartKey)
+		err := reorgInfo.UpdateReorgMeta(reorgInfo.StartKey, w)
 		logutil.BgLogger().Info("[ddl] update column and indexes",
 			zap.Int64("jobID", reorgInfo.Job.ID),
 			zap.ByteString("elementType", reorgInfo.currElement.TypeKey),

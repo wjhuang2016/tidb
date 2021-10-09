@@ -54,7 +54,7 @@ func (d *ddl) Stats(vars *variable.SessionVars) (map[string]interface{}, error) 
 
 	err := kv.RunInNewTxn(context.Background(), d.store, false, func(ctx context.Context, txn kv.Transaction) error {
 		var err1 error
-		ddlInfo, err1 = admin.GetDDLInfo(txn)
+		ddlInfo, err1 = admin.GetDDLInfo(txn, nil)
 		if err1 != nil {
 			return errors.Trace(err1)
 		}

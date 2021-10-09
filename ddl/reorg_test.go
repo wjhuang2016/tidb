@@ -119,7 +119,7 @@ func (s *testDDLSuite) TestReorg(c *C) {
 			c.Assert(err, IsNil)
 
 			m = meta.NewMeta(txn)
-			info, err1 := getReorgInfo(d.ddlCtx, m, job, mockTbl, nil)
+			info, err1 := getReorgInfo(d.ddlCtx, m, job, mockTbl, nil, nil)
 			c.Assert(err1, IsNil)
 			c.Assert(info.StartKey, DeepEquals, kv.Key(handle.Encoded()))
 			c.Assert(info.currElement, DeepEquals, e)
@@ -150,18 +150,18 @@ func (s *testDDLSuite) TestReorg(c *C) {
 	err = kv.RunInNewTxn(context.Background(), d.store, false, func(ctx context.Context, txn kv.Transaction) error {
 		t := meta.NewMeta(txn)
 		var err1 error
-		_, err1 = getReorgInfo(d.ddlCtx, t, job, mockTbl, []*meta.Element{element})
+		_, err1 = getReorgInfo(d.ddlCtx, t, job, mockTbl, []*meta.Element{element}, nil)
 		c.Assert(meta.ErrDDLReorgElementNotExist.Equal(err1), IsTrue)
 		c.Assert(job.SnapshotVer, Equals, uint64(0))
 		return nil
 	})
 	c.Assert(err, IsNil)
 	job.SnapshotVer = uint64(1)
-	err = info.UpdateReorgMeta(info.StartKey)
+	err = info.UpdateReorgMeta(info.StartKey, nil)
 	c.Assert(err, IsNil)
 	err = kv.RunInNewTxn(context.Background(), d.store, false, func(ctx context.Context, txn kv.Transaction) error {
 		t := meta.NewMeta(txn)
-		info1, err1 := getReorgInfo(d.ddlCtx, t, job, mockTbl, []*meta.Element{element})
+		info1, err1 := getReorgInfo(d.ddlCtx, t, job, mockTbl, []*meta.Element{element}, nil)
 		c.Assert(err1, IsNil)
 		c.Assert(info1.currElement, DeepEquals, info.currElement)
 		c.Assert(info1.StartKey, DeepEquals, info.StartKey)

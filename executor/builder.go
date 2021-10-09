@@ -326,7 +326,7 @@ func (b *executorBuilder) buildShowDDL(v *plannercore.ShowDDL) Executor {
 		return nil
 	}
 
-	ddlInfo, err := admin.GetDDLInfo(txn)
+	ddlInfo, err := admin.GetDDLInfo(txn, b.ctx)
 	if err != nil {
 		b.err = err
 		return nil

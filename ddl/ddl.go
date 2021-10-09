@@ -22,6 +22,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/pingcap/tidb/util/admin"
 	"sync"
 	"time"
 
@@ -46,7 +47,6 @@ import (
 	"github.com/pingcap/tidb/statistics/handle"
 	"github.com/pingcap/tidb/table"
 	goutil "github.com/pingcap/tidb/util"
-	"github.com/pingcap/tidb/util/admin"
 	"github.com/pingcap/tidb/util/logutil"
 	"go.etcd.io/etcd/clientv3"
 	"go.uber.org/zap"
@@ -58,12 +58,14 @@ const (
 	// DDLOwnerKey is the ddl owner path that is saved to etcd, and it's exported for testing.
 	DDLOwnerKey = "/tidb/ddl/fg/owner"
 	// addingDDLJobPrefix is the path prefix used to record the newly added DDL job, and it's saved to etcd.
-	addingDDLJobPrefix = "/tidb/ddl/add_ddl_job_"
-	ddlPrompt          = "ddl"
+	addingDDLJobPrefix  = "/tidb/ddl/add_ddl_job_"
+	ddlPrompt           = "ddl"
+	addingDDLJobGeneral = "/tidb/ddl/add_ddl_job_general"
+	addingDDLJobReorg   = "/tidb/ddl/add_ddl_job_reorg"
 
 	shardRowIDBitsMax = 15
 
-	batchAddingJobs = 10
+	batchAddingJobs = 1000
 
 	// PartitionCountLimit is limit of the number of partitions in a table.
 	// Reference linking https://dev.mysql.com/doc/refman/5.7/en/partitioning-limitations.html.
@@ -193,8 +195,13 @@ type ddl struct {
 
 	*ddlCtx
 	workers     map[workerType]*worker
+	wp          *workerPool
+	gwp         *workerPool
 	sessPool    *sessionPool
 	delRangeMgr delRangeManager
+
+	ddlJobCh chan struct{}
+	runningReorgJobMap map[int]struct{}
 }
 
 // ddlCtx is the context when we use worker to handle DDL jobs.
@@ -314,6 +321,8 @@ func newDDL(ctx context.Context, options ...Option) *ddl {
 		ctx:        ctx,
 		ddlCtx:     ddlCtx,
 		limitJobCh: make(chan *limitJobTask, batchAddingJobs),
+		ddlJobCh:   make(chan struct{}, 100),
+		runningReorgJobMap: make(map[int]struct{}),
 	}
 
 	return d
@@ -358,22 +367,32 @@ func (d *ddl) Start(ctxPool *pools.ResourcePool) error {
 			return errors.Trace(err)
 		}
 
-		d.workers = make(map[workerType]*worker, 2)
 		d.sessPool = newSessionPool(ctxPool)
 		d.delRangeMgr = d.newDeleteRangeManager(ctxPool == nil)
-		d.workers[generalWorker] = newWorker(d.ctx, generalWorker, d.sessPool, d.delRangeMgr)
-		d.workers[addIdxWorker] = newWorker(d.ctx, addIdxWorker, d.sessPool, d.delRangeMgr)
-		for _, worker := range d.workers {
-			worker.wg.Add(1)
-			w := worker
-			go w.start(d.ddlCtx)
+		sysFac := func() (pools.Resource, error) {
+			wk := newWorker(d.ctx, addIdxWorker, d.sessPool, d.delRangeMgr)
 
-			metrics.DDLCounter.WithLabelValues(fmt.Sprintf("%s_%s", metrics.CreateDDL, worker.String())).Inc()
+			metrics.DDLCounter.WithLabelValues(fmt.Sprintf("%s_%s", metrics.CreateDDL, wk.String())).Inc()
 
 			// When the start function is called, we will send a fake job to let worker
 			// checks owner firstly and try to find whether a job exists and run.
-			asyncNotify(worker.ddlJobCh)
+			asyncNotify(wk.ddlJobCh)
+			return wk, nil
 		}
+		sysFac2 := func() (pools.Resource, error) {
+			wk := newWorker(d.ctx, generalWorker, d.sessPool, d.delRangeMgr)
+
+			metrics.DDLCounter.WithLabelValues(fmt.Sprintf("%s_%s", metrics.CreateDDL, wk.String())).Inc()
+
+			// When the start function is called, we will send a fake job to let worker
+			// checks owner firstly and try to find whether a job exists and run.
+			asyncNotify(wk.ddlJobCh)
+			return wk, nil
+		}
+		d.wp = newDDLWorkerPool(pools.NewResourcePool(sysFac, 10, 10, 3*time.Minute))
+		d.gwp = newDDLWorkerPool(pools.NewResourcePool(sysFac2, 50, 50, 3*time.Minute))
+
+		go d.startDispatchLoop()
 
 		go d.schemaSyncer.StartCleanWork()
 		if config.TableLockEnabled() {
@@ -400,11 +419,14 @@ func (d *ddl) close() {
 	d.ownerManager.Cancel()
 	d.schemaSyncer.Close()
 
-	for _, worker := range d.workers {
-		worker.close()
+	if d.wp != nil {
+		d.wp.close()
+	}
+	if d.gwp != nil {
+		d.gwp.close()
 	}
 	// d.delRangeMgr using sessions from d.sessPool.
-	// Put it before d.sessPool.close to reduce the time spent by d.sessPool.close.
+	// Put it before d.sessPool.Close to reduce the time spent by d.sessPool.Close.
 	if d.delRangeMgr != nil {
 		d.delRangeMgr.clear()
 	}
@@ -469,7 +491,7 @@ func (d *ddl) GetID() string {
 
 var (
 	fastDDLIntervalPolicy = []time.Duration{
-		500 * time.Millisecond,
+		50 * time.Millisecond,
 	}
 	normalDDLIntervalPolicy = []time.Duration{
 		500 * time.Millisecond,
@@ -510,17 +532,17 @@ func (d *ddl) asyncNotifyWorker(job *model.Job) {
 		return
 	}
 
-	var worker *worker
 	jobTp := job.Type
+	key := ""
 	if admin.MayNeedBackfill(jobTp) {
-		worker = d.workers[addIdxWorker]
+		key = addingDDLJobReorg
 	} else {
-		worker = d.workers[generalWorker]
+		key = addingDDLJobGeneral
 	}
 	if d.ownerManager.IsOwner() {
-		asyncNotify(worker.ddlJobCh)
+		asyncNotify(d.ddlJobCh)
 	} else {
-		d.asyncNotifyByEtcd(worker.addingDDLJobKey, job)
+		d.asyncNotifyByEtcd(key, job)
 	}
 }
 
