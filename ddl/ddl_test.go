@@ -16,6 +16,7 @@ package ddl
 
 import (
 	"context"
+	"github.com/pingcap/tidb/store/mockstore"
 	"os"
 	"testing"
 	"time"
@@ -30,7 +31,6 @@ import (
 	"github.com/pingcap/tidb/meta"
 	"github.com/pingcap/tidb/meta/autoid"
 	"github.com/pingcap/tidb/sessionctx"
-	"github.com/pingcap/tidb/store/mockstore"
 	"github.com/pingcap/tidb/table"
 	"github.com/pingcap/tidb/types"
 	"github.com/pingcap/tidb/util/logutil"
@@ -305,4 +305,8 @@ func (s *testDDLSuite) TestGetIntervalFromPolicy(c *C) {
 	val, changed = getIntervalFromPolicy(policy, 3)
 	c.Assert(val, Equals, 2*time.Second)
 	c.Assert(changed, Equals, false)
+}
+
+func (s *testDDLSuite) TestSess(c *C)()  {
+
 }

@@ -21,7 +21,7 @@ import (
 	"github.com/pingcap/tidb/meta"
 )
 
-func onLockTables(t *meta.Meta, job *model.Job) (ver int64, err error) {
+func onLockTables(t *meta.Meta, job *model.Job, d *ddlCtx) (ver int64, err error) {
 	arg := &lockTablesArg{}
 	if err := job.DecodeArgs(arg); err != nil {
 		// Invalid arguments, cancel this job.
@@ -31,7 +31,7 @@ func onLockTables(t *meta.Meta, job *model.Job) (ver int64, err error) {
 
 	// Unlock table first.
 	if arg.IndexOfUnlock < len(arg.UnlockTables) {
-		return unlockTables(t, job, arg)
+		return unlockTables(t, job, arg, d)
 	}
 
 	// Check table locked by other, this can be only checked at the first time.
@@ -74,13 +74,13 @@ func onLockTables(t *meta.Meta, job *model.Job) (ver int64, err error) {
 			// none -> pre_lock
 			tbInfo.Lock.State = model.TableLockStatePreLock
 			tbInfo.Lock.TS = t.StartTS
-			ver, err = updateVersionAndTableInfo(t, job, tbInfo, true)
+			ver, err = updateVersionAndTableInfo(t, job, tbInfo, true, d)
 		// If the state of the lock is public, it means the lock is a read lock and already locked by other session,
 		// so this request of lock table doesn't need pre-lock state, just update the TS and table info is ok.
 		case model.TableLockStatePreLock, model.TableLockStatePublic:
 			tbInfo.Lock.State = model.TableLockStatePublic
 			tbInfo.Lock.TS = t.StartTS
-			ver, err = updateVersionAndTableInfo(t, job, tbInfo, true)
+			ver, err = updateVersionAndTableInfo(t, job, tbInfo, true, d)
 			if err != nil {
 				return ver, errors.Trace(err)
 			}
@@ -166,7 +166,7 @@ func checkTableLocked(tbInfo *model.TableInfo, lockTp model.TableLockType, sessi
 }
 
 // unlockTables uses unlock a batch of table lock one by one.
-func unlockTables(t *meta.Meta, job *model.Job, arg *lockTablesArg) (ver int64, err error) {
+func unlockTables(t *meta.Meta, job *model.Job, arg *lockTablesArg, d *ddlCtx) (ver int64, err error) {
 	if arg.IndexOfUnlock >= len(arg.UnlockTables) {
 		return ver, nil
 	}
@@ -185,7 +185,7 @@ func unlockTables(t *meta.Meta, job *model.Job, arg *lockTablesArg) (ver int64, 
 
 	needUpdateTableInfo := unlockTable(tbInfo, arg)
 	if needUpdateTableInfo {
-		ver, err = updateVersionAndTableInfo(t, job, tbInfo, true)
+		ver, err = updateVersionAndTableInfo(t, job, tbInfo, true, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -221,7 +221,7 @@ func unlockTable(tbInfo *model.TableInfo, arg *lockTablesArg) (needUpdateTableIn
 	return true
 }
 
-func onUnlockTables(t *meta.Meta, job *model.Job) (ver int64, err error) {
+func onUnlockTables(t *meta.Meta, job *model.Job, d *ddlCtx) (ver int64, err error) {
 	arg := &lockTablesArg{}
 	if err := job.DecodeArgs(arg); err != nil {
 		// Invalid arguments, cancel this job.
@@ -229,7 +229,7 @@ func onUnlockTables(t *meta.Meta, job *model.Job) (ver int64, err error) {
 		return ver, errors.Trace(err)
 	}
 
-	ver, err = unlockTables(t, job, arg)
+	ver, err = unlockTables(t, job, arg, d)
 	if arg.IndexOfUnlock == len(arg.UnlockTables) {
 		job.FinishTableJob(model.JobStateDone, model.StateNone, ver, nil)
 	}

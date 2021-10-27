@@ -118,7 +118,7 @@ func (w *worker) onAddTablePartition(d *ddlCtx, t *meta.Meta, job *model.Job) (v
 		}
 		// move the adding definition into tableInfo.
 		updateAddingPartitionInfo(partInfo, tblInfo)
-		ver, err = updateVersionAndTableInfoWithCheck(t, job, tblInfo, true)
+		ver, err = updateVersionAndTableInfoWithCheck(t, job, tblInfo, true, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -133,7 +133,7 @@ func (w *worker) onAddTablePartition(d *ddlCtx, t *meta.Meta, job *model.Job) (v
 			// be finished. Otherwise the query to this partition will be blocked.
 			needRetry, err := checkPartitionReplica(tblInfo.TiFlashReplica.Count, addingDefinitions, d)
 			if err != nil {
-				ver, err = convertAddTablePartitionJob2RollbackJob(t, job, err, tblInfo)
+				ver, err = convertAddTablePartitionJob2RollbackJob(t, job, err, tblInfo, d)
 				return ver, err
 			}
 			if needRetry {
@@ -148,7 +148,7 @@ func (w *worker) onAddTablePartition(d *ddlCtx, t *meta.Meta, job *model.Job) (v
 		// For normal and replica finished table, move the `addingDefinitions` into `Definitions`.
 		updatePartitionInfo(tblInfo)
 
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, true)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, true, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -962,7 +962,7 @@ func (w *worker) onDropTablePartition(d *ddlCtx, t *meta.Meta, job *model.Job) (
 			job.State = model.JobStateCancelled
 			return ver, errors.Wrapf(err, "failed to notify PD the label rules")
 		}
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, true)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, true, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -998,13 +998,13 @@ func (w *worker) onDropTablePartition(d *ddlCtx, t *meta.Meta, job *model.Job) (
 			return ver, errors.Wrapf(err, "failed to notify PD the label rules")
 		}
 		job.SchemaState = model.StateDeleteOnly
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != job.SchemaState)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != job.SchemaState, d)
 	case model.StateDeleteOnly:
 		// This state is not a real 'DeleteOnly' state, because tidb does not maintaining the state check in partitionDefinition.
 		// Insert this state to confirm all servers can not see the old partitions when reorg is running,
 		// so that no new data will be inserted into old partitions when reorganizing.
 		job.SchemaState = model.StateDeleteReorganization
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != job.SchemaState)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != job.SchemaState, d)
 	case model.StateDeleteReorganization:
 		oldTblInfo := getTableInfoWithDroppingPartitions(tblInfo)
 		physicalTableIDs = getPartitionIDsFromDefinitions(tblInfo.Partition.DroppingDefinitions)
@@ -1050,7 +1050,7 @@ func (w *worker) onDropTablePartition(d *ddlCtx, t *meta.Meta, job *model.Job) (
 		tblInfo.Partition.DroppingDefinitions = nil
 		// used by ApplyDiff in updateSchemaVersion
 		job.CtxVars = []interface{}{physicalTableIDs}
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, true)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, true, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -1165,7 +1165,7 @@ func onTruncateTablePartition(d *ddlCtx, t *meta.Meta, job *model.Job) (int64, e
 		newIDs[i] = newPartitions[i].ID
 	}
 	job.CtxVars = []interface{}{oldIDs, newIDs}
-	ver, err = updateVersionAndTableInfo(t, job, tblInfo, true)
+	ver, err = updateVersionAndTableInfo(t, job, tblInfo, true, d)
 	if err != nil {
 		return ver, errors.Trace(err)
 	}
@@ -1769,7 +1769,7 @@ func truncateTableByReassignPartitionIDs(t *meta.Meta, tblInfo *model.TableInfo)
 	return nil
 }
 
-func onAlterTableAlterPartition(t *meta.Meta, job *model.Job) (ver int64, err error) {
+func onAlterTableAlterPartition(t *meta.Meta, job *model.Job, d *ddlCtx) (ver int64, err error) {
 	var partitionID int64
 	bundle := &placement.Bundle{}
 	err = job.DecodeArgs(&partitionID, bundle)
@@ -1793,7 +1793,7 @@ func onAlterTableAlterPartition(t *meta.Meta, job *model.Job) (ver int64, err er
 	switch pstate {
 	case model.StatePublic:
 		ptInfo.SetStateByID(partitionID, model.StateGlobalTxnOnly)
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, true)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, true, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -1807,7 +1807,7 @@ func onAlterTableAlterPartition(t *meta.Meta, job *model.Job) (ver int64, err er
 		ptInfo.SetStateByID(partitionID, model.StatePublic)
 		// used by ApplyDiff in updateSchemaVersion
 		job.CtxVars = []interface{}{partitionID}
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, true)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, true, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}

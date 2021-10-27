@@ -18,20 +18,23 @@ import (
 	"time"
 )
 
-func (d *ddl) getOneGeneralJob(sess sessionctx.Context) (*model.Job, error) {
-	sess.(sqlexec.SQLExecutor).ExecuteInternal(context.Background(), "begin")
-	defer func() {
-		sess.(sqlexec.SQLExecutor).ExecuteInternal(context.Background(), "commit")
-	}()
+func (d *ddl) getSomeGeneralJob(sess sessionctx.Context) ([]model.Job, error) {
+	//sess.(sqlexec.SQLExecutor).ExecuteInternal(context.Background(), "begin")
+	//defer func() {
+	//	sess.(sqlexec.SQLExecutor).ExecuteInternal(context.Background(), "commit")
+	//}()
 	runningOrBlockedIDs := make([]string, 0, 10)
+	d.runningReorgJobMapMu.RLock()
 	for id := range d.runningReorgJobMap {
 		runningOrBlockedIDs = append(runningOrBlockedIDs, strconv.Itoa(id))
 	}
+	d.runningReorgJobMapMu.RUnlock()
 	var sql string
+	ts := time.Now()
 	if len(runningOrBlockedIDs) == 0 {
-		sql = "select job_meta from mysql.tidb_ddl_job where job_id = (select min(job_id) from mysql.tidb_ddl_job group by schema_id, table_id having not reorg order by min(job_id) limit 1)"
+		sql = "select job_meta from mysql.tidb_ddl_job where job_id in (select min(job_id) from mysql.tidb_ddl_job group by schema_id, table_id order by min(job_id)) and not reorg"
 	} else {
-		sql = fmt.Sprintf("select job_meta from mysql.tidb_ddl_job where job_id = (select min(job_id) from mysql.tidb_ddl_job group by schema_id, table_id having not reorg and job_id not in (%s) order by min(job_id) limit 1)", strings.Join(runningOrBlockedIDs, ", "))
+		sql = fmt.Sprintf("select job_meta from mysql.tidb_ddl_job where job_id in (select min(job_id) from mysql.tidb_ddl_job group by schema_id, table_id order by min(job_id)) and not reorg and job_id not in (%s)", strings.Join(runningOrBlockedIDs, ", "))
 	}
 	rs, err := sess.(sqlexec.SQLExecutor).ExecuteInternal(context.Background(), sql)
 	if err != nil {
@@ -39,49 +42,59 @@ func (d *ddl) getOneGeneralJob(sess sessionctx.Context) (*model.Job, error) {
 	}
 	var rows []chunk.Row
 	rows, err = sqlexec.DrainRecordSet(d.ctx, rs, 8)
+	rs.Close()
 	if err != nil {
 		return nil, err
 	}
 	if len(rows) == 0 {
 		return nil, nil
 	}
-	jobBinary := rows[0].GetBytes(0)
-	job := &model.Job{}
-	err = job.Decode(jobBinary)
-	if err != nil {
-		return nil, err
-	}
-	if job.Type == model.ActionDropSchema {
-		for {
-			canRun, err := d.checkDropSchemaJobIsRunnable(sess, job)
-			if err != nil {
-				return nil, err
+	jobs := make([]model.Job, 0, 5)
+	for _, row := range rows {
+		jobBinary := row.GetBytes(0)
+		job := model.Job{}
+		err = job.Decode(jobBinary)
+		if err != nil {
+			return nil, err
+		}
+		log.Warn("get ddl job from table", zap.String("time", time.Since(ts).String()), zap.String("job", job.String()))
+		if job.Type == model.ActionDropSchema {
+			for {
+				canRun, err := d.checkDropSchemaJobIsRunnable(sess, &job)
+				if err != nil {
+					return nil, err
+				}
+				if canRun {
+					log.Warn("get ddl job from table", zap.String("time", time.Since(ts).String()), zap.String("job", job.String()))
+					jobs = append(jobs, job)
+					break
+				}
+				runningOrBlockedIDs = append(runningOrBlockedIDs, strconv.Itoa(int(job.ID)))
+				sql = fmt.Sprintf("select job_meta from mysql.tidb_ddl_job where job_id in (select min(job_id) from mysql.tidb_ddl_job group by schema_id, table_id order by min(job_id) limit 20) and not reorg and job_id not in (%s)", strings.Join(runningOrBlockedIDs, ", "))
+				rs, err = sess.(sqlexec.SQLExecutor).ExecuteInternal(context.Background(), sql)
+				if err != nil {
+					return nil, err
+				}
+				rows, err = sqlexec.DrainRecordSet(d.ctx, rs, 8)
+				rs.Close()
+				if err != nil {
+					return nil, err
+				}
+				if len(rows) == 0 {
+					continue
+				}
+				jobBinary = rows[0].GetBytes(0)
+				job = model.Job{}
+				err = job.Decode(jobBinary)
+				if err != nil {
+					return nil, err
+				}
 			}
-			if canRun {
-				return job, nil
-			}
-			runningOrBlockedIDs = append(runningOrBlockedIDs, strconv.Itoa(int(job.ID)))
-			sql = fmt.Sprintf("select job_meta from mysql.tidb_ddl_job where job_id = (select min(job_id) from mysql.tidb_ddl_job group by schema_id, table_id having not reorg and job_id not in (%s) order by min(job_id) limit 1)", strings.Join(runningOrBlockedIDs, ", "))
-			rs, err = sess.(sqlexec.SQLExecutor).ExecuteInternal(context.Background(), sql)
-			if err != nil {
-				return nil, err
-			}
-			rows, err = sqlexec.DrainRecordSet(d.ctx, rs, 8)
-			if err != nil {
-				return nil, err
-			}
-			if len(rows) == 0 {
-				return nil, nil
-			}
-			jobBinary = rows[0].GetBytes(0)
-			job = &model.Job{}
-			err = job.Decode(jobBinary)
-			if err != nil {
-				return nil, err
-			}
+		} else {
+			jobs = append(jobs, job)
 		}
 	}
-	return job, nil
+	return jobs, nil
 }
 
 func (d *ddl) checkDropSchemaJobIsRunnable(sess sessionctx.Context, job *model.Job) (bool, error) {
@@ -91,6 +104,7 @@ func (d *ddl) checkDropSchemaJobIsRunnable(sess sessionctx.Context, job *model.J
 		return false, err
 	}
 	rows, err := sqlexec.DrainRecordSet(d.ctx, rs, 8)
+	rs.Close()
 	if err != nil {
 		return false, err
 	}
@@ -104,6 +118,7 @@ func (d *ddl) checkReorgJobIsRunnable(sess sessionctx.Context, job *model.Job) (
 		return false, err
 	}
 	rows, err := sqlexec.DrainRecordSet(d.ctx, rs, 8)
+	rs.Close()
 	if err != nil {
 		return false, err
 	}
@@ -111,14 +126,16 @@ func (d *ddl) checkReorgJobIsRunnable(sess sessionctx.Context, job *model.Job) (
 }
 
 func (d *ddl) getOneReorgJob(sess sessionctx.Context) (*model.Job, error) {
-	sess.(sqlexec.SQLExecutor).ExecuteInternal(context.Background(), "begin")
-	defer func() {
-		sess.(sqlexec.SQLExecutor).ExecuteInternal(context.Background(), "commit")
-	}()
+	//sess.(sqlexec.SQLExecutor).ExecuteInternal(context.Background(), "begin")
+	//defer func() {
+	//	sess.(sqlexec.SQLExecutor).ExecuteInternal(context.Background(), "commit")
+	//}()
 	runningOrBlockedIDs := make([]string, 0, 10)
+	d.runningReorgJobMapMu.RLock()
 	for id := range d.runningReorgJobMap {
 		runningOrBlockedIDs = append(runningOrBlockedIDs, strconv.Itoa(id))
 	}
+	d.runningReorgJobMapMu.RUnlock()
 	var sql string
 	if len(runningOrBlockedIDs) == 0 {
 		sql = "select job_meta from mysql.tidb_ddl_job where job_id = (select min(job_id) from mysql.tidb_ddl_job group by schema_id, table_id having reorg and job_id order by min(job_id) limit 1)"
@@ -131,6 +148,7 @@ func (d *ddl) getOneReorgJob(sess sessionctx.Context) (*model.Job, error) {
 	}
 	var rows []chunk.Row
 	rows, err = sqlexec.DrainRecordSet(d.ctx, rs, 8)
+	rs.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -158,6 +176,7 @@ func (d *ddl) getOneReorgJob(sess sessionctx.Context) (*model.Job, error) {
 			return nil, err
 		}
 		rows, err = sqlexec.DrainRecordSet(d.ctx, rs, 8)
+		rs.Close()
 		if err != nil {
 			return nil, err
 		}
@@ -174,6 +193,7 @@ func (d *ddl) getOneReorgJob(sess sessionctx.Context) (*model.Job, error) {
 }
 
 func (d *ddl) startDispatchLoop() {
+	time.Sleep(2 * time.Second)
 	for !d.isOwner() {
 		time.Sleep(time.Second)
 	}
@@ -186,61 +206,95 @@ func (d *ddl) startDispatchLoop() {
 		notifyDDLJobByEtcdChGeneral = d.etcdCli.Watch(context.Background(), addingDDLJobGeneral)
 		notifyDDLJobByEtcdChReorg = d.etcdCli.Watch(context.Background(), addingDDLJobReorg)
 	}
-	ticker := time.NewTicker(1*time.Second)
+	ticker := time.NewTicker(50*time.Millisecond)
 	var ok bool
 	for {
 		select {
 		case <-d.ddlJobCh:
 			sleep := false
 			for !sleep {
-				job, _ := d.getOneGeneralJob(sess)
-				if job != nil {
-					d.runningReorgJobMap[int(job.ID)] = struct{}{}
-					go func() {
-						wk, _ := d.gwp.get()
-						wk.handleDDLJob(d.ddlCtx, job, d.ddlJobCh)
-						d.gwp.put(wk)
-						delete(d.runningReorgJobMap, int(job.ID))
-					}()
+				log.Warn("before getSomeGeneralJob", zap.String("time", time.Now().String()))
+				jobs, err := d.getSomeGeneralJob(sess)
+				if err != nil {
+					log.Warn("err", zap.Error(err))
 				}
-				job2, _ := d.getOneReorgJob(sess)
-				if job2 != nil {
-					d.runningReorgJobMap[int(job2.ID)] = struct{}{}
-					go func() {
-						defer delete(d.runningReorgJobMap, int(job2.ID))
-						wk, _ := d.wp.get()
-						wk.handleDDLJob(d.ddlCtx, job2, d.ddlJobCh)
-						d.wp.put(wk)
-					}()
+				if jobs != nil {
+					for _, jobb := range jobs {
+						job := jobb
+						d.runningReorgJobMapMu.Lock()
+						d.runningReorgJobMap[int(job.ID)] = struct{}{}
+						d.runningReorgJobMapMu.Unlock()
+						go func() {
+							defer func() {
+								d.runningReorgJobMapMu.Lock()
+								delete(d.runningReorgJobMap, int(job.ID))
+								d.runningReorgJobMapMu.Unlock()
+							}()
+							wk, _ := d.gwp.get()
+							wk.handleDDLJob(d.ddlCtx, &job, d.ddlJobCh)
+							d.gwp.put(wk)
+						}()
+					}
 				}
-				if job == nil && job2 == nil {
+				log.Warn("after getSomeGeneralJob", zap.String("time", time.Now().String()))
+				//job2, _ := d.getOneReorgJob(sess)
+				//if job2 != nil {
+				//	d.runningReorgJobMap[int(job2.ID)] = struct{}{}
+				//	go func() {
+				//		defer delete(d.runningReorgJobMap, int(job2.ID))
+				//		wk, _ := d.wp.get()
+				//		wk.handleDDLJob(d.ddlCtx, job2, d.ddlJobCh)
+				//		d.wp.put(wk)
+				//	}()
+				//}
+				if jobs == nil {
 					sleep = true
 				}
+				log.Warn("loop getSomeGeneralJob", zap.String("time", time.Now().String()), zap.Bool("sleep", sleep))
 			}
 		case <-ticker.C:
 			sleep := false
 			for !sleep {
-				job, _ := d.getOneGeneralJob(sess)
-				if job != nil {
-					d.runningReorgJobMap[int(job.ID)] = struct{}{}
-					go func() {
-						wk, _ := d.gwp.get()
-						defer delete(d.runningReorgJobMap, int(job.ID))
-						wk.handleDDLJob(d.ddlCtx, job, d.ddlJobCh)
-						d.gwp.put(wk)
-					}()
+				//log.Warn("here")
+				jobs, err := d.getSomeGeneralJob(sess)
+				if err != nil {
+					log.Warn("err", zap.Error(err))
+				}
+				if jobs != nil {
+					for _, jobb := range jobs {
+						job := jobb
+						d.runningReorgJobMapMu.Lock()
+						d.runningReorgJobMap[int(job.ID)] = struct{}{}
+						d.runningReorgJobMapMu.Unlock()
+						go func() {
+							defer func() {
+								d.runningReorgJobMapMu.Lock()
+								delete(d.runningReorgJobMap, int(job.ID))
+								d.runningReorgJobMapMu.Unlock()
+							}()
+							wk, _ := d.gwp.get()
+							wk.handleDDLJob(d.ddlCtx, &job, d.ddlJobCh)
+							d.gwp.put(wk)
+						}()
+					}
 				}
 				job2, _ := d.getOneReorgJob(sess)
 				if job2 != nil {
+					d.runningReorgJobMapMu.Lock()
 					d.runningReorgJobMap[int(job2.ID)] = struct{}{}
+					d.runningReorgJobMapMu.Unlock()
 					go func() {
-						defer delete(d.runningReorgJobMap, int(job2.ID))
+						defer func() {
+							d.runningReorgJobMapMu.Lock()
+							delete(d.runningReorgJobMap, int(job2.ID))
+							d.runningReorgJobMapMu.Unlock()
+						}()
 						wk, _ := d.wp.get()
 						wk.handleDDLJob(d.ddlCtx, job2, d.ddlJobCh)
 						d.wp.put(wk)
 					}()
 				}
-				if job == nil && job2 == nil {
+				if jobs == nil && job2 == nil {
 					sleep = true
 				}
 			}
@@ -248,15 +302,24 @@ func (d *ddl) startDispatchLoop() {
 			if !ok {
 				panic("111")
 			}
-			job, _ := d.getOneGeneralJob(sess)
-			if job != nil {
-				d.runningReorgJobMap[int(job.ID)] = struct{}{}
-				go func() {
-					defer delete(d.runningReorgJobMap, int(job.ID))
-					wk, _ := d.gwp.get()
-					wk.handleDDLJob(d.ddlCtx, job, d.ddlJobCh)
-					d.gwp.put(wk)
-				}()
+			jobs, _ := d.getSomeGeneralJob(sess)
+			if jobs != nil {
+				for _, jobb := range jobs {
+					job := jobb
+					d.runningReorgJobMapMu.Lock()
+					d.runningReorgJobMap[int(job.ID)] = struct{}{}
+					d.runningReorgJobMapMu.Unlock()
+					go func() {
+						defer func() {
+							d.runningReorgJobMapMu.Lock()
+							delete(d.runningReorgJobMap, int(job.ID))
+							d.runningReorgJobMapMu.Unlock()
+						}()
+						wk, _ := d.gwp.get()
+						wk.handleDDLJob(d.ddlCtx, &job, d.ddlJobCh)
+						d.gwp.put(wk)
+					}()
+				}
 			}
 		case _, ok = <-notifyDDLJobByEtcdChReorg:
 			if !ok {
@@ -264,9 +327,15 @@ func (d *ddl) startDispatchLoop() {
 			}
 			job, _ := d.getOneReorgJob(sess)
 			if job != nil {
+				d.runningReorgJobMapMu.Lock()
 				d.runningReorgJobMap[int(job.ID)] = struct{}{}
+				d.runningReorgJobMapMu.Unlock()
 				go func() {
-					defer delete(d.runningReorgJobMap, int(job.ID))
+					defer func() {
+						d.runningReorgJobMapMu.Lock()
+						delete(d.runningReorgJobMap, int(job.ID))
+						d.runningReorgJobMapMu.Unlock()
+					}()
 					wk, _ := d.wp.get()
 					wk.handleDDLJob(d.ddlCtx, job, d.ddlJobCh)
 					d.wp.put(wk)
@@ -279,19 +348,43 @@ func (d *ddl) startDispatchLoop() {
 	}
 }
 
+func (d *ddl) addDDLJobs(job []*model.Job) error {
+	sql := "insert into mysql.tidb_ddl_job values"
+	for i, job := range job {
+		b, err := job.Encode(true)
+		if err != nil {
+			return err
+		}
+		if i != 0 {
+			sql += ","
+		}
+		sql += fmt.Sprintf("(%d, %t, %d, %d, 0x%x, %d, %t)", job.ID, admin.MayNeedBackfill(job.Type), job.SchemaID, job.TableID, b, 0, job.Type == model.ActionDropSchema)
+	}
+	ts := time.Now()
+	sess, _ := d.sessPool.get()
+	defer d.sessPool.put(sess)
+	_, err := sess.(sqlexec.SQLExecutor).ExecuteInternal(context.Background(), sql)
+	if err != nil {
+		return err
+	}
+	log.Warn("add ddl job to table", zap.String("sql", sql), zap.String("time", time.Since(ts).String()))
+	return nil
+}
+
 func (d *ddl) addDDLJob(job *model.Job) error {
 	b, err := job.Encode(true)
 	if err != nil {
 		return err
 	}
+	ts := time.Now()
 	sql := fmt.Sprintf("insert into mysql.tidb_ddl_job values(%d, %t, %d, %d, 0x%x, %d, %t)", job.ID, admin.MayNeedBackfill(job.Type), job.SchemaID, job.TableID, b, 0, job.Type == model.ActionDropSchema)
-	log.Warn("add ddl job to table", zap.String("sql", sql))
 	sess, _ := d.sessPool.get()
 	defer d.sessPool.put(sess)
 	_, err = sess.(sqlexec.SQLExecutor).ExecuteInternal(context.Background(), sql)
 	if err != nil {
 		return err
 	}
+	log.Warn("add ddl job to table", zap.String("sql", sql), zap.String("time", time.Since(ts).String()))
 	return nil
 }
 
@@ -309,6 +402,7 @@ func (w *worker) updateDDLJobNew(job *model.Job, updateRawArgs bool) error {
 	if err != nil {
 		return err
 	}
+	log.Warn("update ddl job", zap.String("job", job.String()))
 	sql := fmt.Sprintf("update mysql.tidb_ddl_job set job_meta = 0x%x where job_id = %d", b, job.ID)
 	_, err = w.sessForJob.(sqlexec.SQLExecutor).ExecuteInternal(context.Background(), sql)
 	if err != nil {

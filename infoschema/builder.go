@@ -17,8 +17,11 @@ package infoschema
 import (
 	"context"
 	"fmt"
+	"github.com/pingcap/log"
+	"go.uber.org/zap"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/pingcap/errors"
 	"github.com/pingcap/failpoint"
@@ -46,6 +49,8 @@ type Builder struct {
 // ApplyDiff applies SchemaDiff to the new InfoSchema.
 // Return the detail updated table IDs that are produced from SchemaDiff and an error.
 func (b *Builder) ApplyDiff(m *meta.Meta, diff *model.SchemaDiff) ([]int64, error) {
+	start := time.Now()
+	log.Warn("in ApplyDiff cp1", zap.String("time", time.Since(start).String()))
 	b.is.schemaMetaVersion = diff.Version
 	switch diff.Type {
 	case model.ActionCreateSchema:
@@ -61,12 +66,14 @@ func (b *Builder) ApplyDiff(m *meta.Meta, diff *model.SchemaDiff) ([]int64, erro
 	case model.ActionAlterPlacementPolicy:
 		return b.applyAlterPolicy(m, diff)
 	}
+	log.Warn("in ApplyDiff cp2", zap.String("time", time.Since(start).String()))
 	roDBInfo, ok := b.is.SchemaByID(diff.SchemaID)
 	if !ok {
 		return nil, ErrDatabaseNotExists.GenWithStackByArgs(
 			fmt.Sprintf("(Schema ID %d)", diff.SchemaID),
 		)
 	}
+	log.Warn("in ApplyDiff cp3", zap.String("time", time.Since(start).String()))
 	var oldTableID, newTableID int64
 	switch diff.Type {
 	case model.ActionCreateTable, model.ActionCreateSequence, model.ActionRecoverTable:
@@ -81,29 +88,31 @@ func (b *Builder) ApplyDiff(m *meta.Meta, diff *model.SchemaDiff) ([]int64, erro
 		newTableID = diff.TableID
 	}
 	// handle placement rule cache
-	switch diff.Type {
-	case model.ActionCreateTable:
-		if err := b.applyPlacementUpdate(placement.GroupID(newTableID)); err != nil {
-			return nil, errors.Trace(err)
-		}
-	case model.ActionDropTable:
-		b.applyPlacementDelete(placement.GroupID(oldTableID))
-	case model.ActionTruncateTable:
-		b.applyPlacementDelete(placement.GroupID(oldTableID))
-		if err := b.applyPlacementUpdate(placement.GroupID(newTableID)); err != nil {
-			return nil, errors.Trace(err)
-		}
-	case model.ActionRecoverTable:
-		if err := b.applyPlacementUpdate(placement.GroupID(newTableID)); err != nil {
-			return nil, errors.Trace(err)
-		}
-	case model.ActionExchangeTablePartition:
-		if err := b.applyPlacementUpdate(placement.GroupID(newTableID)); err != nil {
-			return nil, errors.Trace(err)
-		}
-	}
+	//switch diff.Type {
+	//case model.ActionCreateTable:
+	//	if err := b.applyPlacementUpdate(placement.GroupID(newTableID)); err != nil {
+	//		return nil, errors.Trace(err)
+	//	}
+	//case model.ActionDropTable:
+	//	b.applyPlacementDelete(placement.GroupID(oldTableID))
+	//case model.ActionTruncateTable:
+	//	b.applyPlacementDelete(placement.GroupID(oldTableID))
+	//	if err := b.applyPlacementUpdate(placement.GroupID(newTableID)); err != nil {
+	//		return nil, errors.Trace(err)
+	//	}
+	//case model.ActionRecoverTable:
+	//	if err := b.applyPlacementUpdate(placement.GroupID(newTableID)); err != nil {
+	//		return nil, errors.Trace(err)
+	//	}
+	//case model.ActionExchangeTablePartition:
+	//	if err := b.applyPlacementUpdate(placement.GroupID(newTableID)); err != nil {
+	//		return nil, errors.Trace(err)
+	//	}
+	//}
 	dbInfo := b.copySchemaTables(roDBInfo.Name.L)
+	log.Warn("in ApplyDiff cp4", zap.String("time", time.Since(start).String()))
 	b.copySortedTables(oldTableID, newTableID)
+	log.Warn("in ApplyDiff cp5", zap.String("time", time.Since(start).String()))
 
 	tblIDs := make([]int64, 0, 2)
 	// We try to reuse the old allocator, so the cached auto ID can be reused.
@@ -141,6 +150,7 @@ func (b *Builder) ApplyDiff(m *meta.Meta, diff *model.SchemaDiff) ([]int64, erro
 			tblIDs = tmpIDs
 		}
 	}
+	log.Warn("in ApplyDiff cp6", zap.String("time", time.Since(start).String()))
 	if tableIDIsValid(newTableID) {
 		// All types except DropTableOrView.
 		var err error
@@ -149,6 +159,7 @@ func (b *Builder) ApplyDiff(m *meta.Meta, diff *model.SchemaDiff) ([]int64, erro
 			return nil, errors.Trace(err)
 		}
 	}
+	log.Warn("in ApplyDiff cp7", zap.String("time", time.Since(start).String()))
 	if diff.AffectedOpts != nil {
 		for _, opt := range diff.AffectedOpts {
 			switch diff.Type {
@@ -361,7 +372,10 @@ func (b *Builder) copySortedTablesBucket(bucketIdx int) {
 }
 
 func (b *Builder) applyCreateTable(m *meta.Meta, dbInfo *model.DBInfo, tableID int64, allocs autoid.Allocators, tp model.ActionType, affected []int64) ([]int64, error) {
+	start := time.Now()
+	log.Warn("in applyCreateTable ccp1", zap.String("time", time.Since(start).String()))
 	tblInfo, err := m.GetTable(dbInfo.ID, tableID)
+	log.Warn("in applyCreateTable ccp2", zap.String("time", time.Since(start).String()))
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -392,6 +406,7 @@ func (b *Builder) applyCreateTable(m *meta.Meta, dbInfo *model.DBInfo, tableID i
 	if tp != model.ActionTruncateTablePartition {
 		affected = appendAffectedIDs(affected, tblInfo)
 	}
+	log.Warn("in applyCreateTable ccp3", zap.String("time", time.Since(start).String()))
 
 	// Failpoint check whether tableInfo should be added to repairInfo.
 	// Typically used in repair table test to load mock `bad` tableInfo into repairInfo.
@@ -429,7 +444,9 @@ func (b *Builder) applyCreateTable(m *meta.Meta, dbInfo *model.DBInfo, tableID i
 			}
 		}
 	}
+	log.Warn("in applyCreateTable ccp4", zap.String("time", time.Since(start).String()))
 	tbl, err := tables.TableFromMeta(allocs, tblInfo)
+	log.Warn("in applyCreateTable ccp5", zap.String("time", time.Since(start).String()))
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -440,11 +457,13 @@ func (b *Builder) applyCreateTable(m *meta.Meta, dbInfo *model.DBInfo, tableID i
 	sortedTbls = append(sortedTbls, tbl)
 	sort.Sort(sortedTbls)
 	b.is.sortedTablesBuckets[bucketIdx] = sortedTbls
+	log.Warn("in applyCreateTable ccp6", zap.String("time", time.Since(start).String()))
 
 	newTbl, ok := b.is.TableByID(tableID)
 	if ok {
 		dbInfo.Tables = append(dbInfo.Tables, newTbl.Meta())
 	}
+	log.Warn("in applyCreateTable ccp7", zap.String("time", time.Since(start).String()))
 	return affected, nil
 }
 

@@ -60,7 +60,7 @@ const (
 var (
 	// CheckVersFirstWaitTime is a waitting time before the owner checks all the servers of the schema version,
 	// and it's an exported variable for testing.
-	CheckVersFirstWaitTime = 50 * time.Millisecond
+	CheckVersFirstWaitTime = 30 * time.Millisecond
 	// SyncerSessionTTL is the etcd session's TTL in seconds.
 	// and it's an exported variable for testing.
 	SyncerSessionTTL = 90

@@ -321,7 +321,7 @@ func seek(t table.PhysicalTable, ctx sessionctx.Context, h kv.Handle) (kv.Handle
 		return nil, false, err
 	}
 	if !iter.Valid() || !iter.Key().HasPrefix(recordPrefix) {
-		// No more records in the table, skip to the end.
+		// No more records in the table, skip to the End.
 		return nil, false, nil
 	}
 	handle, err := tablecodec.DecodeRowKey(iter.Key())

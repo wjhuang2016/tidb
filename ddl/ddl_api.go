@@ -21,6 +21,7 @@ package ddl
 import (
 	"context"
 	"fmt"
+	"github.com/pingcap/log"
 	"math"
 	"strconv"
 	"strings"
@@ -1920,6 +1921,7 @@ func (d *ddl) CreateTableWithInfo(
 	onExist OnExist,
 	tryRetainID bool,
 ) (err error) {
+	start := time.Now()
 	is := d.GetInfoSchemaWithInterceptor(ctx)
 	schema, ok := is.SchemaByName(dbName)
 	if !ok {
@@ -1950,9 +1952,11 @@ func (d *ddl) CreateTableWithInfo(
 	}
 
 	// FIXME: Implement `tryRetainID`
+	start2 := time.Now()
 	if err := d.assignTableID(tbInfo); err != nil {
 		return errors.Trace(err)
 	}
+	log.Warn("assignTableID", zap.String("time3", time.Since(start2).String()))
 
 	if tbInfo.Partition != nil {
 		if err := d.assignPartitionIDs(tbInfo.Partition.Definitions); err != nil {
@@ -1984,6 +1988,8 @@ func (d *ddl) CreateTableWithInfo(
 		BinlogInfo: &model.HistoryInfo{},
 		Args:       args,
 	}
+
+	log.Warn("enter doDDLJob", zap.String("time2", time.Since(start).String()))
 
 	err = d.doDDLJob(ctx, job)
 	if err != nil {

@@ -175,7 +175,7 @@ func (s *testIntegrationSuite3) TestCreateTableWithPartition(c *C) {
 	sql9 := `create TABLE t9 (
 	col1 int
 	)
-	partition by range( case when col1 > 0 then 10 else 20 end ) (
+	partition by range( case when col1 > 0 then 10 else 20 End ) (
 		partition p0 values less than (2),
 		partition p1 values less than (6)
 	);`

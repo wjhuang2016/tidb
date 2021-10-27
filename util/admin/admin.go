@@ -220,6 +220,7 @@ func GetDDLJobsNew(sess sessionctx.Context) ([]*model.Job, error) {
 	}
 	var rows []chunk.Row
 	rows, err = sqlexec.DrainRecordSet(context.TODO(), rs, 8)
+	rs.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -540,6 +541,7 @@ func GetDDLReorgHandle(job *model.Job, sess sessionctx.Context) (element *meta.E
 	}
 	var rows []chunk.Row
 	rows, err = sqlexec.DrainRecordSet(context.TODO(), rs, 8)
+	rs.Close()
 	if err != nil {
 		return nil, nil, nil, 0, err
 	}
@@ -555,6 +557,7 @@ func GetDDLReorgHandle(job *model.Job, sess sessionctx.Context) (element *meta.E
 	}
 	var rows2 []chunk.Row
 	rows2, err = sqlexec.DrainRecordSet(context.TODO(), rs, 8)
+	rs.Close()
 	if err != nil {
 		return nil, nil, nil, 0, err
 	}

@@ -52,7 +52,7 @@ import (
 )
 
 // adjustColumnInfoInAddColumn is used to set the correct position of column info when adding column.
-// 1. The added column was append at the end of tblInfo.Columns, due to ddl state was not public then.
+// 1. The added column was append at the End of tblInfo.Columns, due to ddl state was not public then.
 //    It should be moved to the correct position when the ddl state to be changed to public.
 // 2. The offset of column should also to be set to the right value.
 func adjustColumnInfoInAddColumn(tblInfo *model.TableInfo, offset int) {
@@ -83,7 +83,7 @@ func adjustColumnInfoInAddColumn(tblInfo *model.TableInfo, offset int) {
 
 // adjustColumnInfoInDropColumn is used to set the correct position of column info when dropping column.
 // 1. The offset of column should to be set to the last of the columns.
-// 2. The dropped column is moved to the end of tblInfo.Columns, due to it was not public any more.
+// 2. The dropped column is moved to the End of tblInfo.Columns, due to it was not public any more.
 func adjustColumnInfoInDropColumn(tblInfo *model.TableInfo, offset int) {
 	oldCols := tblInfo.Columns
 	// Adjust column offset.
@@ -139,7 +139,7 @@ func createColumnInfo(tblInfo *model.TableInfo, colInfo *model.ColumnInfo, pos *
 	// So that we can use origin column offset to get value from row.
 	colInfo.Offset = len(cols)
 
-	// Append the column info to the end of the tblInfo.Columns.
+	// Append the column info to the End of the tblInfo.Columns.
 	// It will reorder to the right offset in "Columns" when it state change to public.
 	tblInfo.Columns = append(cols, colInfo)
 	return colInfo, pos, offset, nil
@@ -174,7 +174,7 @@ func checkAddColumn(t *meta.Meta, job *model.Job) (*model.TableInfo, *model.Colu
 func onAddColumn(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, err error) {
 	// Handle the rolling back job.
 	if job.IsRollingback() {
-		ver, err = onDropColumn(t, job)
+		ver, err = onDropColumn(t, job, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -213,7 +213,7 @@ func onAddColumn(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, err error)
 	case model.StateNone:
 		// none -> delete only
 		columnInfo.State = model.StateDeleteOnly
-		ver, err = updateVersionAndTableInfoWithCheck(t, job, tblInfo, originalState != columnInfo.State)
+		ver, err = updateVersionAndTableInfoWithCheck(t, job, tblInfo, originalState != columnInfo.State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -221,7 +221,7 @@ func onAddColumn(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, err error)
 	case model.StateDeleteOnly:
 		// delete only -> write only
 		columnInfo.State = model.StateWriteOnly
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != columnInfo.State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != columnInfo.State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -230,7 +230,7 @@ func onAddColumn(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, err error)
 	case model.StateWriteOnly:
 		// write only -> reorganization
 		columnInfo.State = model.StateWriteReorganization
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != columnInfo.State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != columnInfo.State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -241,7 +241,7 @@ func onAddColumn(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, err error)
 		// Adjust table column offset.
 		adjustColumnInfoInAddColumn(tblInfo, offset)
 		columnInfo.State = model.StatePublic
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != columnInfo.State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != columnInfo.State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -315,7 +315,7 @@ func setIndicesState(indexInfos []*model.IndexInfo, state model.SchemaState) {
 func onAddColumns(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, err error) {
 	// Handle the rolling back job.
 	if job.IsRollingback() {
-		ver, err = onDropColumns(t, job)
+		ver, err = onDropColumns(t, job, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -361,7 +361,7 @@ func onAddColumns(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, err error
 	case model.StateNone:
 		// none -> delete only
 		setColumnsState(columnInfos, model.StateDeleteOnly)
-		ver, err = updateVersionAndTableInfoWithCheck(t, job, tblInfo, originalState != columnInfos[0].State)
+		ver, err = updateVersionAndTableInfoWithCheck(t, job, tblInfo, originalState != columnInfos[0].State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -369,7 +369,7 @@ func onAddColumns(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, err error
 	case model.StateDeleteOnly:
 		// delete only -> write only
 		setColumnsState(columnInfos, model.StateWriteOnly)
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != columnInfos[0].State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != columnInfos[0].State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -377,7 +377,7 @@ func onAddColumns(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, err error
 	case model.StateWriteOnly:
 		// write only -> reorganization
 		setColumnsState(columnInfos, model.StateWriteReorganization)
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != columnInfos[0].State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != columnInfos[0].State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -405,7 +405,7 @@ func onAddColumns(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, err error
 			adjustColumnInfoInAddColumn(tblInfo, offsets[i])
 		}
 		setColumnsState(columnInfos, model.StatePublic)
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != columnInfos[0].State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != columnInfos[0].State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -419,7 +419,7 @@ func onAddColumns(d *ddlCtx, t *meta.Meta, job *model.Job) (ver int64, err error
 	return ver, errors.Trace(err)
 }
 
-func onDropColumns(t *meta.Meta, job *model.Job) (ver int64, _ error) {
+func onDropColumns(t *meta.Meta, job *model.Job, d *ddlCtx) (ver int64, _ error) {
 	tblInfo, colInfos, delCount, idxInfos, err := checkDropColumns(t, job)
 	if err != nil {
 		return ver, errors.Trace(err)
@@ -441,7 +441,7 @@ func onDropColumns(t *meta.Meta, job *model.Job) (ver int64, _ error) {
 				return ver, errors.Trace(err)
 			}
 		}
-		ver, err = updateVersionAndTableInfoWithCheck(t, job, tblInfo, originalState != colInfos[0].State)
+		ver, err = updateVersionAndTableInfoWithCheck(t, job, tblInfo, originalState != colInfos[0].State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -450,7 +450,7 @@ func onDropColumns(t *meta.Meta, job *model.Job) (ver int64, _ error) {
 		// write only -> delete only
 		setColumnsState(colInfos, model.StateDeleteOnly)
 		setIndicesState(idxInfos, model.StateDeleteOnly)
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != colInfos[0].State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != colInfos[0].State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -459,7 +459,7 @@ func onDropColumns(t *meta.Meta, job *model.Job) (ver int64, _ error) {
 		// delete only -> reorganization
 		setColumnsState(colInfos, model.StateDeleteReorganization)
 		setIndicesState(idxInfos, model.StateDeleteReorganization)
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != colInfos[0].State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != colInfos[0].State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -480,7 +480,7 @@ func onDropColumns(t *meta.Meta, job *model.Job) (ver int64, _ error) {
 		indexIDs := indexInfosToIDList(idxInfos)
 		tblInfo.Columns = tblInfo.Columns[:len(tblInfo.Columns)-delCount]
 		setColumnsState(colInfos, model.StateNone)
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != colInfos[0].State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != colInfos[0].State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -564,7 +564,7 @@ func checkDropColumnForStatePublic(tblInfo *model.TableInfo, colInfo *model.Colu
 	return nil
 }
 
-func onDropColumn(t *meta.Meta, job *model.Job) (ver int64, _ error) {
+func onDropColumn(t *meta.Meta, job *model.Job, d *ddlCtx) (ver int64, _ error) {
 	tblInfo, colInfo, idxInfos, err := checkDropColumn(t, job)
 	if err != nil {
 		return ver, errors.Trace(err)
@@ -580,7 +580,7 @@ func onDropColumn(t *meta.Meta, job *model.Job) (ver int64, _ error) {
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
-		ver, err = updateVersionAndTableInfoWithCheck(t, job, tblInfo, originalState != colInfo.State)
+		ver, err = updateVersionAndTableInfoWithCheck(t, job, tblInfo, originalState != colInfo.State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -589,7 +589,7 @@ func onDropColumn(t *meta.Meta, job *model.Job) (ver int64, _ error) {
 		// write only -> delete only
 		colInfo.State = model.StateDeleteOnly
 		setIndicesState(idxInfos, model.StateDeleteOnly)
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != colInfo.State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != colInfo.State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -598,7 +598,7 @@ func onDropColumn(t *meta.Meta, job *model.Job) (ver int64, _ error) {
 		// delete only -> reorganization
 		colInfo.State = model.StateDeleteReorganization
 		setIndicesState(idxInfos, model.StateDeleteReorganization)
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != colInfo.State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != colInfo.State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -619,7 +619,7 @@ func onDropColumn(t *meta.Meta, job *model.Job) (ver int64, _ error) {
 		indexIDs := indexInfosToIDList(idxInfos)
 		tblInfo.Columns = tblInfo.Columns[:len(tblInfo.Columns)-1]
 		colInfo.State = model.StateNone
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != colInfo.State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != colInfo.State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -674,7 +674,7 @@ func checkDropColumn(t *meta.Meta, job *model.Job) (*model.TableInfo, *model.Col
 	return tblInfo, colInfo, idxInfos, nil
 }
 
-func onSetDefaultValue(t *meta.Meta, job *model.Job) (ver int64, _ error) {
+func onSetDefaultValue(t *meta.Meta, job *model.Job, d *ddlCtx) (ver int64, _ error) {
 	newCol := &model.ColumnInfo{}
 	err := job.DecodeArgs(newCol)
 	if err != nil {
@@ -682,7 +682,7 @@ func onSetDefaultValue(t *meta.Meta, job *model.Job) (ver int64, _ error) {
 		return ver, errors.Trace(err)
 	}
 
-	return updateColumnDefaultValue(t, job, newCol, &newCol.Name)
+	return updateColumnDefaultValue(t, job, newCol, &newCol.Name, d)
 }
 
 func needChangeColumnData(oldCol, newCol *model.ColumnInfo) bool {
@@ -846,10 +846,10 @@ func (w *worker) onModifyColumn(d *ddlCtx, t *meta.Meta, job *model.Job) (ver in
 	if job.IsRollingback() {
 		// For those column-type-change jobs which don't reorg the data.
 		if !needChangeColumnData(oldCol, jobParam.newCol) {
-			return rollbackModifyColumnJob(t, tblInfo, job, oldCol, jobParam.modifyColumnTp)
+			return rollbackModifyColumnJob(t, tblInfo, job, oldCol, jobParam.modifyColumnTp, d)
 		}
 		// For those column-type-change jobs which reorg the data.
-		return rollbackModifyColumnJobWithData(t, tblInfo, job, oldCol, jobParam)
+		return rollbackModifyColumnJobWithData(t, tblInfo, job, oldCol, jobParam, d)
 	}
 
 	// If we want to rename the column name, we need to check whether it already exists.
@@ -935,7 +935,7 @@ func (w *worker) onModifyColumn(d *ddlCtx, t *meta.Meta, job *model.Job) (ver in
 }
 
 // rollbackModifyColumnJobWithData is used to rollback modify-column job which need to reorg the data.
-func rollbackModifyColumnJobWithData(t *meta.Meta, tblInfo *model.TableInfo, job *model.Job, oldCol *model.ColumnInfo, jobParam *modifyColumnJobParameter) (ver int64, err error) {
+func rollbackModifyColumnJobWithData(t *meta.Meta, tblInfo *model.TableInfo, job *model.Job, oldCol *model.ColumnInfo, jobParam *modifyColumnJobParameter, d *ddlCtx) (ver int64, err error) {
 	// If the not-null change is included, we should clean the flag info in oldCol.
 	if jobParam.modifyColumnTp == mysql.TypeNull {
 		// Reset NotNullFlag flag.
@@ -949,7 +949,7 @@ func rollbackModifyColumnJobWithData(t *meta.Meta, tblInfo *model.TableInfo, job
 		tblInfo.Columns = tblInfo.Columns[:len(tblInfo.Columns)-1]
 		tblInfo.Indices = tblInfo.Indices[:len(tblInfo.Indices)-len(jobParam.changingIdxs)]
 	}
-	ver, err = updateVersionAndTableInfoWithCheck(t, job, tblInfo, true)
+	ver, err = updateVersionAndTableInfoWithCheck(t, job, tblInfo, true, d)
 	if err != nil {
 		return ver, errors.Trace(err)
 	}
@@ -1005,7 +1005,7 @@ func (w *worker) doModifyColumnTypeWithData(
 				}
 			}
 		})
-		ver, err = updateVersionAndTableInfoWithCheck(t, job, tblInfo, originalState != changingCol.State)
+		ver, err = updateVersionAndTableInfoWithCheck(t, job, tblInfo, originalState != changingCol.State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -1028,7 +1028,7 @@ func (w *worker) doModifyColumnTypeWithData(
 		}
 		// delete only -> write only
 		updateChangingInfo(changingCol, changingIdxs, model.StateWriteOnly)
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != changingCol.State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != changingCol.State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -1036,7 +1036,7 @@ func (w *worker) doModifyColumnTypeWithData(
 	case model.StateWriteOnly:
 		// write only -> reorganization
 		updateChangingInfo(changingCol, changingIdxs, model.StateWriteReorganization)
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != changingCol.State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != changingCol.State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -1125,7 +1125,7 @@ func (w *worker) doModifyColumnTypeWithData(
 			return ver, errors.Trace(err)
 		}
 		updateChangingInfo(changingCol, changingIdxs, model.StatePublic)
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != changingCol.State)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, originalState != changingCol.State, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}
@@ -1183,7 +1183,7 @@ func (w *worker) updateColumnAndIndexes(t table.Table, oldCol, col *model.Column
 		}
 	}
 
-	// Get the original start handle and end handle.
+	// Get the original start handle and End handle.
 	currentVer, err := getValidCurrentVersion(reorgInfo.d.store)
 	if err != nil {
 		return errors.Trace(err)
@@ -1492,7 +1492,7 @@ func (w *worker) doModifyColumn(
 		}
 		// The column should get into prevent null status first.
 		if noPreventNullFlag {
-			return updateVersionAndTableInfoWithCheck(t, job, tblInfo, true)
+			return updateVersionAndTableInfoWithCheck(t, job, tblInfo, true, d)
 		}
 	}
 
@@ -1500,7 +1500,7 @@ func (w *worker) doModifyColumn(
 		return ver, errors.Trace(err)
 	}
 
-	ver, err := updateVersionAndTableInfoWithCheck(t, job, tblInfo, true)
+	ver, err := updateVersionAndTableInfoWithCheck(t, job, tblInfo, true, d)
 	if err != nil {
 		// Modified the type definition of 'null' to 'not null' before this, so rollBack the job when an error occurs.
 		job.State = model.JobStateRollingback
@@ -1699,7 +1699,7 @@ func checkForNullValue(ctx context.Context, sctx sessionctx.Context, isDataTrunc
 	return nil
 }
 
-func updateColumnDefaultValue(t *meta.Meta, job *model.Job, newCol *model.ColumnInfo, oldColName *model.CIStr) (ver int64, _ error) {
+func updateColumnDefaultValue(t *meta.Meta, job *model.Job, newCol *model.ColumnInfo, oldColName *model.CIStr, d *ddlCtx) (ver int64, _ error) {
 	tblInfo, err := getTableInfoAndCancelFaultJob(t, job, job.SchemaID)
 	if err != nil {
 		return ver, errors.Trace(err)
@@ -1714,7 +1714,7 @@ func updateColumnDefaultValue(t *meta.Meta, job *model.Job, newCol *model.Column
 	oldCol.DefaultValueBit = newCol.DefaultValueBit
 	oldCol.Flag = newCol.Flag
 
-	ver, err = updateVersionAndTableInfo(t, job, tblInfo, true)
+	ver, err = updateVersionAndTableInfo(t, job, tblInfo, true, d)
 	if err != nil {
 		job.State = model.JobStateCancelled
 		return ver, errors.Trace(err)
@@ -1782,14 +1782,14 @@ func checkAddColumnTooManyColumns(colNum int) error {
 }
 
 // rollbackModifyColumnJob rollbacks the job when an error occurs.
-func rollbackModifyColumnJob(t *meta.Meta, tblInfo *model.TableInfo, job *model.Job, oldCol *model.ColumnInfo, modifyColumnTp byte) (ver int64, _ error) {
+func rollbackModifyColumnJob(t *meta.Meta, tblInfo *model.TableInfo, job *model.Job, oldCol *model.ColumnInfo, modifyColumnTp byte, d *ddlCtx) (ver int64, _ error) {
 	var err error
 	if modifyColumnTp == mysql.TypeNull {
 		// field NotNullFlag flag reset.
 		tblInfo.Columns[oldCol.Offset].Flag = oldCol.Flag &^ mysql.NotNullFlag
 		// field PreventNullInsertFlag flag reset.
 		tblInfo.Columns[oldCol.Offset].Flag = oldCol.Flag &^ mysql.PreventNullInsertFlag
-		ver, err = updateVersionAndTableInfo(t, job, tblInfo, true)
+		ver, err = updateVersionAndTableInfo(t, job, tblInfo, true, d)
 		if err != nil {
 			return ver, errors.Trace(err)
 		}

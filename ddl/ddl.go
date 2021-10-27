@@ -22,6 +22,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/pingcap/log"
 	"github.com/pingcap/tidb/util/admin"
 	"sync"
 	"time"
@@ -92,6 +93,9 @@ var (
 	// region.
 	EnableSplitTableRegion = uint32(0)
 )
+
+var globalAssignTableIDMutex sync.Mutex
+var globalJobIdMutex sync.Mutex
 
 // DDL is responsible for updating schema in data store and maintaining in-memory InfoSchema cache.
 type DDL interface {
@@ -199,9 +203,11 @@ type ddl struct {
 	gwp         *workerPool
 	sessPool    *sessionPool
 	delRangeMgr delRangeManager
+	sessForAddDDL sessionctx.Context
 
 	ddlJobCh chan struct{}
 	runningReorgJobMap map[int]struct{}
+	runningReorgJobMapMu sync.RWMutex
 }
 
 // ddlCtx is the context when we use worker to handle DDL jobs.
@@ -356,6 +362,32 @@ func (d *ddl) Start(ctxPool *pools.ResourcePool) error {
 	logutil.BgLogger().Info("[ddl] start DDL", zap.String("ID", d.uuid), zap.Bool("runWorker", RunWorker))
 	d.ctx, d.cancel = context.WithCancel(d.ctx)
 
+	meta.Sva.Mu.Lock()
+	tia.mu.Lock()
+	err := kv.RunInNewTxn(context.Background(), d.store, true, func(ctx context.Context, txn kv.Transaction) error {
+		t := meta.NewMeta(txn)
+		ver, err := t.GetMaxSchemaVersion()
+		if err != nil {
+			return err
+		}
+		meta.Sva.Curr = ver
+		meta.Sva.End = ver
+		id, err := t.GetGlobalID()
+		if err != nil {
+			return err
+		}
+		tia.curr = id
+		tia.end = id
+		return nil
+	})
+	if err != nil {
+		meta.Sva.Mu.Unlock()
+		tia.mu.Unlock()
+		return err
+	}
+	meta.Sva.Mu.Unlock()
+	tia.mu.Unlock()
+
 	d.wg.Add(1)
 	go d.limitDDLJobs()
 
@@ -390,7 +422,8 @@ func (d *ddl) Start(ctxPool *pools.ResourcePool) error {
 			return wk, nil
 		}
 		d.wp = newDDLWorkerPool(pools.NewResourcePool(sysFac, 10, 10, 3*time.Minute))
-		d.gwp = newDDLWorkerPool(pools.NewResourcePool(sysFac2, 50, 50, 3*time.Minute))
+		d.gwp = newDDLWorkerPool(pools.NewResourcePool(sysFac2, 300, 300, 0))
+		d.sessForAddDDL, _ = d.sessPool.get()
 
 		go d.startDispatchLoop()
 
@@ -418,6 +451,8 @@ func (d *ddl) close() {
 	d.wg.Wait()
 	d.ownerManager.Cancel()
 	d.schemaSyncer.Close()
+
+	d.sessPool.put(d.sessForAddDDL)
 
 	if d.wp != nil {
 		d.wp.close()
@@ -456,20 +491,55 @@ func (d *ddl) GetInfoSchemaWithInterceptor(ctx sessionctx.Context) infoschema.In
 	return d.mu.interceptor.OnGetInfoSchema(ctx, is)
 }
 
+type tableIDAlloc struct {
+	mu sync.Mutex
+	curr int64
+	end int64
+}
+
+var tia tableIDAlloc
+
 func (d *ddl) genGlobalIDs(count int) ([]int64, error) {
 	var ret []int64
-	err := kv.RunInNewTxn(context.Background(), d.store, true, func(ctx context.Context, txn kv.Transaction) error {
-		failpoint.Inject("mockGenGlobalIDFail", func(val failpoint.Value) {
-			if val.(bool) {
-				failpoint.Return(errors.New("gofail genGlobalIDs error"))
-			}
-		})
+	var err error
+	start := time.Now()
+	start2 := time.Now()
 
-		m := meta.NewMeta(txn)
-		var err error
-		ret, err = m.GenGlobalIDs(count)
-		return err
-	})
+	tia.mu.Lock()
+	if tia.curr + int64(count) >= tia.end {
+		err = kv.RunInNewTxn(context.TODO(), d.store, true, func(ctx context.Context, txn kv.Transaction) error {
+			mt := meta.NewMeta(txn)
+			_, err = mt.GenGlobalIDs(1000)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
+			tia.mu.Unlock()
+			return []int64{}, err
+		}
+		tia.end += 1000
+	}
+	for i := 0; i < count; i++ {
+		tia.curr+=1
+		ret = append(ret, tia.curr)
+	}
+	tia.mu.Unlock()
+
+	//err := kv.RunInNewTxn(context.Background(), d.store, true, func(ctx context.Context, txn kv.Transaction) error {
+	//	failpoint.Inject("mockGenGlobalIDFail", func(val failpoint.Value) {
+	//		if val.(bool) {
+	//			failpoint.Return(errors.New("gofail genGlobalIDs error"))
+	//		}
+	//	})
+	//
+	//	m := meta.NewMeta(txn)
+	//	var err error
+	//	ret, err = m.GenGlobalIDs(count)
+	//	return err
+	//})
+	log.Warn("genGlobalIDs", zap.String("time", time.Since(start).String()), zap.String("time2", time.Since(start2).String()))
 
 	return ret, err
 }
@@ -576,7 +646,7 @@ func (d *ddl) doDDLJob(ctx sessionctx.Context, job *model.Job) error {
 
 	var historyJob *model.Job
 	jobID := job.ID
-	// For a job from start to end, the state of it will be none -> delete only -> write only -> reorganization -> public
+	// For a job from start to End, the state of it will be none -> delete only -> write only -> reorganization -> public
 	// For every state changes, we will wait as lease 2 * lease time, so here the ticker check is 10 * lease.
 	// But we use etcd to speed up, normally it takes less than 0.5s now, so we use 0.5s or 1s or 3s as the max value.
 	initInterval, _ := getJobCheckInterval(job, 0)

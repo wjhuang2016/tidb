@@ -75,7 +75,7 @@ const (
 //
 // The worker master is responsible for scaling the backfilling workers according to the
 // system variable "tidb_ddl_reorg_worker_cnt". Essentially, reorg job is mainly based
-// on the [start, end] range of the table to backfill data. We did not do it all at once,
+// on the [start, End] range of the table to backfill data. We did not do it all at once,
 // there were several ddl rounds.
 //
 // [start1---end1 start2---end2 start3---end3 start4---end4 ...         ...         ]
@@ -86,12 +86,12 @@ const (
 //        |             |             |             |       |            |
 //        +---------------- (round1)----------------+       +--(round2)--+
 //
-// The main range [start, end] will be split into small ranges.
+// The main range [start, End] will be split into small ranges.
 // Each small range corresponds to a region and it will be delivered to a backfillworker.
 // Each worker can only be assigned with one range at one round, those remaining ranges
 // will be cached until all the backfill workers have had their previous range jobs done.
 //
-//                [ region start --------------------- region end ]
+//                [ region start --------------------- region End ]
 //                                        |
 //                                        v
 //                [ batch ] [ batch ] [ batch ] [ batch ] ...
@@ -457,8 +457,8 @@ func (w *worker) sendRangeTaskToWorkers(t table.Table, workers []*backfillWorker
 		if err != nil {
 			logutil.BgLogger().Info("[ddl] send range task to workers, get reverse key failed", zap.Error(err))
 		} else {
-			logutil.BgLogger().Info("[ddl] send range task to workers, change end key",
-				zap.String("end key", tryDecodeToHandleString(endKey)), zap.String("current end key", tryDecodeToHandleString(endK)))
+			logutil.BgLogger().Info("[ddl] send range task to workers, change End key",
+				zap.String("End key", tryDecodeToHandleString(endKey)), zap.String("current End key", tryDecodeToHandleString(endK)))
 			endKey = endK
 		}
 
@@ -724,7 +724,7 @@ func iterateSnapshotRows(store kv.Storage, priority int, t table.Table, version 
 	return nil
 }
 
-// getRegionEndKey gets the actual end key for the range of [startKey, endKey].
+// getRegionEndKey gets the actual End key for the range of [startKey, endKey].
 func getRangeEndKey(store kv.Storage, priority int, t table.Table, startKey, endKey kv.Key) (kv.Key, error) {
 	snap := store.GetSnapshot(kv.MaxVersion)
 	snap.SetOption(kv.Priority, priority)

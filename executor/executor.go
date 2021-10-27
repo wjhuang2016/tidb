@@ -449,11 +449,12 @@ type DDLJobRetriever struct {
 }
 
 func (e *DDLJobRetriever) initial(txn kv.Transaction, sess sessionctx.Context) error {
+	m := meta.NewMeta(txn)
+	sess.GetSessionVars().SetInTxn(true)
 	jobs, err := admin.GetDDLJobsNew(sess)
 	if err != nil {
 		return err
 	}
-	m := meta.NewMeta(txn)
 	e.historyJobIter, err = m.GetLastHistoryDDLJobsIterator()
 	if err != nil {
 		return err

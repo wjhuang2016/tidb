@@ -17,8 +17,10 @@ package domain
 import (
 	"context"
 	"fmt"
+	"github.com/pingcap/log"
 	"math/rand"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -126,16 +128,28 @@ func (do *Domain) loadInfoSchema(startTS uint64) (infoschema.InfoSchema, bool, i
 	// 3. There are less 100 diffs.
 	startTime := time.Now()
 	if currentSchemaVersion != 0 && neededSchemaVersion > currentSchemaVersion && neededSchemaVersion-currentSchemaVersion < 100 {
-		is, relatedChanges, err := do.tryLoadSchemaDiffs(m, currentSchemaVersion, neededSchemaVersion)
-		if err == nil {
-			do.infoCache.Insert(is, startTS)
-			logutil.BgLogger().Info("diff load InfoSchema success",
-				zap.Int64("currentSchemaVersion", currentSchemaVersion),
-				zap.Int64("neededSchemaVersion", neededSchemaVersion),
-				zap.Duration("start time", time.Since(startTime)),
-				zap.Int64s("phyTblIDs", relatedChanges.PhyTblIDS),
-				zap.Uint64s("actionTypes", relatedChanges.ActionTypes))
-			return is, false, currentSchemaVersion, relatedChanges, nil
+		for {
+			is, relatedChanges, err := do.tryLoadSchemaDiffs(m, currentSchemaVersion, neededSchemaVersion)
+			if err == nil {
+				do.infoCache.Insert(is, startTS)
+				logutil.BgLogger().Info("diff load InfoSchema success",
+					zap.Int64("currentSchemaVersion", currentSchemaVersion),
+						zap.Int64("neededSchemaVersion", neededSchemaVersion),
+					zap.Duration("start time", time.Since(startTime)),
+					zap.Int64s("phyTblIDs", relatedChanges.PhyTblIDS),
+					zap.Uint64s("actionTypes", relatedChanges.ActionTypes))
+				return is, false, currentSchemaVersion, relatedChanges, nil
+			} else if !strings.EqualFold(err.Error(), "failed to get schemadiff") {
+				break
+			}
+			// Prepare for retry.
+			ver, err := do.store.CurrentVersion(kv.GlobalTxnScope)
+			if err != nil {
+				logutil.BgLogger().Warn("tryLoadSchemaDiffs", zap.String("timet", time.Since(startTime).String()))
+				return nil, false, 0, nil, err
+			}
+			snapshot = do.store.GetSnapshot(kv.NewVersion(ver.Ver))
+			m = meta.NewSnapshotMeta(snapshot)
 		}
 		// We can fall back to full load, don't need to return the error.
 		logutil.BgLogger().Error("failed to load schema diff", zap.Error(err))
@@ -256,6 +270,8 @@ func (do *Domain) fetchSchemasWithTables(schemas []*model.DBInfo, m *meta.Meta, 
 // The second returned value is the delta updated table and partition IDs.
 func (do *Domain) tryLoadSchemaDiffs(m *meta.Meta, usedVersion, newVersion int64) (infoschema.InfoSchema, *transaction.RelatedSchemaChange, error) {
 	var diffs []*model.SchemaDiff
+	start := time.Now()
+	log.Warn("cp1", zap.Int64("useVersion", usedVersion), zap.String("time", time.Since(start).String()))
 	for usedVersion < newVersion {
 		usedVersion++
 		diff, err := m.GetSchemaDiff(usedVersion)
@@ -263,14 +279,20 @@ func (do *Domain) tryLoadSchemaDiffs(m *meta.Meta, usedVersion, newVersion int64
 			return nil, nil, err
 		}
 		if diff == nil {
+			if len(diffs) > 0 {
+				log.Warn("partial reload", zap.Int64("lastGetVersion", usedVersion-1))
+				break
+			}
 			// If diff is missing for any version between used and new version, we fall back to full reload.
 			return nil, nil, fmt.Errorf("failed to get schemadiff")
 		}
 		diffs = append(diffs, diff)
 	}
+	log.Warn("cp2", zap.Int64("useVersion", usedVersion), zap.String("time", time.Since(start).String()))
 	builder := infoschema.NewBuilder(do.Store()).InitWithOldInfoSchema(do.infoCache.GetLatest())
 	phyTblIDs := make([]int64, 0, len(diffs))
 	actions := make([]uint64, 0, len(diffs))
+	log.Warn("cp3", zap.Int64("useVersion", usedVersion), zap.String("time", time.Since(start).String()))
 	for _, diff := range diffs {
 		IDs, err := builder.ApplyDiff(m, diff)
 		if err != nil {
@@ -284,6 +306,7 @@ func (do *Domain) tryLoadSchemaDiffs(m *meta.Meta, usedVersion, newVersion int64
 			actions = append(actions, uint64(1<<diff.Type))
 		}
 	}
+	log.Warn("cp4", zap.Int64("useVersion", usedVersion), zap.String("time", time.Since(start).String()))
 	is := builder.Build()
 	relatedChange := transaction.RelatedSchemaChange{}
 	relatedChange.PhyTblIDS = phyTblIDs
@@ -717,7 +740,7 @@ func (do *Domain) Init(ddlLease time.Duration, sysFactory func(*Domain) (pools.R
 	sysFac := func() (pools.Resource, error) {
 		return sysFactory(do)
 	}
-	sysCtxPool := pools.NewResourcePool(sysFac, 200, 200, resourceIdleTimeout)
+	sysCtxPool := pools.NewResourcePool(sysFac, 500, 500, resourceIdleTimeout)
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	do.cancel = cancelFunc
 	var callback ddl.Callback
