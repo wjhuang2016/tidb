@@ -116,7 +116,7 @@ enable-global-kill = true
 
 [log]
 # Log level: debug, info, warn, error, fatal.
-level = "info"
+level = "debug"
 
 # Log format, one of json or text.
 format = "text"

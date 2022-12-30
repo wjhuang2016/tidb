@@ -17,6 +17,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"sync"
 	"time"
 
@@ -79,33 +80,35 @@ func (d *datum) nextInt64() int64 {
 		d.intValue = mathutil.Max(d.intValue, d.minIntValue)
 	}
 	d.updateRemains()
-	return d.intValue
+	res := d.intValue + d.step
+	d.intValue = res
+	return res
 }
 
 func (d *datum) nextString(n int) string {
 	data := d.nextInt64()
 
-	var value []byte
-	for ; ; n-- {
-		if n == 0 {
-			break
-		}
+	//var value []byte
+	//for ; ; n-- {
+	//	if n == 0 {
+	//		break
+	//	}
+	//
+	//	idx := data % int64(len(alphabet))
+	//	data = data / int64(len(alphabet))
+	//
+	//	value = append(value, alphabet[idx])
+	//
+	//	if data == 0 {
+	//		break
+	//	}
+	//}
+	//
+	//for i, j := 0, len(value)-1; i < j; i, j = i+1, j-1 {
+	//	value[i], value[j] = value[j], value[i]
+	//}
 
-		idx := data % int64(len(alphabet))
-		data = data / int64(len(alphabet))
-
-		value = append(value, alphabet[idx])
-
-		if data == 0 {
-			break
-		}
-	}
-
-	for i, j := 0, len(value)-1; i < j; i, j = i+1, j-1 {
-		value[i], value[j] = value[j], value[i]
-	}
-
-	return string(value)
+	return strconv.Itoa(int(data))
 }
 
 func (d *datum) nextTime() string {

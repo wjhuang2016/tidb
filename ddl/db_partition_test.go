@@ -4529,8 +4529,9 @@ func TestPartitionTableWithAnsiQuotes(t *testing.T) {
 }
 
 func TestAlterModifyColumnOnPartitionedTableRename(t *testing.T) {
-	store := testkit.CreateMockStore(t)
+	store, dom := testkit.CreateMockStoreAndDomain(t)
 	tk := testkit.NewTestKit(t, store)
+<<<<<<< Updated upstream
 	schemaName := "modColPartRename"
 	tk.MustExec("create database " + schemaName)
 	tk.MustExec("use " + schemaName)
@@ -4580,4 +4581,28 @@ func TestDropPartitionKeyColumn(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, "[ddl:3885]Column 'a' has a partitioning function dependency and cannot be dropped or renamed", err.Error())
 	tk.MustExec("alter table t4 drop column b")
+=======
+	tk.MustExec("use test")
+
+	tk1 := testkit.NewTestKit(t, store)
+	tk1.MustExec("use test")
+
+	tk.MustExec("CREATE TABLE `802b5232-f4b3-45b4-8e3e-66c275099a81` (\n  `6f51c8b0-cd17-47d1-9fde-d878e4f1e328` tinyint DEFAULT NULL,\n  `700f4a53-4771-4449-b018-cad53e9d4157` varchar(32) DEFAULT 'md',\n  KEY `b0d5303a-f66b-4ac6-89b9-c94a588be031` (`6f51c8b0-cd17-47d1-9fde-d878e4f1e328`),\n  KEY `12966456-1eea-4981-b833-48c320c688a8` (`6f51c8b0-cd17-47d1-9fde-d878e4f1e328`),\n  KEY `c3e1480c-d6a3-4ef5-8128-b69280c7a5c2` (`6f51c8b0-cd17-47d1-9fde-d878e4f1e328`),\n  KEY `98fec7f7-f79c-4ecf-acfb-5f35cb78bb8b` (`6f51c8b0-cd17-47d1-9fde-d878e4f1e328`),\n  KEY `897779ad-ea3d-4607-a234-0e3549c502a8` (`6f51c8b0-cd17-47d1-9fde-d878e4f1e328`)\n) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin COMMENT='f7d18293-f324-4410-b0c5-2c41efb1d7e4'\nPARTITION BY HASH (`6f51c8b0-cd17-47d1-9fde-d878e4f1e328`) PARTITIONS 2;")
+	one := true
+	hook := &ddl.TestDDLCallback{Do: dom}
+	var checkErr error
+	hook.OnJobRunBeforeExported = func(job *model.Job) {
+		if one {
+			one = false
+			go func() {
+				_, checkErr = tk1.Exec("alter table `802b5232-f4b3-45b4-8e3e-66c275099a81` change column `6f51c8b0-cd17-47d1-9fde-d878e4f1e328` `36712b3c-0ab4-416b-a1a1-80e9d0256480` SMALLINT NULL DEFAULT '-14996'")
+			}()
+		}
+	}
+	dom.DDL().SetHook(hook)
+	tk.MustExec("alter table `802b5232-f4b3-45b4-8e3e-66c275099a81` modify column `6f51c8b0-cd17-47d1-9fde-d878e4f1e328` MEDIUMINT NULL DEFAULT '6243108' FIRST")
+
+	time.Sleep(2 * time.Second)
+	require.NoError(t, checkErr)
+>>>>>>> Stashed changes
 }

@@ -214,15 +214,18 @@ func genColumnData(table *table, column *column) (string, error) {
 		}
 		return strconv.FormatInt(data, 10), nil
 	case mysql.TypeVarchar, mysql.TypeString, mysql.TypeTinyBlob, mysql.TypeBlob, mysql.TypeMediumBlob, mysql.TypeLongBlob:
-		data := []byte{'\''}
 		if incremental {
-			data = append(data, []byte(column.data.nextString(tp.GetFlen()))...)
+			return column.data.nextString(tp.GetFlen()), nil
+			//	data = append(data, []byte(column.data.nextString(tp.GetFlen()))...)
 		} else {
+			data := []byte{'\''}
 			data = append(data, []byte(randStringValue(column, tp.GetFlen()))...)
+			data = append(data, '\'')
+			return string(data), nil
 		}
 
-		data = append(data, '\'')
-		return string(data), nil
+		//data = append(data, '\'')
+		//return string(data), nil
 	case mysql.TypeFloat, mysql.TypeDouble:
 		var data float64
 		if incremental {

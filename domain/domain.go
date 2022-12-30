@@ -677,11 +677,14 @@ func (do *Domain) mdlCheckLoop() {
 
 			do.mdlCheckTableInfo.mu.Lock()
 			maxVer := do.mdlCheckTableInfo.newestVer
+			logutil.BgLogger().Warn("maxVer", zap.Int64("maxVer", maxVer))
 			if maxVer > saveMaxSchemaVersion {
 				saveMaxSchemaVersion = maxVer
+				logutil.BgLogger().Warn("saveMaxSchemaVersion", zap.Int64("saveMaxSchemaVersion", saveMaxSchemaVersion))
 			} else if !jobNeedToSync {
 				// Schema doesn't change, and no job to check in the last run.
 				do.mdlCheckTableInfo.mu.Unlock()
+				logutil.BgLogger().Warn("no job to check")
 				continue
 			}
 

@@ -43,6 +43,7 @@ func doInsert(table *table, db *sql.DB, count int) {
 	}
 
 	for _, sql := range sqls {
+		log.Error("111111111", zap.String("sqls", sql))
 		_, err = txn.Exec(sql)
 		if err != nil {
 			log.Fatal("exec", zap.String("sql", sql), zap.Error(err))
