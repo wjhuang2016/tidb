@@ -363,7 +363,9 @@ func (b *backfillSchedulerHandle) OnSubtaskFinished(ctx context.Context, meta []
 			if err != nil {
 				return nil, err
 			}
-			err = bc.CloseWriters(ctx)
+			// Call FinishImport to close the writers and cleanup the engines.
+			// TODO(tangenta): add table info for unique case.
+			err = bcCtx.FinishImport(b.index.ID, b.index.Unique, nil)
 			if err != nil {
 				return nil, err
 			}

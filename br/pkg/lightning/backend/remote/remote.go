@@ -285,23 +285,7 @@ func (remote *Backend) importEngine(ctx context.Context, engineUUID uuid.UUID, r
 }
 
 func (remote *Backend) CleanupEngine(ctx context.Context, engineUUID uuid.UUID) error {
-	for wid, seq := range remote.mu.writersSeq {
-		jobIDStr := strconv.Itoa(int(remote.jobID))
-		widStr := strconv.Itoa(wid)
-		filePrefix := filepath.Join(jobIDStr, engineUUID.String(), widStr)
-		for i := 1; i <= seq; i++ {
-			dataPath := filepath.Join(filePrefix, strconv.Itoa(i))
-			err := remote.externalStorage.DeleteFile(ctx, dataPath)
-			if err != nil {
-				return err
-			}
-			statPath := filepath.Join(filePrefix+"_stat", strconv.Itoa(i))
-			err = remote.externalStorage.DeleteFile(ctx, statPath)
-			if err != nil {
-				return err
-			}
-		}
-	}
+	// TODO(tangenta): remove the data files from distributed storage.
 	return nil
 }
 

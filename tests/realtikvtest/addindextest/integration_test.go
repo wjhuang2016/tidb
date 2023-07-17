@@ -25,6 +25,7 @@ import (
 
 	"github.com/pingcap/failpoint"
 	"github.com/pingcap/tidb/br/pkg/lightning/backend/local"
+	"github.com/pingcap/tidb/br/pkg/storage"
 	"github.com/pingcap/tidb/ddl"
 	"github.com/pingcap/tidb/ddl/ingest"
 	"github.com/pingcap/tidb/ddl/testutil"
@@ -484,6 +485,19 @@ func TestAddIndexBackfillLostUpdate(t *testing.T) {
 func TestRemoteBackend(t *testing.T) {
 	store, _ := realtikvtest.CreateMockStoreAndDomainAndSetup(t)
 	tk := testkit.NewTestKit(t, store)
+
+	uri := fmt.Sprintf("s3://nfs/tools_test_data/sharedisk?access-key=minioadmin&secret-access-key=minioadmin&endpoint=http://127.0.0.1:9000&force-path-style=true")
+	backend, err := storage.ParseBackend(uri, nil)
+	require.NoError(t, err)
+	exStore, err := storage.New(context.Background(), backend, &storage.ExternalStorageOptions{})
+	require.NoError(t, err)
+
+	ctx := context.Background()
+	err = exStore.WalkDir(ctx, &storage.WalkOption{},
+		func(path string, size int64) error {
+			return exStore.DeleteFile(ctx, path)
+		})
+	require.NoError(t, err)
 
 	go func() {
 		tk2 := testkit.NewTestKit(t, store)

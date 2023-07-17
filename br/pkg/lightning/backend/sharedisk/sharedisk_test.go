@@ -174,16 +174,16 @@ func TestWriterPerf(t *testing.T) {
 	uri := fmt.Sprintf("s3://%s/%s?access-key=%s&secret-access-key=%s&endpoint=http://%s:%s&force-path-style=true",
 		bucket, prefix, "minioadmin", "minioadmin", "127.0.0.1", "9000")
 
-	ctx := context.Background()
-
 	backend, err := storage2.ParseBackend(uri, nil)
 	require.NoError(t, err)
 	storage, err := storage2.New(context.Background(), backend, &storage2.ExternalStorageOptions{})
 	require.NoError(t, err)
 
-	writer := NewWriter(context.Background(), storage, "test", 0, memLimit, keyDist, sizeDist, writeBatchSize, DummyOnCloseFunc)
-	writer.filenamePrefix = "test"
+	ctx := context.Background()
+	err = cleanupFiles(ctx, storage, "test")
+	require.NoError(t, err)
 
+	writer := NewWriter(context.Background(), storage, "test", 0, memLimit, keyDist, sizeDist, writeBatchSize, DummyOnCloseFunc)
 	pool := membuf.NewPool()
 	defer pool.Destroy()
 	defer writer.Close(ctx)
