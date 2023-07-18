@@ -351,13 +351,11 @@ func (w *Writer) flushKVs(ctx context.Context) error {
 	//if err != nil {
 	//	return err
 	//}
-
 	w.recordMinMax(w.writeBatch[0].Key, w.writeBatch[len(w.writeBatch)-1].Key, size)
 
 	w.writeBatch = w.writeBatch[:0]
 	w.kvBuffer.Reset()
 	w.batchSize = 0
-	//w.engine.rc.reset()
 	return nil
 }
 

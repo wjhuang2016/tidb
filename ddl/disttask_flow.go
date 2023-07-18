@@ -213,11 +213,7 @@ func (h *litBackfillFlowHandle) splitSubtaskRanges(ctx context.Context, taskHand
 	if err != nil {
 		return nil, err
 	}
-	splitter, err := bc.GetRangeSplitter(ctx, dataFiles, statFiles, totalSize, len(instanceIDs))
-	if err != nil {
-		return nil, err
-	}
-	if splitter == nil {
+	if len(statFiles) == 0 {
 		// Stats data files not found.
 		m := &BackfillSubTaskMeta{
 			StartKey:   firstKey,
@@ -230,6 +226,10 @@ func (h *litBackfillFlowHandle) splitSubtaskRanges(ctx context.Context, taskHand
 			return nil, err
 		}
 		return [][]byte{metaBytes}, nil
+	}
+	splitter, err := bc.GetRangeSplitter(ctx, dataFiles, statFiles, totalSize, len(instanceIDs))
+	if err != nil {
+		return nil, err
 	}
 	metaArr := make([][]byte, 0, 16)
 	startKey := firstKey
