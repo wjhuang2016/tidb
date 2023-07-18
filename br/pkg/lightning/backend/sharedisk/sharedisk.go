@@ -179,6 +179,7 @@ type Writer struct {
 
 	kvBuffer   *membuf.Buffer
 	writeBatch []common.KvPair
+	batchCount int64
 	batchSize  uint64
 
 	currentSeq int
@@ -221,6 +222,7 @@ func (w *Writer) AppendRows(ctx context.Context, columnNames []string, rows enco
 		w.writeBatch = append(w.writeBatch, common.KvPair{Key: key, Val: val})
 		if w.batchSize >= w.memSizeLimit {
 			if err := w.flushKVs(ctx); err != nil {
+				logutil.BgLogger().Info("debug flush", zap.Any("len", len(w.writeBatch)), zap.Any("cap", cap(w.writeBatch)))
 				return err
 			}
 		}

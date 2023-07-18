@@ -231,6 +231,12 @@ func (h *litBackfillFlowHandle) splitSubtaskRanges(ctx context.Context, taskHand
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		err := splitter.Close()
+		if err != nil {
+			logutil.BgLogger().Error("failed to close range splitter", zap.Error(err))
+		}
+	}()
 	metaArr := make([][]byte, 0, 16)
 	startKey := firstKey
 	var endKey kv.Key

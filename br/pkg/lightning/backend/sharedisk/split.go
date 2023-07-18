@@ -42,6 +42,10 @@ func NewRangeSplitter(maxSize, maxKeys, maxWays uint64, propIter *MergePropIter,
 	}
 }
 
+func (r *RangeSplitter) Close() error {
+	return r.propIter.Close()
+}
+
 func (r *RangeSplitter) SplitOne() (kv.Key, []string, []string, error) {
 	if r.exhausted {
 		return nil, nil, nil, nil

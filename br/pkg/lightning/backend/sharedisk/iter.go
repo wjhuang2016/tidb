@@ -26,6 +26,8 @@ import (
 	sst "github.com/pingcap/kvproto/pkg/import_sstpb"
 	"github.com/pingcap/tidb/br/pkg/storage"
 	"github.com/pingcap/tidb/kv"
+	"github.com/pingcap/tidb/util/logutil"
+	"go.uber.org/zap"
 )
 
 type kvPair struct {
@@ -242,12 +244,30 @@ func NewMergePropIter(ctx context.Context, paths []string, exStorage storage.Ext
 		lastFileIdx:   -1,
 	}
 	it.propHeap = make([]*prop, 0, len(paths))
+	it.statFileReader = make([]*statsReader, len(paths))
+
+	// Open all stat files concurrently.
+	var wg sync.WaitGroup
+	wg.Add(len(paths))
+	var perr atomic.Pointer[error]
 	for i, path := range paths {
-		rd, err := newStatsReader(ctx, exStorage, path, 4096)
-		if err != nil {
-			return nil, err
-		}
-		it.statFileReader = append(it.statFileReader, rd)
+		i := i
+		path := path
+		go func() {
+			rd, err := newStatsReader(ctx, exStorage, path, 4096)
+			if err != nil {
+				perr.CompareAndSwap(nil, &err)
+			}
+			it.statFileReader[i] = rd
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	if perr.Load() != nil {
+		return nil, *perr.Load()
+	}
+
+	for i, rd := range it.statFileReader {
 		p, err := rd.nextProp()
 		if err != nil {
 			return nil, err
@@ -267,6 +287,11 @@ func SeekPropsOffsets(ctx context.Context, start kv.Key, paths []string, exStora
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if err := iter.Close(); err != nil {
+			logutil.BgLogger().Warn("failed to close merge prop iterator", zap.Error(err))
+		}
+	}()
 	var (
 		lastOffset  uint64
 		lastFileIdx int
@@ -321,5 +346,10 @@ func (i *MergePropIter) Prop() *RangeProperty {
 }
 
 func (i *MergePropIter) Close() error {
+	for _, rd := range i.statFileReader {
+		if err := rd.Close(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
