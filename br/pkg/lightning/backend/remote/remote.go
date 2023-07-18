@@ -214,6 +214,8 @@ func (remote *Backend) Close() {
 	log.FromContext(context.Background()).Info("close remote backend",
 		zap.String("jobID", strconv.FormatInt(remote.jobID, 10)),
 		zap.Int64("buffer pool size", remote.bufferPool.TotalSize()))
+	remote.importClientFactory.Close()
+	remote.pdCtl.Close()
 	remote.bufferPool.Destroy()
 }
 
