@@ -244,7 +244,7 @@ func (r *byteReader) reload() error {
 	} else if err != nil && err == io.ErrUnexpectedEOF {
 		r.isEOF = true
 	} else if err != nil {
-		logutil.BgLogger().Warn("Other error during reading from external storage", zap.String("file", r.name), zap.Uint64("start", r.fileStart))
+		logutil.BgLogger().Warn("Other error during reading from external storage", zap.String("file", r.name), zap.Uint64("start", r.fileStart), zap.Error(err))
 		return err
 	}
 	elapsed := time.Since(startTime).Microseconds()
