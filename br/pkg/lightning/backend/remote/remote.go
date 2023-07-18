@@ -54,6 +54,7 @@ import (
 	"github.com/pingcap/tidb/br/pkg/utils"
 	"github.com/pingcap/tidb/infoschema"
 	"github.com/pingcap/tidb/kv"
+	"github.com/pingcap/tidb/metrics"
 	"github.com/pingcap/tidb/store/pdtypes"
 	"github.com/pingcap/tidb/tablecodec"
 	"github.com/pingcap/tidb/util/codec"
@@ -1574,6 +1575,7 @@ func (remote *Backend) writeToTiKV(ctx context.Context, j *regionJob) error {
 	defer iter.Close()
 
 	var remainingStartKey []byte
+	startTime := time.Now()
 	for iter.Next() {
 		key := kv.Key(iter.Key())
 		if key.Cmp(remote.startKey) < 0 || key.Cmp(remote.endKey) > 0 {
@@ -1636,6 +1638,10 @@ func (remote *Backend) writeToTiKV(ctx context.Context, j *regionJob) error {
 		size = 0
 		bytesBuf.Reset()
 	}
+
+	rate := float64(totalSize) / 1024.0 / 1024.0 / (float64(time.Since(startTime).Microseconds()) / 1000000.0)
+	log.FromContext(ctx).Info("global sort rate", zap.Any("m/s", rate))
+	metrics.GlobalSortMergeSortRate.WithLabelValues("sort before write to TiKV").Observe(rate)
 
 	var leaderPeerMetas []*sst.SSTMeta
 	for i, wStream := range clients {
