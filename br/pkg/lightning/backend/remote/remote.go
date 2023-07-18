@@ -45,7 +45,6 @@ import (
 	"github.com/pingcap/tidb/br/pkg/lightning/common"
 	"github.com/pingcap/tidb/br/pkg/lightning/config"
 	"github.com/pingcap/tidb/br/pkg/lightning/log"
-	"github.com/pingcap/tidb/br/pkg/lightning/manual"
 	"github.com/pingcap/tidb/br/pkg/lightning/metric"
 	"github.com/pingcap/tidb/br/pkg/logutil"
 	"github.com/pingcap/tidb/br/pkg/membuf"
@@ -151,7 +150,7 @@ func NewRemoteBackend(ctx context.Context, remoteCfg *Config, cfg local.BackendC
 		splitCli:            splitCli,
 		importClientFactory: importClientFactory,
 		tikvCodec:           tikvCodec,
-		bufferPool:          membuf.NewPool(membuf.WithAllocator(manual.Allocator{})),
+		bufferPool:          membuf.NewPool(),
 		writeLimiter:        writeLimiter,
 		phase:               PhaseUpload,
 	}
@@ -212,6 +211,10 @@ func (remote *Backend) SetImportPhase() {
 }
 
 func (remote *Backend) Close() {
+	log.FromContext(context.Background()).Info("close remote backend",
+		zap.String("jobID", strconv.FormatInt(remote.jobID, 10)),
+		zap.Int64("buffer pool size", remote.bufferPool.TotalSize()))
+	remote.bufferPool.Destroy()
 }
 
 func (remote *Backend) RetryImportDelay() time.Duration {
@@ -312,7 +315,7 @@ func (remote *Backend) LocalWriter(ctx context.Context, cfg *backend.LocalWriter
 	}
 	prefix := filepath.Join(strconv.Itoa(int(remote.jobID)), engineUUID.String())
 	writer := sharedisk.NewWriter(ctx, remote.externalStorage, prefix,
-		remote.allocWriterID(), remote.config.MemQuota, remote.config.StatSampleKeys,
+		remote.allocWriterID(), remote.bufferPool, remote.config.MemQuota, remote.config.StatSampleKeys,
 		remote.config.StatSampleSize, remote.config.WriteBatchSize, onClose)
 	remote.mu.Lock()
 	remote.mu.writers = append(remote.mu.writers, writer)

@@ -147,18 +147,17 @@ type OnCloseFunc func(summary *WriterSummary)
 func DummyOnCloseFunc(*WriterSummary) {}
 
 func NewWriter(ctx context.Context, externalStorage storage.ExternalStorage,
-	prefix string, writerID int, memSizeLimit uint64, keyDist int64, sizeDist uint64, writeBatchSize int64,
+	prefix string, writerID int, bufferPool *membuf.Pool,
+	memSizeLimit uint64, keyDist int64, sizeDist uint64, writeBatchSize int64,
 	onClose OnCloseFunc) *Writer {
 	engine := NewEngine(sizeDist, uint64(keyDist))
-	pool := membuf.NewPool()
 	filePrefix := filepath.Join(prefix, strconv.Itoa(writerID))
 	return &Writer{
 		ctx:            ctx,
 		engine:         engine,
 		memSizeLimit:   memSizeLimit,
 		exStorage:      externalStorage,
-		memBufPool:     pool,
-		kvBuffer:       pool.NewBuffer(),
+		kvBuffer:       bufferPool.NewBuffer(),
 		writeBatch:     make([]common.KvPair, 0, writeBatchSize),
 		currentSeq:     0,
 		tikvCodec:      keyspace.CodecV1,
@@ -178,8 +177,6 @@ type Writer struct {
 	memSizeLimit uint64
 	exStorage    storage.ExternalStorage
 
-	// bytes buffer for writeBatch
-	memBufPool *membuf.Pool
 	kvBuffer   *membuf.Buffer
 	writeBatch []common.KvPair
 	batchSize  uint64
@@ -241,7 +238,7 @@ func (w *Writer) Close(ctx context.Context) (backend.ChunkFlushStatus, error) {
 		return status(true), nil
 	}
 	w.closed = true
-	defer w.memBufPool.Destroy()
+	defer w.kvBuffer.Destroy()
 	err := w.flushKVs(ctx)
 	if err != nil {
 		return status(false), err

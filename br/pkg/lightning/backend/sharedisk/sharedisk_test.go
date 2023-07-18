@@ -55,8 +55,8 @@ func TestWriter(t *testing.T) {
 		keyDist               = 8 * 1024
 		writeBatchSize        = 8 * 1024
 	)
-	writer := NewWriter(context.Background(), storage, "jobID/engineUUID", 0, memLimit,
-		keyDist, sizeDist, writeBatchSize, DummyOnCloseFunc)
+	writer := NewWriter(context.Background(), storage, "jobID/engineUUID", 0,
+		membuf.NewPool(), memLimit, keyDist, sizeDist, writeBatchSize, DummyOnCloseFunc)
 
 	var kvs []common.KvPair
 	value := make([]byte, 128)
@@ -183,7 +183,8 @@ func TestWriterPerf(t *testing.T) {
 	err = cleanupFiles(ctx, storage, "test")
 	require.NoError(t, err)
 
-	writer := NewWriter(context.Background(), storage, "test", 0, memLimit, keyDist, sizeDist, writeBatchSize, DummyOnCloseFunc)
+	writer := NewWriter(context.Background(), storage, "test", 0,
+		membuf.NewPool(), memLimit, keyDist, sizeDist, writeBatchSize, DummyOnCloseFunc)
 	pool := membuf.NewPool()
 	defer pool.Destroy()
 	defer writer.Close(ctx)
