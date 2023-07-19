@@ -129,6 +129,10 @@ func (h *litBackfillFlowHandle) ProcessNormalFlow(ctx context.Context, taskHandl
 
 		subTaskMetas = make([][]byte, 0, 100)
 		regionBatch := 20
+		//// Make sure subtask count is less than 500.
+		//if len(recordRegionMetas) > 10000 {
+		//	regionBatch = len(recordRegionMetas) / 500
+		//}
 		sort.Slice(recordRegionMetas, func(i, j int) bool {
 			return bytes.Compare(recordRegionMetas[i].StartKey(), recordRegionMetas[j].StartKey()) < 0
 		})

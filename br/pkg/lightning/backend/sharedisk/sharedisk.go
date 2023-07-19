@@ -330,6 +330,7 @@ func (w *Writer) flushKVs(ctx context.Context) error {
 	defer func() {
 		w.currentSeq++
 		dataWriter.Close(w.ctx)
+		w.kvStore = nil
 	}()
 
 	slices.SortFunc(w.writeBatch[:w.batchCount], func(i, j common.KvPair) bool {
