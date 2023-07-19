@@ -152,6 +152,7 @@ func NewRemoteBackend(ctx context.Context, remoteCfg *Config, cfg local.BackendC
 		importClientFactory: importClientFactory,
 		tikvCodec:           tikvCodec,
 		bufferPool:          membuf.NewPool(),
+		kvPairSlicePool:     newKvPairSlicePool(),
 		writeLimiter:        writeLimiter,
 		phase:               PhaseUpload,
 	}
@@ -192,6 +193,7 @@ type Backend struct {
 	splitCli            split.SplitClient
 	tikvCodec           tikvclient.Codec
 	bufferPool          *membuf.Pool
+	kvPairSlicePool     *kvPairSlicePool
 	writeLimiter        local.StoreWriteLimiter
 	supportMultiIngest  bool
 	timestamp           uint64
@@ -236,7 +238,8 @@ func (remote *Backend) CloseEngine(ctx context.Context, config *backend.EngineCo
 	return nil
 }
 
-func (remote *Backend) SetRange(ctx context.Context, start, end kv.Key, dataFiles, statsFiles []string) error {
+func (remote *Backend) SetRange(ctx context.Context, start, end kv.Key,
+	dataFiles, statsFiles []string) error {
 	log.FromContext(ctx).Info("set ranges", zap.String("start", hex.EncodeToString(start)), zap.String("end", hex.EncodeToString(end)))
 	if start.Cmp(end) > 0 {
 		return errors.New("invalid range")
@@ -546,7 +549,9 @@ func (remote *Backend) doImport(ctx context.Context, regionRanges []Range, regio
 // to a region. The keyRange may be changed when processing because of writing
 // partial data to TiKV or region split.
 type regionJob struct {
-	keyRange Range
+	writeBatch []kvPair
+	memBuffer  *membuf.Buffer
+	keyRange   Range
 	// TODO: check the keyRange so that it's always included in region
 	region *split.RegionInfo
 	// stage should be updated only by convertStageTo
@@ -881,13 +886,16 @@ func (remote *Backend) generateJobForRange(
 
 	jobs := make([]*regionJob, 0, len(regions))
 	for _, region := range regions {
-		log.FromContext(ctx).Debug("get region",
-			zap.Binary("startKey", startKey),
-			zap.Binary("endKey", endKey),
+		jobKeyRange := intersectRange(region.Region, Range{start: start, end: end})
+		log.FromContext(ctx).Info("get region",
+			logutil.Key("startKey", startKey),
+			logutil.Key("endKey", endKey),
 			zap.Uint64("id", region.Region.GetId()),
 			zap.Stringer("epoch", region.Region.GetRegionEpoch()),
-			zap.Binary("start", region.Region.GetStartKey()),
-			zap.Binary("end", region.Region.GetEndKey()),
+			logutil.Key("start", region.Region.GetStartKey()),
+			logutil.Key("end", region.Region.GetEndKey()),
+			logutil.Key("job start", jobKeyRange.start),
+			logutil.Key("job end", jobKeyRange.end),
 			zap.Reflect("peers", region.Region.GetPeers()))
 
 		jobs = append(jobs, &regionJob{
@@ -899,6 +907,49 @@ func (remote *Backend) generateJobForRange(
 		})
 	}
 	return jobs, nil
+}
+
+func (remote *Backend) createMergeIter(ctx context.Context) (*sharedisk.MergeIter, error) {
+	var offsets []uint64
+	if len(remote.statsFiles) == 0 {
+		offsets = make([]uint64, len(remote.dataFiles))
+		log.FromContext(ctx).Info("no stats files",
+			zap.String("startKey", hex.EncodeToString(remote.startKey)))
+	} else {
+		offs, err := sharedisk.SeekPropsOffsets(ctx, remote.startKey, remote.statsFiles, remote.externalStorage)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		offsets = offs
+		log.FromContext(ctx).Info("seek props offsets",
+			zap.Uint64s("offsets", offsets),
+			zap.String("startKey", hex.EncodeToString(remote.startKey)),
+			zap.Strings("statsFiles", sharedisk.PrettyFileNames(remote.statsFiles)))
+	}
+
+	iter, err := sharedisk.NewMergeIter(ctx, remote.dataFiles, offsets, remote.externalStorage, 64*1024)
+	// Fill in the first key value.
+	iter.Next()
+	return iter, errors.Trace(err)
+}
+
+func (remote *Backend) fillJobKVs(j *regionJob, iter *sharedisk.MergeIter) {
+	j.writeBatch = remote.kvPairSlicePool.get()
+	memBuf := remote.bufferPool.NewBuffer()
+	for iter.Valid() {
+		k, v := iter.Key(), iter.Value()
+		kBuf := memBuf.AllocBytes(len(k))
+		key := append(kBuf[:0], k...)
+		val := memBuf.AddBytes(v)
+		if bytes.Compare(k, j.keyRange.start) < 0 || bytes.Compare(k, j.keyRange.end) > 0 {
+			break
+		}
+		j.writeBatch = append(j.writeBatch, kvPair{key: key, val: val})
+		if !iter.Next() {
+			break
+		}
+	}
+	j.memBuffer = memBuf
 }
 
 // prepareAndSendJob will read the engine to get estimated key range,
@@ -925,7 +976,6 @@ func (remote *Backend) prepareAndSendJob(
 		if err == nil || common.IsContextCanceledError(err) {
 			break
 		}
-
 		log.FromContext(ctx).Warn("split and scatter failed in retry",
 			log.ShortError(err), zap.Int("retry", i))
 	}
@@ -987,7 +1037,17 @@ func (remote *Backend) generateAndSendJob(
 				}
 				return err
 			}
+			iter, err := remote.createMergeIter(ctx)
+			if err != nil {
+				if common.IsContextCanceledError(err) {
+					return nil
+				}
+				return err
+			}
+			//nolint: errcheck
+			defer iter.Close()
 			for _, job := range jobs {
+				remote.fillJobKVs(job, iter)
 				jobWg.Add(1)
 				select {
 				case <-egCtx.Done():
@@ -1551,30 +1611,21 @@ func (remote *Backend) writeToTiKV(ctx context.Context, j *regionJob) error {
 		return nil
 	}
 
-	var offsets []uint64
-	if len(remote.statsFiles) == 0 {
-		offsets = make([]uint64, len(remote.dataFiles))
-		log.FromContext(ctx).Info("no stats files",
-			zap.String("startKey", hex.EncodeToString(remote.startKey)))
-	} else {
-		offs, err := sharedisk.SeekPropsOffsets(ctx, remote.startKey, remote.statsFiles, remote.externalStorage)
+	var iter local.Iter
+	if len(j.writeBatch) == 0 {
+		var err error
+		iter, err = remote.createMergeIter(ctx)
 		if err != nil {
 			return errors.Trace(err)
 		}
-		offsets = offs
-		log.FromContext(ctx).Info("seek props offsets",
-			zap.Uint64s("offsets", offsets),
-			zap.String("startKey", hex.EncodeToString(remote.startKey)),
-			zap.Strings("statsFiles", sharedisk.PrettyFileNames(remote.statsFiles)))
+	} else {
+		log.FromContext(ctx).Info("use writeBatch to create iterator",
+			logutil.Key("startKey", j.keyRange.start),
+			logutil.Key("endKey", j.keyRange.end),
+			logutil.Key("writeBatchStart", j.writeBatch[0].key),
+			logutil.Key("writeBatchEnd", j.writeBatch[len(j.writeBatch)-1].key))
+		iter = newSliceIterator(j.writeBatch)
 	}
-
-	iter, err := sharedisk.NewMergeIter(ctx, remote.dataFiles, offsets, remote.externalStorage, 64*1024)
-	if err != nil {
-		return errors.Trace(err)
-	}
-
-	//nolint: errcheck
-	defer iter.Close()
 
 	var remainingStartKey []byte
 	startTime := time.Now()
@@ -1628,6 +1679,10 @@ func (remote *Backend) writeToTiKV(ctx context.Context, j *regionJob) error {
 		}
 	}
 
+	if err := iter.Close(); err != nil {
+		return errors.Trace(err)
+	}
+
 	if iter.Error() != nil {
 		return errors.Trace(iter.Error())
 	}
@@ -1639,6 +1694,11 @@ func (remote *Backend) writeToTiKV(ctx context.Context, j *regionJob) error {
 		count = 0
 		size = 0
 		bytesBuf.Reset()
+	}
+	if len(j.writeBatch) > 0 {
+		j.memBuffer.Destroy()
+		j.writeBatch = j.writeBatch[:0]
+		remote.kvPairSlicePool.put(j.writeBatch)
 	}
 
 	rate := float64(totalSize) / 1024.0 / 1024.0 / (float64(time.Since(startTime).Microseconds()) / 1000000.0)
