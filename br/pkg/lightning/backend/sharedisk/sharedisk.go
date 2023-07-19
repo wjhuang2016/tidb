@@ -266,6 +266,7 @@ func (w *Writer) Close(ctx context.Context) (backend.ChunkFlushStatus, error) {
 			return status(false), err
 		}
 	}
+	w.writeBatch = nil
 
 	w.onClose(&WriterSummary{
 		WriterID:  w.writerID,
