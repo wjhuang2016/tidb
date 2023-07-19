@@ -221,7 +221,6 @@ func (w *Writer) AppendRows(ctx context.Context, columnNames []string, rows enco
 		val := w.kvBuffer.AddBytes(pair.Val)
 		w.writeBatch = append(w.writeBatch, common.KvPair{Key: key, Val: val})
 		if w.batchSize >= w.memSizeLimit {
-			logutil.BgLogger().Info("debug flush", zap.Any("len", len(w.writeBatch)), zap.Any("cap", cap(w.writeBatch)))
 			if err := w.flushKVs(ctx); err != nil {
 				return err
 			}
@@ -312,6 +311,7 @@ func CheckDataCnt(file string, exStorage storage.ExternalStorage) error {
 }
 
 func (w *Writer) flushKVs(ctx context.Context) error {
+	logutil.BgLogger().Info("debug flush", zap.Any("len", len(w.writeBatch)), zap.Any("cap", cap(w.writeBatch)))
 	if len(w.writeBatch) == 0 {
 		return nil
 	}
