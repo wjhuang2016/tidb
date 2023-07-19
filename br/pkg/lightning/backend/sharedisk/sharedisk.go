@@ -158,7 +158,7 @@ func NewWriter(ctx context.Context, externalStorage storage.ExternalStorage,
 		memSizeLimit:   memSizeLimit,
 		exStorage:      externalStorage,
 		kvBuffer:       bufferPool.NewBuffer(),
-		writeBatch:     make([]common.KvPair, 0, writeBatchSize),
+		writeBatch:     make([]common.KvPair, writeBatchSize),
 		currentSeq:     0,
 		tikvCodec:      keyspace.CodecV1,
 		filenamePrefix: filePrefix,
@@ -179,7 +179,7 @@ type Writer struct {
 
 	kvBuffer   *membuf.Buffer
 	writeBatch []common.KvPair
-	batchCount int64
+	batchCount int
 	batchSize  uint64
 
 	currentSeq int
@@ -219,7 +219,12 @@ func (w *Writer) AppendRows(ctx context.Context, columnNames []string, rows enco
 		buf := w.kvBuffer.AllocBytes(len(pair.Key))
 		key := append(buf[:0], pair.Key...)
 		val := w.kvBuffer.AddBytes(pair.Val)
-		w.writeBatch = append(w.writeBatch, common.KvPair{Key: key, Val: val})
+		w.batchCount++
+		if w.batchCount > len(w.writeBatch) {
+			w.writeBatch = append(w.writeBatch, common.KvPair{Key: key, Val: val})
+		} else {
+			w.writeBatch[w.batchCount-1] = common.KvPair{Key: key, Val: val}
+		}
 		if w.batchSize >= w.memSizeLimit {
 			if err := w.flushKVs(ctx); err != nil {
 				return err
@@ -312,7 +317,7 @@ func CheckDataCnt(file string, exStorage storage.ExternalStorage) error {
 
 func (w *Writer) flushKVs(ctx context.Context) error {
 	logutil.BgLogger().Info("debug flush", zap.Any("len", len(w.writeBatch)), zap.Any("cap", cap(w.writeBatch)))
-	if len(w.writeBatch) == 0 {
+	if w.batchCount == 0 {
 		return nil
 	}
 
@@ -326,7 +331,7 @@ func (w *Writer) flushKVs(ctx context.Context) error {
 		dataWriter.Close(w.ctx)
 	}()
 
-	slices.SortFunc(w.writeBatch, func(i, j common.KvPair) bool {
+	slices.SortFunc(w.writeBatch[:w.batchCount], func(i, j common.KvPair) bool {
 		return bytes.Compare(i.Key, j.Key) < 0
 	})
 
@@ -334,7 +339,7 @@ func (w *Writer) flushKVs(ctx context.Context) error {
 	w.kvStore.rc = w.engine.rc
 
 	var size uint64
-	for i := 0; i < len(w.writeBatch); i++ {
+	for i := 0; i < w.batchCount; i++ {
 		//logutil.BgLogger().Info("flush kv", zap.Int("writerID", w.writerID),
 		//	zap.String("key", hex.EncodeToString(w.writeBatch[i].Key)),
 		//	zap.String("val", hex.EncodeToString(w.writeBatch[i].Val)))
@@ -353,9 +358,9 @@ func (w *Writer) flushKVs(ctx context.Context) error {
 	//if err != nil {
 	//	return err
 	//}
-	w.recordMinMax(w.writeBatch[0].Key, w.writeBatch[len(w.writeBatch)-1].Key, size)
+	w.recordMinMax(w.writeBatch[0].Key, w.writeBatch[w.batchCount-1].Key, size)
 
-	w.writeBatch = w.writeBatch[:0]
+	w.batchCount = 0
 	w.kvBuffer.Reset()
 	w.batchSize = 0
 	return nil
