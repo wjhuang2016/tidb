@@ -1053,9 +1053,15 @@ func (remote *Backend) fillJobKVs(j *regionJob, iter *sharedisk.MergeIter) {
 		val := memBuf.AddBytes(v)
 		if bytes.Compare(k, j.keyRange.end) >= 0 {
 			if bytes.Compare(k, j.keyRange.start) == 0 {
+				// Handle the corner case that the batch contains only one key.
+				// For example, the range is [a, a), and the batch contains only one key a.
 				j.writeBatch = append(j.writeBatch, kvPair{key: key, val: val})
 			}
 			if len(j.writeBatch) > 0 {
+				// Handle the corner case that regions boundary is the same as the key range.
+				// We should set the job key range end to the last batch key to prevent the error like
+				// 'key c is not in region key range [a, c)'.
+				// Since the range is inclusive, it is safe to use the last key of the batch.
 				lastKey := j.writeBatch[len(j.writeBatch)-1].key
 				j.keyRange.end = kv.Key(lastKey).Clone()
 			}
@@ -1141,6 +1147,16 @@ func (remote *Backend) generateAndSendJob(
 
 	eg, egCtx := errgroup.WithContext(ctx)
 	eg.SetLimit(1)
+
+	iter, err := remote.createMergeIter(ctx, jobRanges[0].start)
+	if err != nil {
+		if common.IsContextCanceledError(err) {
+			return nil
+		}
+		return err
+	}
+	//nolint: errcheck
+	defer iter.Close()
 	for _, jobRange := range jobRanges {
 		r := jobRange
 		eg.Go(func() error {
@@ -1156,15 +1172,6 @@ func (remote *Backend) generateAndSendJob(
 				}
 				return err
 			}
-			iter, err := remote.createMergeIter(ctx, r.start)
-			if err != nil {
-				if common.IsContextCanceledError(err) {
-					return nil
-				}
-				return err
-			}
-			//nolint: errcheck
-			defer iter.Close()
 			for _, job := range jobs {
 				remote.fillJobKVs(job, iter)
 				jobWg.Add(1)

@@ -252,7 +252,7 @@ func (r *byteReader) reload() error {
 	ReadByteForTest.Add(uint64(nBytes))
 	ReadTimeForTest.Add(uint64(elapsed))
 	readRate := float64(nBytes) / 1024.0 / 1024.0 / (float64(time.Since(startTime).Microseconds()) / 1000000.0)
-	//log.Info("s3 read rate", zap.Any("res", readRate))
+	// log.Info("s3 read rate", zap.Any("res", readRate))
 	metrics.GlobalSortSharedDiskRate.WithLabelValues("read").Observe(readRate)
 	ReadIOCnt.Add(1)
 	r.bufOffset = 0
