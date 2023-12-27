@@ -1,7 +1,10 @@
 ---
 name: "\U0001F947 Ask a Database Performance Question"
 about: I want to ask a database performance question.
-labels: type/question, type/performance
+title: ''
+labels: ''
+assignees: ''
+
 ---
 
 ## Performance Questions

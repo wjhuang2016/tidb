@@ -1,7 +1,10 @@
 ---
 name: "\U0001F947 Propose a Challenge Program task"
 about: As a developer, I want to propose a Challenge Program task.
-labels: challenge-program-2
+title: ''
+labels: ''
+assignees: ''
+
 ---
 
 ## Description
