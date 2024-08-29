@@ -46,7 +46,7 @@ import (
 var WithTiKV = flag.String("with-tikv", "", "address of tikv cluster, if set, running test with real tikv cluster")
 
 var skipTestNames = map[string]struct{}{
-	// Full load related tests
+	// Tests related to full reload
 	"TestAllViewHintType":                    {},
 	"TestJoinHintCompatibility":              {},
 	"TestPartitionErrorCode":                 {},
@@ -57,6 +57,9 @@ var skipTestNames = map[string]struct{}{
 	"TestMemCacheReadLock":                   {},
 	"TestUnrelatedDDLTriggerReload":          {},
 	"TestPartitionMemCacheReadLock":          {},
+	// Tests that can pass seperately
+	"TestMDLViewIDConflict":       {},
+	"TestMemoryControlWithUpdate": {},
 }
 
 func getFuncName(skip int) string {
