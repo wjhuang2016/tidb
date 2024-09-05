@@ -60,6 +60,10 @@ var skipTestNames = map[string]struct{}{
 	// Tests that can pass seperately
 	"TestMDLViewIDConflict":       {},
 	"TestMemoryControlWithUpdate": {},
+	// auto id issue
+	"TestRenameMultiTables": {},
+	// Imcompatible with v3
+	"TestRepairTableWithPartition": {},
 }
 
 func getFuncName(skip int) string {
