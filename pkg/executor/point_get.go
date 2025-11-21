@@ -668,7 +668,7 @@ func (e *PointGetExecutor) get(ctx context.Context, key kv.Key) (kv.ValueEntry, 
 	if e.txn.Valid() && !e.txn.IsReadOnly() {
 		// We cannot use txn.Get directly here because the snapshot in txn and the snapshot of e.snapshot may be
 		// different for pessimistic transaction.
-		val, err = e.txn.GetMemBuffer().Get(ctx, key)
+		val, err = kv.GetValue(ctx, e.txn.GetMemBuffer(), key)
 		if err == nil {
 			return val, err
 		}
@@ -702,15 +702,15 @@ func (e *PointGetExecutor) get(ctx context.Context, key kv.Key) (kv.ValueEntry, 
 		// if the query has max execution time set, we need to set the context deadline for the get request
 		ctxWithTimeout, cancel := context.WithTimeout(ctx, time.Duration(e.Ctx().GetSessionVars().MaxExecutionTime)*time.Millisecond)
 		defer cancel()
-		ctx = ctxWithTimeout
+			ctx = ctxWithTimeout
+		}
+		var avoidAllocation [1]kv.GetOption
+		opts := avoidAllocation[:0]
+		if e.commitTSOffset >= 0 {
+			opts = append(opts, kv.WithReturnCommitTS())
+		}
+		return e.snapshot.Get(ctx, key, opts...)
 	}
-	var avoidAllocation [1]kv.GetOption
-	opts := avoidAllocation[:0]
-	if e.commitTSOffset >= 0 {
-		opts = append(opts, kv.WithReturnCommitTS())
-	}
-	return e.snapshot.Get(ctx, key, opts...)
-}
 
 func (e *PointGetExecutor) verifyTxnScope() error {
 	if e.txnScope == "" || e.txnScope == kv.GlobalTxnScope {
