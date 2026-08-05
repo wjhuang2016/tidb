@@ -16,6 +16,7 @@ package crossks
 
 import (
 	"context"
+	"fmt"
 	"maps"
 	"slices"
 	"sync"
@@ -54,8 +55,9 @@ import (
 
 const (
 	crossKSSessPoolSize         = 5
-	crossKSRuntimeIdleTimeout   = 30 * time.Minute
-	crossKSRuntimeSweepInterval = time.Minute
+	crossKSRuntimeIdleTimeout   = 3 * time.Second
+	crossKSRuntimeSweepInterval = 250 * time.Millisecond
+	crossKSRuntimeCloseDelay    = 10 * time.Second
 )
 
 type runtimeEntry struct {
@@ -157,6 +159,7 @@ func (m *Manager) Acquire(
 	logutil.BgLogger().Info("acquire cross keyspace runtime",
 		zap.String("targetKS", ks),
 		zap.String("holderID", holderID),
+		zap.String("storeIdentity", fmt.Sprintf("%p", entry.sessMgr.store)),
 		zap.Int("activeHolderCount", len(entry.activeHolders)))
 	return &runtimeHandle{
 		manager:  m,
@@ -196,6 +199,9 @@ func (m *Manager) getOrCreateEntryWithoutLock(
 		activeHolders: make(map[string]struct{}),
 	}
 	m.runtimes[ks] = entry
+	logutil.BgLogger().Info("ai-native probe created cross keyspace runtime",
+		zap.String("targetKS", ks),
+		zap.String("storeIdentity", fmt.Sprintf("%p", mgr.store)))
 	return entry, nil
 }
 
@@ -516,7 +522,10 @@ func (m *SessionManager) Coordinator() sessmgr.InfoSchemaCoordinator {
 
 func (m *SessionManager) close() {
 	ks := m.store.GetKeyspace()
-	logger := logutil.BgLogger().With(zap.String("targetKS", ks))
+	storeIdentity := fmt.Sprintf("%p", m.store)
+	logger := logutil.BgLogger().With(
+		zap.String("targetKS", ks),
+		zap.String("storeIdentity", storeIdentity))
 	logger.Info("close cross keyspace session manager")
 	m.sessPool.Close()
 	close(m.exitCh)
@@ -530,6 +539,10 @@ func (m *SessionManager) close() {
 	needCloseStore := ks != keyspace.System
 	failpoint.InjectCall("skipCloseStore", &needCloseStore)
 	if needCloseStore {
+		logger.Info("ai-native probe opened cross keyspace close window",
+			zap.Duration("delay", crossKSRuntimeCloseDelay))
+		time.Sleep(crossKSRuntimeCloseDelay)
+		logger.Info("ai-native probe closing cross keyspace store")
 		if err := m.store.Close(); err != nil {
 			logger.Warn("failed to close store", zap.Error(err))
 		}
