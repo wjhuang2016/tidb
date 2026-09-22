@@ -1,0 +1,34 @@
+# Matrix 18: comparison / NULL / conditional semantics
+>>>
+SELECT 10 < '9', '10' < '9', 10 < 9;
+SELECT 'a' <=> NULL, NULL <=> NULL, 1 <=> 1;
+SELECT IF(1, 'a', 'b'), IF(0, 'a', 'b'), IF(NULL, 'a', 'b');
+SELECT IFNULL(NULL, 1), IFNULL(2, 1), NULLIF(1, 1), NULLIF(1, 2);
+SELECT COALESCE(NULL, NULL, 3);
+SELECT GREATEST(1, NULL, 3), LEAST(1, NULL, 3);
+SELECT GREATEST('10', 9), LEAST('10', 9);
+SELECT GREATEST(1.5, 2, '3');
+SELECT CASE WHEN 1 THEN 'a' WHEN 2 THEN 'b' ELSE 'c' END;
+SELECT CASE 2 WHEN 1 THEN 'a' WHEN 2 THEN 'b' END;
+SELECT CASE 3 WHEN 1 THEN 'a' END;
+SELECT INTERVAL(5, 1, 2, 3, 4, 6, 7);
+SELECT INTERVAL(NULL, 1, 2);
+SELECT 1 IN (1, 2, 3), 'a' IN ('A'), NULL IN (1, 2), 1 IN (NULL, 1);
+SELECT (1, 2) IN ((1, 2), (3, 4));
+SELECT TRUE, FALSE, TRUE = 1, TRUE + TRUE;
+SELECT NOT NOT 1, ! 5, - - 5;
+SELECT 1 AND NULL, 0 AND NULL, 1 OR NULL, 0 OR NULL, NULL XOR 1;
+SELECT '1' + true, 'true' + 0, false - 1;
+SELECT BINARY 'A' = 'a', 'A' = 'a';
+SELECT _utf8mb4'a' = _utf8mb4'A' COLLATE utf8mb4_0900_ai_ci;
+SELECT 'ß' = 'ss' COLLATE utf8mb4_0900_ai_ci;
+SELECT 'ß' = 'ss' COLLATE utf8mb4_general_ci;
+SELECT 'ａ' = 'a' COLLATE utf8mb4_general_ci;
+SELECT CONCAT(_binary 'x', 'y');
+SELECT CAST(TRUE AS SIGNED), CAST(FALSE AS CHAR);
+SELECT 5 BETWEEN 1 AND NULL, 5 NOT BETWEEN 1 AND NULL;
+SELECT ISNULL(NULL), ISNULL(0);
+SELECT 2 IS TRUE, 0 IS FALSE, NULL IS UNKNOWN;
+SELECT 'abc' REGEXP 'a.c', 'abc' REGEXP '^$', '' REGEXP '^$', NULL REGEXP 'a';
+SELECT '2020' LIKE '2_20', 'a%b' LIKE 'a\\%b', 'abc' LIKE NULL;
+SELECT 1 RLIKE '1', 1 NOT RLIKE '[a-z]';

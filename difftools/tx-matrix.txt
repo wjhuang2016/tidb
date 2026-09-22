@@ -1,0 +1,45 @@
+# Two-session pessimistic transaction matrix
+A: DROP DATABASE IF EXISTS txdb
+A: CREATE DATABASE txdb
+B: USE txdb
+A: USE txdb
+A: CREATE TABLE t(a INT PRIMARY KEY, b INT)
+A: INSERT INTO t VALUES (1, 10), (2, 20)
+B: BEGIN
+B: SELECT * FROM t WHERE a = 1
+A: BEGIN
+A: UPDATE t SET b = 99 WHERE a = 1
+B: UPDATE t SET b = 88 WHERE a = 1
+A: COMMIT
+B: SELECT * FROM t WHERE a = 1
+B: COMMIT
+B: SELECT * FROM t
+A: BEGIN
+A: SELECT * FROM t WHERE a = 2 FOR UPDATE
+B: SELECT * FROM t WHERE a = 2
+A: COMMIT
+A: BEGIN
+A: INSERT INTO t VALUES (3, 30)
+B: SELECT COUNT(*) FROM t
+A: COMMIT
+B: SELECT COUNT(*) FROM t
+A: BEGIN
+A: DELETE FROM t WHERE a = 3
+A: ROLLBACK
+B: SELECT COUNT(*) FROM t
+A: SET SESSION tidb_disable_txn_auto_retry = 1
+A: SELECT @@tidb_disable_txn_auto_retry
+A: BEGIN OPTIMISTIC
+A: UPDATE t SET b = b + 1 WHERE a = 1
+B: BEGIN OPTIMISTIC
+B: UPDATE t SET b = b + 100 WHERE a = 1
+A: COMMIT
+B: COMMIT
+B: SELECT * FROM t WHERE a = 1
+A: SHOW TABLE STATUS LIKE 't'
+A: ADMIN SHOW DDL JOBS
+B: SELECT @@tidb_current_ts > 0
+A: BEGIN
+A: SELECT @@tidb_current_ts > 0
+A: COMMIT
+A: SELECT @@tidb_current_ts > 0

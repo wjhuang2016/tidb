@@ -1,0 +1,18 @@
+# Matrix 7: SHOW surfaces — full sysvar values, charsets, collations, status, engines, warnings state
+# audits compared declarations; this compares LIVE values
+>>>
+SHOW VARIABLES;
+SHOW GLOBAL VARIABLES;
+SHOW CHARACTER SET;
+SHOW COLLATION;
+SHOW ENGINES;
+SELECT @@version_comment, @@version_compile_os, @@version_compile_machine;
+SELECT @@sql_mode, @@default_charset, @@default_collation_for_utf8mb4;
+SELECT @@time_zone, @@system_time_zone;
+SELECT @@max_allowed_packet, @@max_execution_time, @@sql_select_limit;
+SELECT @@autocommit, @@tx_isolation, @@transaction_isolation;
+SELECT @@lower_case_table_names, @@innodb_lock_wait_timeout;
+SELECT @@tidb_distsql_scan_concurrency, @@tidb_init_chunk_size, @@tidb_max_chunk_size;
+SELECT @@character_set_client, @@character_set_connection, @@character_set_results, @@character_set_server;
+SELECT @@collation_connection, @@collation_server;
+SELECT @@warning_count, @@error_count;

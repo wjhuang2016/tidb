@@ -1,0 +1,24 @@
+# Matrix 6: accept-then-discard (shape 5) — hints, syntax accepted but maybe ignored
+>>>
+CREATE TABLE t(a INT, b INT, KEY ka(a));
+INSERT INTO t VALUES (1,1),(2,2),(3,3);
+SELECT /*+ USE_INDEX(t, no_such_index) */ a FROM t;
+SELECT /*+ MAX_EXECUTION_TIME(1) */ SUM(a * (a+1) * b) FROM t, t t2, t t3, t t4;
+SELECT /*+ HASH_AGG() */ COUNT(*) FROM t;
+SELECT /*+ WRONG_HINT_SYNTAX(xyz) */ COUNT(*) FROM t;
+SELECT a FROM t FORCE INDEX(ka) WHERE a > 1;
+SELECT a FROM t FORCE INDEX(no_such_index) WHERE a > 1;
+SELECT a FROM t IGNORE INDEX(ka) WHERE a > 1;
+SET SESSION transaction_isolation = 'SERIALIZABLE';
+SET SESSION transaction_isolation = 'READ-UNCOMMITTED';
+SET SESSION max_allowed_packet = 100;
+SELECT @@max_allowed_packet;
+CREATE TABLE t2(a INT PRIMARY KEY NONCLUSTERED, b INT) CHARSET=utf8mb4;
+SHOW CREATE TABLE t2;
+SET SESSION sql_mode = 'ANSI_QUOTES';
+SELECT "quoted_string";
+SET SESSION sql_mode = 'STRICT_TRANS_TABLES';
+SELECT @@sql_mode;
+ALTER TABLE t ADD COLUMN c INT DEFAULT (a + b);
+SHOW CREATE TABLE t;
+SELECT c FROM t;

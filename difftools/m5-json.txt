@@ -1,0 +1,37 @@
+# Matrix 5: JSON surface — serde_json dual-implementation path (shape 3)
+>>>
+SELECT JSON_TYPE(CAST(1 AS JSON));
+SELECT JSON_TYPE(CAST(18446744073709551615 AS JSON));
+SELECT JSON_TYPE(CAST(-9223372036854775808 AS JSON));
+SELECT JSON_TYPE(CAST(1.5 AS JSON));
+SELECT JSON_TYPE(CAST(1e308 AS JSON));
+SELECT JSON_TYPE('null');
+SELECT JSON_VALID('{"a":1}');
+SELECT JSON_VALID('{"a":1,}');
+SELECT JSON_OBJECT('k', 1, 'k', 2);
+SELECT JSON_OBJECT('k', 1, 'K', 2);
+SELECT JSON_EXTRACT('{"a": [1,2,3]}', '$.a[1]');
+SELECT JSON_EXTRACT('{"a": [1,2,3]}', '$.a[10]');
+SELECT JSON_EXTRACT('{"a": 1}', '$.b');
+SELECT JSON_EXTRACT('bad json', '$.a');
+SELECT JSON_UNQUOTE(JSON_EXTRACT('{"a": "中文\\u4e2d"}', '$.a'));
+SELECT JSON_LENGTH('{"a": [1,2,3]}', '$.a');
+SELECT JSON_DEPTH('{}'), JSON_DEPTH('[]'), JSON_DEPTH('"s"');
+SELECT JSON_CONTAINS('{"a":1}', '1', '$.a');
+SELECT JSON_CONTAINS_PATH('{"a":1}', 'one', '$.a', '$.b');
+SELECT JSON_CONTAINS_PATH('{"a":1}', 'all', '$.a', '$.b');
+SELECT JSON_ARRAY(1, 'a', NULL, TRUE);
+SELECT JSON_MERGE_PRESERVE('[1,2]', '[3]');
+SELECT JSON_MERGE_PATCH('{"a":1}', '{"a":null}');
+SELECT JSON_SET('{"a":1}', '$.b', CAST(2 AS JSON));
+SELECT JSON_SET('{"a":1}', '$.a', CAST(18446744073709551615 AS UNSIGNED));
+SELECT JSON_SEARCH('["abc","abd"]', 'one', 'ab%');
+SELECT JSON_KEYS('{"a":1,"b":2}');
+SELECT JSON_INSERT('{"a":1}', '$.b', '2');
+SELECT JSON_REPLACE('{"a":1}', '$.b', '2');
+SELECT JSON_REMOVE('{"a":1,"b":2}', '$.a');
+SELECT CAST('{"a": 1e2}' AS JSON);
+SELECT CAST('{"dup":1,"dup":2}' AS JSON);
+SELECT JSON_EXTRACT('[1,2,3]', '$[1 TO 2]');
+SELECT JSON_PRETTY('{"a":[1,2]}');
+SELECT CAST(JSON_OBJECT('k', 9223372036854775808) AS CHAR);

@@ -1,0 +1,278 @@
+DIVERGE character_set_client
+  SET SESSION character_set_client = 0
+    GO  : ERR(1105)
+    RUST: ERR(1115)
+  SET SESSION character_set_client = 'x'
+    GO  : ERR(1105)
+    RUST: ERR(1115)
+DIVERGE character_set_connection
+  SET SESSION character_set_connection = 0
+    GO  : ERR(1105)
+    RUST: ERR(1115)
+  SET SESSION character_set_connection = 'x'
+    GO  : ERR(1105)
+    RUST: ERR(1115)
+DIVERGE character_set_database
+  SET SESSION character_set_database = 0
+    GO  : ERR(1105)
+    RUST: ERR(1115)
+  SET SESSION character_set_database = 'x'
+    GO  : ERR(1105)
+    RUST: ERR(1115)
+DIVERGE character_set_filesystem
+  SET SESSION character_set_filesystem = 0
+    GO  : ERR(1105)
+    RUST: (ok)
+  SELECT @@SESSION.character_set_filesystem
+    GO  : ('binary',)
+    RUST: ('0',)
+  SET SESSION character_set_filesystem = 'x'
+    GO  : ERR(1105)
+    RUST: (ok)
+  SELECT @@SESSION.character_set_filesystem
+    GO  : ('binary',)
+    RUST: ('x',)
+DIVERGE character_set_results
+  SET SESSION character_set_results = 0
+    GO  : ERR(1105)
+    RUST: ERR(1115)
+  SET SESSION character_set_results = 'x'
+    GO  : ERR(1105)
+    RUST: ERR(1115)
+DIVERGE character_set_server
+  SET SESSION character_set_server = 0
+    GO  : ERR(1105)
+    RUST: ERR(1115)
+  SET SESSION character_set_server = 'x'
+    GO  : ERR(1105)
+    RUST: ERR(1115)
+DIVERGE datadir
+  SELECT @@SESSION.datadir
+    GO  : ('/tmp/gotidb-data2',)
+    RUST: ('/usr/local/mysql/data/',)
+  SELECT @@SESSION.datadir
+    GO  : ('/tmp/gotidb-data2',)
+    RUST: ('/usr/local/mysql/data/',)
+  SELECT @@SESSION.datadir
+    GO  : ('/tmp/gotidb-data2',)
+    RUST: ('/usr/local/mysql/data/',)
+DIVERGE error_count
+  SELECT @@SESSION.error_count
+    GO  : ('1',)
+    RUST: (0,)
+  SELECT @@SESSION.error_count
+    GO  : ('1',)
+    RUST: (0,)
+  SELECT @@SESSION.error_count
+    GO  : ('1',)
+    RUST: (0,)
+DIVERGE last_sql_use_alloc
+  SELECT @@SESSION.last_sql_use_alloc
+    GO  : (1,)
+    RUST: (0,)
+  SELECT @@SESSION.last_sql_use_alloc
+    GO  : (1,)
+    RUST: (0,)
+  SELECT @@SESSION.last_sql_use_alloc
+    GO  : (1,)
+    RUST: (0,)
+DIVERGE max_allowed_packet
+  SET SESSION max_allowed_packet = DEFAULT
+    GO  : ERR(1621)
+    RUST: (ok)
+DIVERGE port
+  SELECT @@SESSION.port
+    GO  : (4000,)
+    RUST: (4001,)
+  SELECT @@SESSION.port
+    GO  : (4000,)
+    RUST: (4001,)
+  SELECT @@SESSION.port
+    GO  : (4000,)
+    RUST: (4001,)
+DIVERGE socket
+  SELECT @@SESSION.socket
+    GO  : ('/tmp/tidb-4000.sock',)
+    RUST: ('/tmp/tidb-4001.sock',)
+  SELECT @@SESSION.socket
+    GO  : ('/tmp/tidb-4000.sock',)
+    RUST: ('/tmp/tidb-4001.sock',)
+  SELECT @@SESSION.socket
+    GO  : ('/tmp/tidb-4000.sock',)
+    RUST: ('/tmp/tidb-4001.sock',)
+DIVERGE sql_mode
+  SET SESSION sql_mode = 0
+    GO  : ERR(1105)
+    RUST: ERR(1231)
+  SET SESSION sql_mode = 'x'
+    GO  : ERR(1105)
+    RUST: ERR(1231)
+DIVERGE sql_select_limit
+  SELECT @@SESSION.sql_select_limit
+    GO  : (18446744073709551615,)
+    RUST: ('18446744073709551615',)
+DIVERGE system_time_zone
+  SELECT @@SESSION.system_time_zone
+    GO  : ('Asia/Shanghai',)
+    RUST: ('CST',)
+  SELECT @@SESSION.system_time_zone
+    GO  : ('Asia/Shanghai',)
+    RUST: ('CST',)
+  SELECT @@SESSION.system_time_zone
+    GO  : ('Asia/Shanghai',)
+    RUST: ('CST',)
+DIVERGE tidb_cloud_storage_uri
+  SET SESSION tidb_cloud_storage_uri = DEFAULT
+    GO  : ERR(1105)
+    RUST: ERR(1229)
+  SELECT @@SESSION.tidb_cloud_storage_uri
+    GO  : ERR(2013)
+    RUST: ERR(1238)
+  SET SESSION tidb_cloud_storage_uri = 0
+    GO  : ERR(0)
+    RUST: ERR(1229)
+  SELECT @@SESSION.tidb_cloud_storage_uri
+    GO  : ERR(0)
+    RUST: ERR(1238)
+  SET SESSION tidb_cloud_storage_uri = 'x'
+    GO  : ERR(0)
+    RUST: ERR(1229)
+  SELECT @@SESSION.tidb_cloud_storage_uri
+    GO  : ERR(0)
+    RUST: ERR(1238)
+DIVERGE tidb_current_ts
+  SELECT @@SESSION.tidb_current_ts
+    GO  : ('0',)
+    RUST: (469255289004621824,)
+  SELECT @@SESSION.tidb_current_ts
+    GO  : ('0',)
+    RUST: (469255289004621824,)
+  SELECT @@SESSION.tidb_current_ts
+    GO  : ('0',)
+    RUST: (469255289004621824,)
+DIVERGE tidb_enable_ddl
+  SET SESSION tidb_enable_ddl = 0
+    GO  : ERR(8246)
+    RUST: (ok)
+DIVERGE tidb_last_ddl_info
+  SELECT @@SESSION.tidb_last_ddl_info
+    GO  : ('{"query":"","seq_num":0}',)
+    RUST: ('',)
+  SELECT @@SESSION.tidb_last_ddl_info
+    GO  : ('{"query":"","seq_num":0}',)
+    RUST: ('',)
+  SELECT @@SESSION.tidb_last_ddl_info
+    GO  : ('{"query":"","seq_num":0}',)
+    RUST: ('',)
+DIVERGE tidb_last_query_info
+  SELECT @@SESSION.tidb_last_query_info
+    GO  : ('{"txn_scope":"global","start_ts":0,"for_update_ts":0,"ru_consumption":0}',)
+    RUST: ('{"txn_scope":"","start_ts":0,"for_update_ts":0,"ru_consumption":0}',)
+  SELECT @@SESSION.tidb_last_query_info
+    GO  : ('{"txn_scope":"global","start_ts":0,"for_update_ts":0,"ru_consumption":0}',)
+    RUST: ('{"txn_scope":"","start_ts":0,"for_update_ts":0,"ru_consumption":0}',)
+DIVERGE tidb_pipelined_dml_resource_policy
+  SET SESSION tidb_pipelined_dml_resource_policy = 0
+    GO  : ERR(1231)
+    RUST: (ok)
+  SELECT @@SESSION.tidb_pipelined_dml_resource_policy
+    GO  : ('standard',)
+    RUST: ('0',)
+  SET SESSION tidb_pipelined_dml_resource_policy = 'x'
+    GO  : ERR(1231)
+    RUST: (ok)
+  SELECT @@SESSION.tidb_pipelined_dml_resource_policy
+    GO  : ('standard',)
+    RUST: ('x',)
+DIVERGE tidb_server_memory_limit_gc_trigger
+  SET SESSION tidb_server_memory_limit_gc_trigger = 'x'
+    GO  : ERR(1105)
+    RUST: ERR(1231)
+DIVERGE tidb_slow_log_rules
+  SET SESSION tidb_slow_log_rules = 0
+    GO  : ERR(1105)
+    RUST: (ok)
+  SELECT @@SESSION.tidb_slow_log_rules
+    GO  : ('',)
+    RUST: ('0',)
+  SET SESSION tidb_slow_log_rules = 'x'
+    GO  : ERR(1105)
+    RUST: (ok)
+  SELECT @@SESSION.tidb_slow_log_rules
+    GO  : ('',)
+    RUST: ('x',)
+DIVERGE tidb_slow_query_file
+  SELECT @@SESSION.tidb_slow_query_file
+    GO  : ('tidb-slow.log',)
+    RUST: ('',)
+DIVERGE tidb_snapshot
+  SELECT @@SESSION.tidb_snapshot
+    GO  : ('0',)
+    RUST: ERR(1105)
+  SET SESSION tidb_snapshot = 'x'
+    GO  : ERR(1292)
+    RUST: (ok)
+  SELECT @@SESSION.tidb_snapshot
+    GO  : ('0',)
+    RUST: ERR(1105)
+DIVERGE tidb_trace_event
+  SET SESSION tidb_trace_event = DEFAULT
+    GO  : ERR(1105)
+    RUST: (ok)
+DIVERGE tiflash_compute_dispatch_policy
+  SET SESSION tiflash_compute_dispatch_policy = 0
+    GO  : ERR(1105)
+    RUST: (ok)
+  SELECT @@SESSION.tiflash_compute_dispatch_policy
+    GO  : ('consistent_hash',)
+    RUST: ('0',)
+  SET SESSION tiflash_compute_dispatch_policy = 'x'
+    GO  : ERR(1105)
+    RUST: (ok)
+  SELECT @@SESSION.tiflash_compute_dispatch_policy
+    GO  : ('consistent_hash',)
+    RUST: ('x',)
+DIVERGE timestamp
+  SELECT @@SESSION.timestamp
+    GO  : ('1790066879.8702157',)
+    RUST: ('0',)
+  SELECT @@SESSION.timestamp
+    GO  : ('1790066879.8706582',)
+    RUST: ('0',)
+  SELECT @@SESSION.timestamp
+    GO  : ('1790066879.8711998',)
+    RUST: ('0',)
+DIVERGE tx_read_ts
+  SET SESSION tx_read_ts = 0
+    GO  : ERR(1292)
+    RUST: (ok)
+  SELECT @@SESSION.tx_read_ts
+    GO  : ('',)
+    RUST: ('0',)
+  SET SESSION tx_read_ts = 'x'
+    GO  : ERR(1292)
+    RUST: (ok)
+  SELECT @@SESSION.tx_read_ts
+    GO  : ('',)
+    RUST: ('x',)
+DIVERGE version_compile_machine
+  SELECT @@SESSION.version_compile_machine
+    GO  : ('amd64',)
+    RUST: ('x86_64',)
+  SELECT @@SESSION.version_compile_machine
+    GO  : ('amd64',)
+    RUST: ('x86_64',)
+  SELECT @@SESSION.version_compile_machine
+    GO  : ('amd64',)
+    RUST: ('x86_64',)
+DIVERGE warning_count
+  SELECT @@SESSION.warning_count
+    GO  : ('1',)
+    RUST: (0,)
+  SELECT @@SESSION.warning_count
+    GO  : ('1',)
+    RUST: (0,)
+  SELECT @@SESSION.warning_count
+    GO  : ('1',)
+    RUST: (0,)
+total divergent vars: 31

@@ -1,0 +1,22 @@
+# Matrix 2: warning channel — counts, codes, text, strict/non-strict
+# blind spot: warnings observed on 28/4906 statements
+>>>
+CREATE TABLE t(a INT NOT NULL, b VARCHAR(2));
+INSERT INTO t VALUES (1, 'abc');
+INSERT INTO t VALUES ('x', 'abc');
+INSERT IGNORE INTO t VALUES (NULL, 'abc');
+INSERT INTO t VALUES (1, 'abcdef');
+SELECT CAST('abc' AS SIGNED);
+SELECT CAST(9223372036854775808 AS UNSIGNED);
+INSERT INTO t VALUES (1, 'a'), (2, 'b');
+UPDATE t SET a = 1 WHERE b = 'zzz';
+SELECT 'abc' + 0;
+CREATE TABLE t2(d DECIMAL(3,2));
+INSERT INTO t2 VALUES (123.456);
+INSERT INTO t2 VALUES (9999);
+SELECT 1 INTO OUTFILE '/tmp/should_not_work';
+SET @@sql_mode = '';
+INSERT INTO t2 VALUES (123.456);
+SET @@sql_mode = 'STRICT_TRANS_TABLES';
+INSERT INTO t2 VALUES (123.456);
+INSERT INTO t VALUES (1, NULL);
