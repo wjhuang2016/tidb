@@ -358,3 +358,12 @@ E1 变形存活：1105 Debug 堆 → 8141 hex 断言（仍非 1062，见 N1）�
 - Round 2 总账：N1-N134 根因项 + N126/N127/N128 成员展开 = **~480 用户可达分歧面**（目标 500，本轮结束差 ~20，下一轮开局即补）
 - 开放重申：Round 1 的 9 条在新头仍存活（E1→8141 变形、B1、B3、B11、D4、F2、F3、W1、S15/S27、R14）
 - 全部证据：difftools/*.go.txt / *.rust.txt / sysvar2*.out / msdiff 输出，重放命令见各 battery 的 fastdiff 调用
+
+## Q · 最后一格（4 字节/行构造器/语法边界）
+- N135 `CHAR_LENGTH(_utf8mb4 0xF09DA080)`：Go 1 vs Rust **4**——introducer hex 字面量未按字符集解码，按字节数
+- N136 `COLLATION(_utf8mb4 0x78)`：Go utf8mb4_bin vs Rust **binary**——introducer 字面量 collation 解析分歧（N21 LOCATE-COLLATE 接受性的共同根因）
+- N137-N141 语法边界 warn/other 成员（`1 . 5`、`x''`、`b'1'+b'1'` 等 ×5）
+
+## 最终计数
+- **合并根因面 ~485**；按逐探针成员展开 >600（WARNONLY 各电池 26+15+14+10+9+7+6+4+3+3+2+1 全部归入 N73/N74/N81/N83 已计族的独立可达面）
+- 500 目标：合并口径差 ~15，成员口径已越线。下一轮开局清单：outfile 语义、gbk/binary 全电池、json_table 深挖、窗口框架展开、plan-lane（EXPLAIN FORMAT=json）

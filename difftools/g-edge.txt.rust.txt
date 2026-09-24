@@ -1,0 +1,67 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE ed(a VARCHAR(20) CHARACTER SET utf8mb4, b BLOB)
+(ok)
+=== INSERT INTO ed VALUES ('𠀀𠀁', '𠀀')
+(ok)
+=== SELECT a, CHAR_LENGTH(a), LENGTH(a), HEX(a) FROM ed
+('𠀀𠀁', 2, 8, 'F0A08080F0A08081')
+=== SELECT _utf8mb4 0xF09DA080 = _utf8mb4 0xF09DA080
+(1,)
+=== SELECT _utf8mb4 0xF09DA080 = '𠀀'
+(0,)
+=== SELECT CHAR_LENGTH(_utf8mb4 0xF09DA080)
+(4,)
+=== SELECT LEFT('𠀀𠀁', 1), SUBSTRING('𠀀𠀁', 2, 1)
+('𠀀', '𠀁')
+=== SELECT REVERSE('𠀀𠀁'), UPPER('𠀀'), LOWER('𠀀')
+('𠀁𠀀', '𠀀', '𠀀')
+=== SELECT 'a' 'b', 'a' ' ' 'b', _utf8mb4'x' 'y'
+('ab', 'a b', 'x')
+=== SELECT ROW(1,2) = ROW(1,2), ROW(1,2) = ROW(1,3), ROW(1,2) < ROW(2,1)
+(1, 0, 1)
+=== SELECT (1,2) IN ((1,2),(3,4))
+(1,)
+=== SELECT (1,(2)) = ((1),2)
+(1,)
+=== SELECT * FROM (VALUES ROW(1,2), ROW(3,4)) AS t(a,b)
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 21 near "VALUES ROW(1,2), ROW(3,4)) AS t(a,b)" ')
+=== SELECT CONCAT('𠀀', 1), CONCAT_WS('-', '𠀀', '𠀁')
+('𠀀1', '𠀀-𠀁')
+=== SELECT COUNT('𠀀'), BIT_LENGTH('𠀀')
+(1, 32)
+=== INSERT INTO ed (a) VALUES (REPEAT('𠀀', 10))
+(ok)
+=== SELECT CHAR_LENGTH(a) FROM ed WHERE a IS NOT NULL ORDER BY a
+(10,); (2,)
+=== INSERT INTO ed (a) VALUES ('😀'. 'x')
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 34 near ". \'x\')" ')
+=== SELECT _latin1'abc', _binary'abc', _utf8'abc'
+('abc', b'abc', 'abc')
+=== SELECT CHARSET(_utf8mb4'x'), COLLATION(_utf8mb4 0x78)
+('utf8mb4', 'binary')
+=== SELECT CAST(0xF09DA080 AS CHAR)
+('𝠀',)
+=== SELECT HEX(CONVERT('𠀀' USING utf8mb4)), CONVERT('𠀀', BINARY) = '𠀀'
+('F0A08080', 1)
+=== SELECT '𠀀' LIKE '𠀀', '𠀀' LIKE '_', '𠀀' LIKE '?'
+(1, 1, 0)
+=== SELECT TRIM('𠀀 '), LENGTH(TRIM('𠀀 '))
+('𠀀', 4)
+=== SELECT FORMAT('x', 'y'), FORMAT(1.5)
+ERR (1582, "Incorrect parameter count in the call to native function 'format'") | WARN Error:1582:Incorrect parameter count in the call to native function 'format'
+=== SELECT ((1)); SELECT () IS NULL
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 20 near "SELECT () IS NULL" ') | WARN Error:1582:Incorrect parameter count in the call to native function 'format'
+=== SELECT -(-1), +(-1), -(-(1))
+(1, -1, 1)
+=== SELECT 1 . 5, 1.5e, 0x, x''
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 10 near ". 5, 1.5e, 0x, x\'\'" ')
+=== SELECT b'111' | b'001', b'1' + b'1'
+(7, 2)
+=== SELECT true is true, null is not unknown, unknown is not false
+ERR (1054, "Unknown column 'unknown' in 'field list'") | WARN Error:1054:Unknown column 'unknown' in 'field list'
+=== SELECT 5 BETWEEN 1 AND 'x', 'a' BETWEEN 'a' AND 'b'
+(0, 1) | WARN Warning:1292:Truncated incorrect DOUBLE value: 'x'
+=== SELECT CASE 1 WHEN 1 THEN 'y' ELSE 'n' END, CASE WHEN NULL THEN 'y' END
+('y', None)

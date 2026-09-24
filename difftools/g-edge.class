@@ -1,0 +1,25 @@
+### VALUE (2)
+  SELECT CHAR_LENGTH(_utf8mb4 0xF09DA080)
+    GO  : (1,)
+    RUST: (4,)
+  SELECT CHARSET(_utf8mb4'x'), COLLATION(_utf8mb4 0x78)
+    GO  : ('utf8mb4', 'utf8mb4_bin')
+    RUST: ('utf8mb4', 'binary')
+### ERRCODE (0)
+### WARNONLY (3)
+  INSERT INTO ed (a) VALUES ('😀'. 'x')
+    GO  : 1064
+    RUST: -
+  SELECT FORMAT('x', 'y'), FORMAT(1.5)
+    GO  : 1292,1292,1582
+    RUST: 1582
+  SELECT 1 . 5, 1.5e, 0x, x''
+    GO  : 1064
+    RUST: -
+### OTHER (2)
+  SELECT * FROM (VALUES ROW(1,2), ROW(3,4)) AS t(a,b)
+    GO  : ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 48 near "a,b)" ')
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 21 near "VALUES ROW(1,2), ROW(3,4
+  SELECT ((1)); SELECT () IS NULL
+    GO  : ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 23 near ") IS NULL" ')
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 20 near "SELECT () IS NULL" ')

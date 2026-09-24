@@ -1,0 +1,23 @@
+--- go
++++ rust
+@@ -15 +15 @@
+-(1,)
++(4,)
+@@ -29 +29 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 48 near "a,b)" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 48 near "a,b)" 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 21 near "VALUES ROW(1,2), ROW(3,4)) AS t(a,b)" ')
+@@ -39 +39 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 34 near ". \'x\')" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 34 near ". 'x')" 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 34 near ". \'x\')" ')
+@@ -43 +43 @@
+-('utf8mb4', 'utf8mb4_bin')
++('utf8mb4', 'binary')
+@@ -53 +53 @@
+-ERR (1582, "Incorrect parameter count in the call to native function 'format'") | WARN Warning:1292:Truncated incorrect DOUBLE value: 'x'; Warning:1292:Truncated incorrect INTEGER value: 'y'; Error:1582:Incorrect parameter count in the call to native function 'format'
++ERR (1582, "Incorrect parameter count in the call to native function 'format'") | WARN Error:1582:Incorrect parameter count in the call to native function 'format'
+@@ -55 +55 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 23 near ") IS NULL" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 23 near ") IS NULL" 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 20 near "SELECT () IS NULL" ') | WARN Error:1582:Incorrect parameter count in the call to native function 'format'
+@@ -59 +59 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 10 near ". 5, 1.5e, 0x, x\'\'" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 10 near ". 5, 1.5e, 0x, x''" 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 10 near ". 5, 1.5e, 0x, x\'\'" ')
