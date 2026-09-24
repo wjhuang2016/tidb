@@ -1,0 +1,101 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE vg(a INT PRIMARY KEY, b INT)
+(ok)
+=== INSERT INTO vg VALUES (1, 10), (2, 20)
+(ok)
+=== CREATE VIEW v1 AS SELECT a, b * 2 AS b2 FROM vg
+(ok)
+=== SELECT * FROM v1
+(1, 20); (2, 40)
+=== CREATE VIEW v2 AS SELECT * FROM vg WITH CHECK OPTION
+(ok)
+=== SELECT * FROM v2
+(1, 10); (2, 20)
+=== INSERT INTO v2 VALUES (3, 30)
+ERR (1105, 'insert into view v2 is not supported now') | WARN Error:1105:insert into view v2 is not supported now
+=== CREATE VIEW v3(a, c) AS SELECT a, b FROM vg
+(ok) | WARN Error:1105:insert into view v2 is not supported now
+=== SELECT v3.c FROM v3
+(10,); (20,)
+=== CREATE OR REPLACE VIEW v1 AS SELECT a FROM vg
+(ok)
+=== SELECT * FROM v1
+(1,); (2,)
+=== ALTER VIEW v1 AS SELECT b FROM vg
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ALTER VIEW v1 AS SELECT b FROM vg" ')
+=== SELECT * FROM v1
+(1,); (2,)
+=== DROP VIEW v1, v2, v3
+(ok)
+=== CREATE VIEW vd AS SELECT * FROM vg DEFINER = 'root'@'%'
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 44 near "= \'root\'@\'%\'" ')
+=== SELECT * FROM vd
+ERR (1146, "Table 'fdq.vd' doesn't exist") | WARN Error:1146:Table 'fdq.vd' doesn't exist
+=== CREATE VIEW vsql AS SELECT * FROM vg SQL SECURITY INVOKER
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 49 near "SECURITY INVOKER" ') | WARN Error:1146:Table 'fdq.vd' doesn't exist
+=== SELECT * FROM vsql
+ERR (1146, "Table 'fdq.vsql' doesn't exist") | WARN Error:1146:Table 'fdq.vsql' doesn't exist
+=== CREATE TABLE gc(a INT, b INT AS (a + 1) VIRTUAL, c INT AS (a * 2) STORED, KEY ib(b))
+ERR (8200, 'Unsupported a generated expression waits on its DDL course') | WARN Error:1146:Table 'fdq.vsql' doesn't exist
+=== INSERT INTO gc(a) VALUES (1), (2)
+ERR (1146, "Table 'fdq.gc' doesn't exist") | WARN Error:1146:Table 'fdq.gc' doesn't exist
+=== SELECT * FROM gc
+ERR (1146, "Table 'fdq.gc' doesn't exist") | WARN Error:1146:Table 'fdq.gc' doesn't exist
+=== SELECT b FROM gc WHERE b = 2
+ERR (1146, "Table 'fdq.gc' doesn't exist") | WARN Error:1146:Table 'fdq.gc' doesn't exist
+=== SELECT b + c FROM gc
+ERR (1146, "Table 'fdq.gc' doesn't exist") | WARN Error:1146:Table 'fdq.gc' doesn't exist
+=== UPDATE gc SET a = 10 WHERE a = 1
+ERR (1146, "Table 'fdq.gc' doesn't exist") | WARN Error:1146:Table 'fdq.gc' doesn't exist
+=== SELECT * FROM gc
+ERR (1146, "Table 'fdq.gc' doesn't exist") | WARN Error:1146:Table 'fdq.gc' doesn't exist
+=== INSERT INTO gc(a, b) VALUES (5, 5)
+ERR (1146, "Table 'fdq.gc' doesn't exist") | WARN Error:1146:Table 'fdq.gc' doesn't exist
+=== UPDATE gc SET b = 1 WHERE a = 2
+ERR (1146, "Table 'fdq.gc' doesn't exist") | WARN Error:1146:Table 'fdq.gc' doesn't exist
+=== CREATE TABLE gcs(a INT, s VARCHAR(10) AS (CONCAT('x', a)) VIRTUAL, UNIQUE KEY(s))
+ERR (8200, 'Unsupported a generated expression waits on its DDL course') | WARN Error:1146:Table 'fdq.gc' doesn't exist
+=== INSERT INTO gcs(a) VALUES (1), (2)
+ERR (1146, "Table 'fdq.gcs' doesn't exist") | WARN Error:1146:Table 'fdq.gcs' doesn't exist
+=== SELECT * FROM gcs
+ERR (1146, "Table 'fdq.gcs' doesn't exist") | WARN Error:1146:Table 'fdq.gcs' doesn't exist
+=== CREATE TABLE gdt(a INT, d DATETIME DEFAULT CURRENT_TIMESTAMP, d2 DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, d3 TIMESTAMP DEFAULT '2020-01-01 00:00:00')
+(ok)
+=== INSERT INTO gdt(a) VALUES (1)
+(ok)
+=== SELECT a, d3 FROM gdt
+(1, datetime.datetime(2020, 1, 1, 0, 0))
+=== CREATE TABLE dft(a INT DEFAULT (1 + 2), b INT DEFAULT (a))
+ERR (1105, 'a DEFAULT this node cannot evaluate')
+=== INSERT INTO dft VALUES (DEFAULT, DEFAULT)
+ERR (1146, "Table 'fdq.dft' doesn't exist") | WARN Error:1146:Table 'fdq.dft' doesn't exist
+=== SELECT * FROM dft
+ERR (1146, "Table 'fdq.dft' doesn't exist") | WARN Error:1146:Table 'fdq.dft' doesn't exist
+=== INSERT INTO dft(a) VALUES (DEFAULT(a))
+ERR (1146, "Table 'fdq.dft' doesn't exist") | WARN Error:1146:Table 'fdq.dft' doesn't exist
+=== SELECT DEFAULT(a), DEFAULT(b) FROM dft
+ERR (1146, "Table 'fdq.dft' doesn't exist") | WARN Error:1146:Table 'fdq.dft' doesn't exist
+=== CREATE TABLE sr(a INT AUTO_INCREMENT PRIMARY KEY, b INT) AUTO_INCREMENT = 100
+(ok)
+=== INSERT INTO sr(b) VALUES (1)
+(ok)
+=== SELECT * FROM sr
+(100, 1)
+=== SHOW CREATE TABLE sr
+('sr', 'CREATE TABLE `sr` (\n  `a` int NOT NULL AUTO_INCREMENT,\n  `b` int DEFAULT NULL,\n  PRIMARY KEY (`a`) /*T![clustered_index] CLUSTERED */\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=101')
+=== CREATE TABLE ct(a INT CHECK (a > 0) NOT ENFORCED, b INT CONSTRAINT ck1 CHECK (b > 0))
+(ok) | WARN Warning:1105:tidb_enable_check_constraint is off; Warning:1105:tidb_enable_check_constraint is off
+=== INSERT INTO ct VALUES (1, 1)
+(ok)
+=== INSERT INTO ct VALUES (0, 1)
+(ok)
+=== INSERT INTO ct VALUES (1, 0)
+(ok)
+=== ALTER TABLE ct ALTER CHECK ck1 NOT ENFORCED
+(ok) | WARN Warning:1105:tidb_enable_check_constraint is off
+=== INSERT INTO ct VALUES (1, -5)
+(ok)
+=== DROP TABLE ct
+(ok)

@@ -1,0 +1,97 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE isx(a INT PRIMARY KEY, b VARCHAR(20) COLLATE utf8mb4_general_ci, INDEX(b))
+(ok)
+=== INSERT INTO isx VALUES (1, 'aa'), (2, 'bb')
+(ok)
+=== SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE, ENGINE, TABLE_ROWS, TABLE_COLLATION FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'fdq'
+('fdq', 'isx', 'BASE TABLE', 'InnoDB', 0, 'utf8mb4_bin')
+=== SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, COLUMN_TYPE, IS_NULLABLE, COLUMN_KEY, EXTRA FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'fdq' ORDER BY TABLE_NAME, ORDINAL_POSITION
+('isx', 'a', 1, 'int', 'NO', 'PRI', ''); ('isx', 'b', 2, 'varchar(20)', 'YES', 'MUL', '')
+=== SELECT INDEX_NAME, SEQ_IN_INDEX, COLUMN_NAME, NON_UNIQUE, INDEX_TYPE FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = 'fdq'
+('PRIMARY', 1, 'a', '0', 'BTREE'); ('b', 1, 'b', '1', 'BTREE')
+=== SELECT * FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = 'fdq'
+('def', 'fdq', 'PRIMARY', 'def', 'fdq', 'isx', 'a', 1, 1, None, None, None)
+=== SELECT * FROM information_schema.SCHEMA_PRIVILEGES
+(ok)
+=== SELECT * FROM information_schema.TABLE_PRIVILEGES
+(ok)
+=== SELECT * FROM information_schema.COLUMN_PRIVILEGES
+(ok)
+=== SELECT * FROM information_schema.USER_PRIVILEGES
+("'root'@'%'", 'def', 'SELECT', 'YES'); ("'root'@'%'", 'def', 'INSERT', 'YES'); ("'root'@'%'", 'def', 'UPDATE', 'YES'); ("'root'@'%'", 'def', 'DELETE', 'YES'); ("'root'@'%'", 'def', 'CREATE', 'YES'); ("'root'@'%'", 'def', 'DROP', 'YES'); ("'root'@'%'", 'def', 'PROCESS', 'YES'); ("'root'@'%'", 'def', 'REFERENCES', 'YES'); ("'root'@'%'", 'def', 'ALTER', 'YES'); ("'root'@'%'", 'def', 'SHOW DATABASES', 'YES'); ("'root'@'%'", 'def', 'SUPER', 'YES'); ("'root'@'%'", 'def', 'EXECUTE', 'YES'); ("'root'@'%'", 'def', 'INDEX', 'YES'); ("'root'@'%'", 'def', 'CREATE USER', 'YES'); ("'root'@'%'", 'def', 'CREATE TABLESPACE', 'YES'); ("'root'@'%'", 'def', 'TRIGGER', 'YES'); ("'root'@'%'", 'def', 'CREATE VIEW', 'YES'); ("'root'@'%'", 'def', 'SHOW VIEW', 'YES'); ("'root'@'%'", 'def', 'OPERATE VIEW', 'YES'); ("'root'@'%'", 'def', 'CREATE ROLE', 'YES'); ("'root'@'%'", 'def', 'DROP ROLE', 'YES'); ("'root'@'%'", 'def', 'CREATE TEMPORARY TABLES', 'YES'); ("'root'@'%'", 'def', 'LOCK TABLES', 'YES'); ("'root'@'%'", 'def', 'CREATE ROUTINE', 'YES'); ("'root'@'%'", 'def', 'ALTER ROUTINE', 'YES'); ("'root'@'%'", 'def', 'EVENT', 'YES'); ("'root'@'%'", 'def', 'SHUTDOWN', 'YES'); ("'root'@'%'", 'def', 'RELOAD', 'YES'); ("'root'@'%'", 'def', 'FILE', 'YES'); ("'root'@'%'", 'def', 'CONFIG', 'YES'); ("'root'@'%'", 'def', 'REPLICATION CLIENT', 'YES'); ("'root'@'%'", 'def', 'REPLICATION SLAVE', 'YES')
+=== SELECT * FROM information_schema.COLLATIONS WHERE COLLATION_NAME LIKE 'utf8mb4%' LIMIT 30
+('utf8mb4_0900_ai_ci', 'utf8mb4', 255, '', 'Yes', 0, 'NO PAD'); ('utf8mb4_0900_bin', 'utf8mb4', 309, '', 'Yes', 1, 'NO PAD'); ('utf8mb4_bin', 'utf8mb4', 46, 'Yes', 'Yes', 1, 'PAD SPACE'); ('utf8mb4_general_ci', 'utf8mb4', 45, '', 'Yes', 1, 'PAD SPACE'); ('utf8mb4_unicode_ci', 'utf8mb4', 224, '', 'Yes', 8, 'PAD SPACE')
+=== SELECT * FROM information_schema.CHARACTER_SETS LIMIT 50
+('ascii', 'ascii_bin', 'US ASCII', 1); ('binary', 'binary', 'binary', 1); ('gb18030', 'gb18030_chinese_ci', 'China National Standard GB18030', 4); ('gbk', 'gbk_chinese_ci', 'Chinese Internal Code Specification', 2); ('latin1', 'latin1_bin', 'Latin1', 1); ('utf8', 'utf8_bin', 'UTF-8 Unicode', 3); ('utf8mb4', 'utf8mb4_bin', 'UTF-8 Unicode', 4)
+=== SELECT * FROM information_schema.ENGINES
+ERR (1146, "Table 'INFORMATION_SCHEMA.ENGINES' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.ENGINES' doesn't exist
+=== SELECT * FROM information_schema.SCHEMATA ORDER BY SCHEMA_NAME
+('def', 'INFORMATION_SCHEMA', 'utf8mb4', 'utf8mb4_bin', None, None); ('def', 'chk', 'utf8mb4', 'utf8mb4_bin', None, None); ('def', 'chk2', 'utf8mb4', 'utf8mb4_bin', None, None); ('def', 'fdq', 'utf8mb4', 'utf8mb4_bin', None, None); ('def', 'mysql', 'utf8mb4', 'utf8mb4_bin', None, None); ('def', 'test', 'utf8mb4', 'utf8mb4_bin', None, None)
+=== SELECT * FROM information_schema.VIEWS WHERE TABLE_SCHEMA = 'fdq'
+(ok)
+=== SELECT * FROM information_schema.TRIGGERS
+ERR (1146, "Table 'INFORMATION_SCHEMA.TRIGGERS' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.TRIGGERS' doesn't exist
+=== SELECT * FROM information_schema.ROUTINES
+ERR (1146, "Table 'INFORMATION_SCHEMA.ROUTINES' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.ROUTINES' doesn't exist
+=== SELECT * FROM information_schema.EVENTS
+ERR (1146, "Table 'INFORMATION_SCHEMA.EVENTS' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.EVENTS' doesn't exist
+=== SELECT * FROM information_schema.PARAMETERS
+ERR (1146, "Table 'INFORMATION_SCHEMA.PARAMETERS' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.PARAMETERS' doesn't exist
+=== SELECT * FROM information_schema.PROCESSLIST
+(2097182, 'root', 'ADDR', 'fdq', 'Query', 0, 'autocommit', 'SELECT * FROM information_schema.PROCESSLIST', '', 0, None, None, None, 0, '', '', '', None, 0, 0); (2305843009213693952, 'root', 'ADDR', 'test', 'Sleep', 0, 'autocommit', None, '', 0, None, None, None, 0, '', '', '', None, 0, 0); (2305843009213693953, 'root', 'ADDR', 'test', 'Sleep', 0, 'autocommit', None, '', 0, None, None, None, 0, '', '', '', None, 0, 0)
+=== SELECT * FROM information_schema.PLUGINS
+ERR (1146, "Table 'INFORMATION_SCHEMA.PLUGINS' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.PLUGINS' doesn't exist
+=== SELECT * FROM information_schema.SESSION_VARIABLES LIMIT 20
+ERR (1146, "Table 'INFORMATION_SCHEMA.SESSION_VARIABLES' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.SESSION_VARIABLES' doesn't exist
+=== SELECT * FROM information_schema.GLOBAL_VARIABLES LIMIT 20
+ERR (1146, "Table 'INFORMATION_SCHEMA.GLOBAL_VARIABLES' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.GLOBAL_VARIABLES' doesn't exist
+=== SELECT * FROM information_schema.SESSION_STATUS LIMIT 20
+ERR (1146, "Table 'INFORMATION_SCHEMA.SESSION_STATUS' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.SESSION_STATUS' doesn't exist
+=== SELECT * FROM information_schema.GLOBAL_STATUS LIMIT 20
+ERR (1146, "Table 'INFORMATION_SCHEMA.GLOBAL_STATUS' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.GLOBAL_STATUS' doesn't exist
+=== SELECT * FROM information_schema.PARTITIONS LIMIT 5
+('def', 'INFORMATION_SCHEMA', 'character_sets', None, None, None, None, None, None, None, None, None, 0, 0, 0, None, 0, None, None, None, None, None, None, None, None, None, None, None, None); ('def', 'INFORMATION_SCHEMA', 'client_errors_summary_by_host', None, None, None, None, None, None, None, None, None, 0, 0, 0, None, 0, None, None, None, None, None, None, None, None, None, None, None, None); ('def', 'INFORMATION_SCHEMA', 'client_errors_summary_by_user', None, None, None, None, None, None, None, None, None, 0, 0, 0, None, 0, None, None, None, None, None, None, None, None, None, None, None, None); ('def', 'INFORMATION_SCHEMA', 'client_errors_summary_global', None, None, None, None, None, None, None, None, None, 0, 0, 0, None, 0, None, None, None, None, None, None, None, None, None, None, None, None); ('def', 'INFORMATION_SCHEMA', 'cluster_info', None, None, None, None, None, None, None, None, None, 0, 0, 0, None, 0, None, None, None, None, None, None, None, None, None, None, None, None)
+=== SELECT * FROM information_schema.SIZING LIMIT 5
+ERR (1146, "Table 'INFORMATION_SCHEMA.SIZING' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.SIZING' doesn't exist
+=== SELECT * FROM information_schema.TIDB_INDEXES LIMIT 5
+ERR (1146, "Table 'INFORMATION_SCHEMA.TIDB_INDEXES' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.TIDB_INDEXES' doesn't exist
+=== SELECT * FROM information_schema.TIDB_TABLES LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.TIDB_TABLES' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.TIDB_TABLES' doesn't exist
+=== SELECT * FROM information_schema.TIFLASH_SEGMENTS LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.TIFLASH_SEGMENTS' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.TIFLASH_SEGMENTS' doesn't exist
+=== SELECT * FROM information_schema.TIFLASH_TABLES LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.TIFLASH_TABLES' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.TIFLASH_TABLES' doesn't exist
+=== SELECT * FROM information_schema.TIKV_STORE_STATUS LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.TIKV_STORE_STATUS' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.TIKV_STORE_STATUS' doesn't exist
+=== SELECT * FROM information_schema.CLUSTER_INFO
+('tidb', 'ADDR', 'ADDR', '8.0.11-TiDB-v8.4.0-this-is-a-placeholder', '7aff167d0de722eaee7b497ceb194bcb8898d6cc', datetime.datetime(2026, 9, 24, 7, 11, 4), '8m48s', 0)
+=== SELECT * FROM information_schema.CLUSTER_CONFIG LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.CLUSTER_CONFIG' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.CLUSTER_CONFIG' doesn't exist
+=== SELECT * FROM information_schema.CLUSTER_LOG LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.CLUSTER_LOG' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.CLUSTER_LOG' doesn't exist
+=== SELECT * FROM information_schema.INSPECTION_SUMMARY LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.INSPECTION_SUMMARY' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.INSPECTION_SUMMARY' doesn't exist
+=== SELECT * FROM information_schema.INSPECTION_RESULT LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.INSPECTION_RESULT' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.INSPECTION_RESULT' doesn't exist
+=== SELECT * FROM information_schema.METRICS_SUMMARY LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.METRICS_SUMMARY' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.METRICS_SUMMARY' doesn't exist
+=== SELECT * FROM information_schema.METRICS_TABLES LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.METRICS_TABLES' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.METRICS_TABLES' doesn't exist
+=== SELECT * FROM information_schema.RUNAWAY_WATCHES LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.RUNAWAY_WATCHES' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.RUNAWAY_WATCHES' doesn't exist
+=== SELECT * FROM information_schema.RUNAWAY_TASKS LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.RUNAWAY_TASKS' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.RUNAWAY_TASKS' doesn't exist
+=== SELECT * FROM information_schema.KEYSPACE LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.KEYSPACE' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.KEYSPACE' doesn't exist
+=== SELECT * FROM information_schema.TTL_TABLE_STATUS LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.TTL_TABLE_STATUS' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.TTL_TABLE_STATUS' doesn't exist
+=== SELECT * FROM information_schema.RESOURCE_GROUPS
+ERR (1146, "Table 'INFORMATION_SCHEMA.RESOURCE_GROUPS' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.RESOURCE_GROUPS' doesn't exist
+=== SELECT * FROM information_schema.SEQUENCES LIMIT 3
+ERR (1146, "Table 'INFORMATION_SCHEMA.SEQUENCES' doesn't exist") | WARN Error:1146:Table 'INFORMATION_SCHEMA.SEQUENCES' doesn't exist
+=== SELECT * FROM performance_schema.events_statements_summary_by_digest LIMIT 3
+ERR (1049, "Unknown database 'performance_schema'") | WARN Error:1049:Unknown database 'performance_schema'
+=== SELECT * FROM metrics_schema.upstream_dashboard_emails LIMIT 3
+ERR (1049, "Unknown database 'metrics_schema'") | WARN Error:1049:Unknown database 'metrics_schema'

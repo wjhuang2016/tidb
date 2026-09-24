@@ -1,0 +1,83 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE cl(a VARCHAR(20), b INT)
+(ok)
+=== INSERT INTO cl VALUES ('a',1),('A',2),('b ',3),('ß',4),('ss',5),('ａ',6),('中',7),('Ä',8),('ä',9)
+(ok)
+=== >>>
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 2 near ">>>" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 2 near ">>>" 
+=== SELECT 'a' = 'A' COLLATE utf8mb4_general_ci
+(1,)
+=== SELECT 'a' = 'A' COLLATE utf8mb4_bin
+(0,)
+=== SELECT 'a' = 'A ' COLLATE utf8mb4_general_ci
+(1,)
+=== SELECT 'a' = 'A ' COLLATE utf8mb4_0900_ai_ci
+(0,)
+=== SELECT 'a' = 'A ' COLLATE utf8mb4_0900_bin
+(0,)
+=== SELECT 'ß' = 'ss' COLLATE utf8mb4_0900_ai_ci
+(1,)
+=== SELECT 'Ä' = 'AE' COLLATE utf8mb4_0900_ai_ci
+(0,)
+=== SELECT 'ａ' = 'a' COLLATE utf8mb4_general_ci
+(0,)
+=== SELECT '中' = '中' COLLATE utf8mb4_general_ci
+(1,)
+=== SELECT GROUP_CONCAT(a ORDER BY a SEPARATOR ',') FROM cl
+('A,a,b ,ss,Ä,ß,ä,中,ａ',)
+=== SELECT a, COUNT(*) FROM cl GROUP BY a ORDER BY a
+('A', 1); ('a', 1); ('b ', 1); ('ss', 1); ('Ä', 1); ('ß', 1); ('ä', 1); ('中', 1); ('ａ', 1)
+=== SELECT DISTINCT a FROM cl ORDER BY a COLLATE utf8mb4_general_ci
+('ä',); ('Ä',); ('a',); ('A',); ('b ',); ('ß',); ('ss',); ('中',); ('ａ',)
+=== SELECT a FROM cl WHERE a LIKE 'a%'
+('a',)
+=== SELECT a FROM cl WHERE a LIKE '%S%'
+(ok)
+=== SELECT BINARY 'a ' = 'a'
+(0,)
+=== SELECT a = BINARY 'a ' FROM cl WHERE b = 1
+(0,)
+=== SELECT SOUNDEX('a'), SOUNDEX('ß')
+ERR (1305, 'FUNCTION fdq.soundex does not exist') | WARN Error:1305:FUNCTION fdq.soundex does not exist
+=== SELECT INSTR('aA', 'a'), LOCATE('A', 'aA') COLLATE utf8mb4_general_ci
+ERR (1253, "COLLATION 'utf8mb4_general_ci' is not valid for CHARACTER SET 'binary'") | WARN Error:1253:COLLATION 'utf8mb4_general_ci' is not valid for CHARACTER SET 'binary'
+=== SELECT STRCMP('a', 'A')
+(1,)
+=== SELECT a FROM cl ORDER BY a COLLATE utf8mb4_general_ci LIMIT 3
+('a',); ('A',); ('b ',)
+=== CREATE TABLE cl2(a VARCHAR(20) COLLATE utf8mb4_general_ci, KEY(a))
+(ok)
+=== INSERT INTO cl2 VALUES ('a'),('A'),('b ')
+(ok)
+=== SELECT COUNT(*) FROM cl2 WHERE a = 'a'
+(2,)
+=== SELECT COUNT(*) FROM cl2 WHERE a = 'a '
+(2,)
+=== SHOW INDEX FROM cl2
+('cl2', 1, 'a', 1, 'a', 'A', 0, None, None, 'YES', 'BTREE', '', '', 'YES', None, 'NO', 'NO')
+=== CREATE TABLE cl3(a VARCHAR(20) COLLATE utf8mb4_0900_ai_ci, KEY(a))
+(ok)
+=== SELECT COUNT(*) FROM cl3 WHERE a = 'a'
+(0,)
+=== CREATE TABLE cl4(a CHAR(10) CHARACTER SET gbk)
+(ok)
+=== INSERT INTO cl4 VALUES (_gbk 0xD6D0)
+ERR (1115, "Unsupported character introducer: 'gbk'") | WARN Error:1115:Unsupported character introducer: 'gbk'
+=== SELECT a, HEX(a), CHAR_LENGTH(a) FROM cl4
+(ok)
+=== SELECT CONVERT(a USING utf8mb4) FROM cl4
+(ok)
+=== CREATE TABLE cl5(a VARCHAR(10) COLLATE latin1_swedish_ci)
+ERR (1273, "Unsupported collation when new collation is enabled: 'latin1_swedish_ci'") | WARN Error:1273:Unsupported collation when new collation is enabled: 'latin1_swedish_ci'
+=== INSERT INTO cl5 VALUES (_latin1 0xC4)
+ERR (1146, "Table 'fdq.cl5' doesn't exist") | WARN Error:1146:Table 'fdq.cl5' doesn't exist
+=== SELECT a = _latin1 0xC5 FROM cl5
+ERR (1146, "Table 'fdq.cl5' doesn't exist") | WARN Error:1146:Table 'fdq.cl5' doesn't exist
+=== SELECT HEX(WEIGHT_STRING('a' COLLATE utf8mb4_general_ci))
+('0041',)
+=== SELECT HEX(WEIGHT_STRING('a' COLLATE utf8mb4_0900_ai_ci))
+('1C47',)
+=== SELECT HEX(WEIGHT_STRING('ä' COLLATE utf8mb4_general_ci))
+('0041',)

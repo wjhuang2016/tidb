@@ -1,0 +1,119 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE tx1(a INT PRIMARY KEY, b INT)
+(ok)
+=== INSERT INTO tx1 VALUES (1,10),(2,20),(3,30)
+(ok)
+=== START TRANSACTION
+(ok)
+=== SAVEPOINT sp1
+(ok)
+=== UPDATE tx1 SET b = 11 WHERE a = 1
+(ok)
+=== SAVEPOINT sp2
+(ok)
+=== UPDATE tx1 SET b = 12 WHERE a = 1
+(ok)
+=== ROLLBACK TO sp1
+(ok)
+=== SELECT b FROM tx1 WHERE a = 1
+(10,)
+=== ROLLBACK TO sp2
+ERR (1305, 'SAVEPOINT sp2 does not exist')
+=== ROLLBACK
+(ok)
+=== SELECT b FROM tx1 WHERE a = 1
+(10,)
+=== START TRANSACTION READ ONLY
+ERR (1235, 'function READ ONLY has only noop implementation in tidb now, use tidb_enable_noop_functions to enable these functions')
+=== SELECT * FROM tx1
+(1, 10); (2, 20); (3, 30)
+=== UPDATE tx1 SET b = 99 WHERE a = 1
+(ok)
+=== COMMIT
+(ok)
+=== SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+ERR (8048, "The isolation level 'READ-UNCOMMITTED' is not supported. Set tidb_skip_isolation_level_check=1 to skip this error")
+=== START TRANSACTION; COMMIT
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE
+ERR (8048, "The isolation level 'SERIALIZABLE' is not supported. Set tidb_skip_isolation_level_check=1 to skip this error")
+=== START TRANSACTION; COMMIT
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== SET SESSION TRANSACTION ISOLATION LEVEL BOGUS
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 45 near "BOGUS" ')
+=== SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+(ok)
+=== BEGIN
+(ok)
+=== SELECT * FROM tx1 WHERE a = 1 FOR UPDATE
+(1, 99)
+=== COMMIT
+(ok)
+=== BEGIN
+(ok)
+=== SELECT * FROM tx1 WHERE a = 1 FOR SHARE
+ERR (1235, 'function LOCK IN SHARE MODE has only noop implementation in tidb now, use tidb_enable_noop_functions to enable these functions') | WARN Error:1235:function LOCK IN SHARE MODE has only noop implementation in tidb now, use tidb_enable_noop_functions to enable these functions
+=== COMMIT
+(ok) | WARN Error:1235:function LOCK IN SHARE MODE has only noop implementation in tidb now, use tidb_enable_noop_functions to enable these functions
+=== BEGIN
+(ok) | WARN Error:1235:function LOCK IN SHARE MODE has only noop implementation in tidb now, use tidb_enable_noop_functions to enable these functions
+=== SELECT * FROM tx1 WHERE a = 1 LOCK IN SHARE MODE
+ERR (1235, 'function LOCK IN SHARE MODE has only noop implementation in tidb now, use tidb_enable_noop_functions to enable these functions') | WARN Error:1235:function LOCK IN SHARE MODE has only noop implementation in tidb now, use tidb_enable_noop_functions to enable these functions
+=== COMMIT
+(ok) | WARN Error:1235:function LOCK IN SHARE MODE has only noop implementation in tidb now, use tidb_enable_noop_functions to enable these functions
+=== BEGIN
+(ok) | WARN Error:1235:function LOCK IN SHARE MODE has only noop implementation in tidb now, use tidb_enable_noop_functions to enable these functions
+=== SELECT * FROM tx1 WHERE a = 1 FOR UPDATE NOWAIT
+(1, 99)
+=== COMMIT
+(ok)
+=== BEGIN
+(ok)
+=== SELECT * FROM tx1 WHERE a = 1 FOR UPDATE SKIP LOCKED
+ERR (1235, "This version of TiDB doesn't yet support 'SELECT lock mode'") | WARN Error:1235:This version of TiDB doesn't yet support 'SELECT lock mode'
+=== COMMIT
+(ok) | WARN Error:1235:This version of TiDB doesn't yet support 'SELECT lock mode'
+=== BEGIN
+(ok) | WARN Error:1235:This version of TiDB doesn't yet support 'SELECT lock mode'
+=== SELECT * FROM tx1 WHERE a = 1 FOR UPDATE OF tx1
+(1, 99)
+=== COMMIT
+(ok)
+=== BEGIN OPTIMISTIC
+(ok)
+=== COMMIT
+(ok)
+=== BEGIN PESSIMISTIC
+(ok)
+=== COMMIT
+(ok)
+=== SET tidb_txn_mode = 'optimistic'
+(ok)
+=== BEGIN; COMMIT
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== SET tidb_txn_mode = 'pessimistic'
+(ok)
+=== BEGIN; COMMIT
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== SET autocommit = 0
+(ok)
+=== INSERT INTO tx1 VALUES (4, 40)
+(ok)
+=== ROLLBACK
+(ok)
+=== SELECT COUNT(*) FROM tx1
+(3,)
+=== SET autocommit = 1
+(ok)
+=== SAVEPOINT nonexistent
+(ok)
+=== ROLLBACK TO sp_after_commit
+ERR (1305, 'SAVEPOINT sp_after_commit does not exist')
+=== RELEASE SAVEPOINT sp1
+ERR (1305, 'SAVEPOINT sp1 does not exist')
+=== RELEASE SAVEPOINT nonexistent
+ERR (1305, 'SAVEPOINT nonexistent does not exist')
+=== BEGIN; SAVEPOINT s; SAVEPOINT s; RELEASE SAVEPOINT s; RELEASE SAVEPOINT s; COMMIT
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")

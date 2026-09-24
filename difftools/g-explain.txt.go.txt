@@ -1,0 +1,69 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE ex1(a INT PRIMARY KEY, b INT, c VARCHAR(5), KEY ib(b), KEY ic(c, b))
+(ok)
+=== INSERT INTO ex1 VALUES (1,1,'x'),(2,2,'y'),(3,3,'z')
+(ok)
+=== EXPLAIN SELECT * FROM ex1 WHERE a = 1
+('Point_Get_1', '1.00', 'root', 'table:ex1', 'handle:1')
+=== EXPLAIN SELECT * FROM ex1 WHERE b = 1
+('IndexLookUp_7', '10.00', 'root', '', ''); ('├─IndexRangeScan_5(Build)', '10.00', 'cop[tikv]', 'table:ex1, index:ib(b)', 'range:[1,1], keep order:false, stats:pseudo'); ('└─TableRowIDScan_6(Probe)', '10.00', 'cop[tikv]', 'table:ex1', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM ex1 WHERE b > 1 AND c = 'y'
+('IndexReader_6', '33.33', 'root', '', 'index:IndexRangeScan_5'); ('└─IndexRangeScan_5', '33.33', 'cop[tikv]', 'table:ex1, index:ic(c, b)', 'range:("y" 1,"y" +inf], keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM ex1 WHERE b IN (1, 2)
+('IndexLookUp_7', '20.00', 'root', '', ''); ('├─IndexRangeScan_5(Build)', '20.00', 'cop[tikv]', 'table:ex1, index:ib(b)', 'range:[1,1], [2,2], keep order:false, stats:pseudo'); ('└─TableRowIDScan_6(Probe)', '20.00', 'cop[tikv]', 'table:ex1', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM ex1 WHERE a IN (1, 2)
+('Batch_Point_Get_1', '2.00', 'root', 'table:ex1', 'handle:[1 2], keep order:false, desc:false')
+=== EXPLAIN SELECT * FROM ex1 WHERE b BETWEEN 1 AND 2
+('IndexReader_13', '250.00', 'root', '', 'index:Selection_12'); ('└─Selection_12', '250.00', 'cop[tikv]', '', 'ge(fdq.ex1.b, 1), le(fdq.ex1.b, 2)'); ('  └─IndexFullScan_11', '10000.00', 'cop[tikv]', 'table:ex1, index:ic(c, b)', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM ex1 WHERE b LIKE 'x%'
+('IndexReader_10', '1000.00', 'root', '', 'index:Selection_9'); ('└─Selection_9', '1000.00', 'cop[tikv]', '', 'like(cast(fdq.ex1.b, var_string(20)), "x%", 92)'); ('  └─IndexFullScan_8', '10000.00', 'cop[tikv]', 'table:ex1, index:ic(c, b)', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM ex1 WHERE c LIKE '%x'
+('IndexReader_10', '1000.00', 'root', '', 'index:Selection_9'); ('└─Selection_9', '1000.00', 'cop[tikv]', '', 'like(fdq.ex1.c, "%x", 92)'); ('  └─IndexFullScan_8', '10000.00', 'cop[tikv]', 'table:ex1, index:ic(c, b)', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM ex1 ORDER BY b
+('Sort_4', '10000.00', 'root', '', 'fdq.ex1.b'); ('└─IndexReader_10', '10000.00', 'root', '', 'index:IndexFullScan_9'); ('  └─IndexFullScan_9', '10000.00', 'cop[tikv]', 'table:ex1, index:ic(c, b)', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM ex1 ORDER BY b DESC
+('Sort_4', '10000.00', 'root', '', 'fdq.ex1.b:desc'); ('└─IndexReader_10', '10000.00', 'root', '', 'index:IndexFullScan_9'); ('  └─IndexFullScan_9', '10000.00', 'cop[tikv]', 'table:ex1, index:ic(c, b)', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM ex1 GROUP BY b
+ERR (1055, "Expression #1 of SELECT list is not in GROUP BY clause and contains nonaggregated column 'fdq.ex1.a' which is not functionally dependent on columns in GROUP BY clause; this is incompatible with sql_mode=only_full_group_by") | WARN Error:1055:Expression #1 of SELECT list is not in GROUP BY clause and contains nonaggregated column 'fdq.ex1.a' which is not functionally dependent on columns in GROUP BY clause; this is incompatible 
+=== EXPLAIN SELECT COUNT(*) FROM ex1
+('HashAgg_13', '1.00', 'root', '', 'funcs:count(Column#9)->Column#5'); ('└─IndexReader_14', '1.00', 'root', '', 'index:HashAgg_5'); ('  └─HashAgg_5', '1.00', 'cop[tikv]', '', 'funcs:count(1)->Column#9'); ('    └─IndexFullScan_11', '10000.00', 'cop[tikv]', 'table:ex1, index:ib(b)', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT DISTINCT b FROM ex1
+('StreamAgg_21', '8000.00', 'root', '', 'group by:fdq.ex1.b, funcs:firstrow(fdq.ex1.b)->fdq.ex1.b'); ('└─IndexReader_22', '8000.00', 'root', '', 'index:StreamAgg_7'); ('  └─StreamAgg_7', '8000.00', 'cop[tikv]', '', 'group by:fdq.ex1.b, '); ('    └─IndexFullScan_20', '10000.00', 'cop[tikv]', 'table:ex1, index:ib(b)', 'keep order:true, stats:pseudo')
+=== EXPLAIN SELECT * FROM ex1 LIMIT 1
+('Limit_7', '1.00', 'root', '', 'offset:0, count:1'); ('└─IndexReader_13', '1.00', 'root', '', 'index:Limit_12'); ('  └─Limit_12', '1.00', 'cop[tikv]', '', 'offset:0, count:1'); ('    └─IndexFullScan_11', '1.00', 'cop[tikv]', 'table:ex1, index:ic(c, b)', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM ex1 LIMIT 1, 2
+('Limit_7', '2.00', 'root', '', 'offset:1, count:2'); ('└─IndexReader_13', '3.00', 'root', '', 'index:Limit_12'); ('  └─Limit_12', '3.00', 'cop[tikv]', '', 'offset:0, count:3'); ('    └─IndexFullScan_11', '3.00', 'cop[tikv]', 'table:ex1, index:ic(c, b)', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT SQL_NO_CACHE * FROM ex1
+('IndexReader_7', '10000.00', 'root', '', 'index:IndexFullScan_6'); ('└─IndexFullScan_6', '10000.00', 'cop[tikv]', 'table:ex1, index:ic(c, b)', 'keep order:false, stats:pseudo')
+=== EXPLAIN FORMAT = 'brief' SELECT * FROM ex1 WHERE a = 1
+('Point_Get', '1.00', 'root', 'table:ex1', 'handle:1')
+=== EXPLAIN FORMAT = 'dot' SELECT * FROM ex1 WHERE a = 1
+('\ndigraph Point_Get_1 {\nsubgraph cluster1{\nnode [style=filled, color=lightgrey]\ncolor=black\nlabel = "root"\n"Point_Get_1"\n}\n}\n',)
+=== EXPLAIN FORMAT = 'row' SELECT * FROM ex1 WHERE a = 1
+('Point_Get_1', '1.00', 'root', 'table:ex1', 'handle:1')
+=== EXPLAIN FORMAT = 'cost_trace' SELECT * FROM ex1 WHERE a = 1
+('Point_Get_1', '1.00', '0.00', 'N/A', 'root', 'table:ex1', 'handle:1')
+=== EXPLAIN ANALYZE SELECT * FROM ex1 WHERE a = 1
+('Point_Get_1', '1.00', '1', 'root', 'table:ex1', 'time:40.9µs, open:1.22µs, close:3.48µs, loops:2, RU:0.47, Get:{num_rpc:1, total_time:13.7µs}', 'handle:1', 'N/A', 'N/A')
+=== EXPLAIN FOR CONNECTION 999999
+ERR (1094, 'Unknown thread id: 999999') | WARN Error:1094:Unknown thread id: 999999
+=== EXPLAIN SELECT (SELECT MAX(b) FROM ex1) FROM ex1
+('Projection_50', '10000.00', 'root', '', 'ScalarQueryCol#14(3)->Column#15'); ('└─IndexReader_54', '10000.00', 'root', '', 'index:IndexFullScan_53'); ('  └─IndexFullScan_53', '10000.00', 'cop[tikv]', 'table:ex1, index:ib(b)', 'keep order:false, stats:pseudo'); ('ScalarSubQuery_49', 'N/A', 'root', '', 'Output: ScalarQueryCol#14'); ('└─MaxOneRow_12', '1.00', 'root', '', ''); ('  └─StreamAgg_18', '1.00', 'root', '', 'funcs:max(fdq.ex1.b)->Column#13'); ('    └─Limit_42', '1.00', 'root', '', 'offset:0, count:1'); ('      └─IndexReader_48', '1.00', 'root', '', 'index:Limit_47'); ('        └─Limit_47', '1.00', 'cop[tikv]', '', 'offset:0, count:1'); ('          └─IndexFullScan_32', '1.00', 'cop[tikv]', 'table:ex1, index:ib(b)', 'keep order:true, desc, stats:pseudo')
+=== EXPLAIN SELECT * FROM ex1 e1 WHERE b > (SELECT AVG(b) FROM ex1)
+('IndexReader_47', '3333.33', 'root', '', 'index:Selection_46'); ('└─Selection_46', '3333.33', 'cop[tikv]', '', 'gt(fdq.ex1.b, ScalarQueryCol#18(2))'); ('  └─IndexFullScan_45', '10000.00', 'cop[tikv]', 'table:e1, index:ic(c, b)', 'keep order:false, stats:pseudo'); ('ScalarSubQuery_36', 'N/A', 'root', '', 'Output: ScalarQueryCol#18'); ('└─MaxOneRow_7', '1.00', 'root', '', ''); ('  └─HashAgg_17', '1.00', 'root', '', 'funcs:avg(Column#11, Column#12)->Column#9'); ('    └─IndexReader_18', '1.00', 'root', '', 'index:HashAgg_9'); ('      └─HashAgg_9', '1.00', 'cop[tikv]', '', 'funcs:count(fdq.ex1.b)->Column#11, funcs:sum(fdq.ex1.b)->Column#12'); ('        └─IndexFullScan_15', '10000.00', 'cop[tikv]', 'table:ex1, index:ib(b)', 'keep order:false, stats:pseudo')
+=== EXPLAIN UPDATE ex1 SET b = 1 WHERE a = 1
+('Update_3', 'N/A', 'root', '', 'N/A'); ('└─Point_Get_1', '1.00', 'root', 'table:ex1', 'handle:1')
+=== EXPLAIN DELETE FROM ex1 WHERE a = 1
+('Delete_2', 'N/A', 'root', '', 'N/A'); ('└─Point_Get_1', '1.00', 'root', 'table:ex1', 'handle:1')
+=== EXPLAIN INSERT INTO ex1 VALUES (9, 9, 'q')
+('Insert_1', 'N/A', 'root', '', 'N/A')
+=== EXPLAIN FOR UPDATE SELECT * FROM ex1 WHERE a = 1
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 18 near "UPDATE SELECT * FROM ex1 WHERE a = 1" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 18 near "UPDATE SELECT * FROM ex1 WHERE a = 1" 
+=== EXPLAIN SELECT * FROM ex1 IGNORE INDEX(ib) WHERE b = 1
+('IndexReader_10', '10.00', 'root', '', 'index:Selection_9'); ('└─Selection_9', '10.00', 'cop[tikv]', '', 'eq(fdq.ex1.b, 1)'); ('  └─IndexFullScan_8', '10000.00', 'cop[tikv]', 'table:ex1, index:ic(c, b)', 'keep order:false, stats:pseudo')
+=== EXPLAIN WITH cte AS (SELECT * FROM ex1) SELECT * FROM cte
+('IndexReader_11', '10000.00', 'root', '', 'index:IndexFullScan_10'); ('└─IndexFullScan_10', '10000.00', 'cop[tikv]', 'table:ex1, index:ic(c, b)', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM ex1 WHERE b = 1 UNION SELECT * FROM ex1 WHERE c = 'x'
+('HashAgg_13', '16.00', 'root', '', 'group by:Column#10, Column#11, Column#9, funcs:firstrow(Column#9)->Column#9, funcs:firstrow(Column#10)->Column#10, funcs:firstrow(Column#11)->Column#11'); ('└─Union_14', '20.00', 'root', '', ''); ('  ├─IndexLookUp_19', '10.00', 'root', '', ''); ('  │ ├─IndexRangeScan_17(Build)', '10.00', 'cop[tikv]', 'table:ex1, index:ib(b)', 'range:[1,1], keep order:false, stats:pseudo'); ('  │ └─TableRowIDScan_18(Probe)', '10.00', 'cop[tikv]', 'table:ex1', 'keep order:false, stats:pseudo'); ('  └─IndexReader_22', '10.00', 'root', '', 'index:IndexRangeScan_21'); ('    └─IndexRangeScan_21', '10.00', 'cop[tikv]', 'table:ex1, index:ic(c, b)', 'range:["x","x"], keep order:false, stats:pseudo')

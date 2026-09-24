@@ -1,0 +1,89 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE jt(a JSON, b INT)
+(ok)
+=== INSERT INTO jt VALUES ('{"x":[1,2,{"y":"z"}],"k":null}', 1)
+(ok)
+=== SELECT JSON_EXTRACT(a, '$.x[1]') FROM jt
+('2',)
+=== SELECT JSON_EXTRACT(a, '$.x[2].y') FROM jt
+('"z"',)
+=== SELECT JSON_EXTRACT(a, '$.x[*]') FROM jt
+('[1, 2, {"y": "z"}]',)
+=== SELECT JSON_EXTRACT(a, '$**.y') FROM jt
+('["z"]',)
+=== SELECT JSON_EXTRACT(a, '$.x[1 to 2]') FROM jt
+('[2, {"y": "z"}]',)
+=== SELECT JSON_EXTRACT(a, '$.x[last-1]') FROM jt
+('2',)
+=== SELECT JSON_EXTRACT(a, '$.nope') FROM jt
+(None,)
+=== SELECT JSON_EXTRACT(a, 1) FROM jt
+ERR (3143, 'Invalid JSON path expression. The error is around character position 1.') | WARN Error:3143:Invalid JSON path expression. The error is around character position 1.
+=== SELECT JSON_EXTRACT(a, '$.k'), JSON_TYPE(JSON_EXTRACT(a, '$.k')) FROM jt
+('null', 'NULL')
+=== SELECT JSON_SET(a, '$.new', 5) FROM jt
+('{"k": null, "new": 5, "x": [1, 2, {"y": "z"}]}',)
+=== SELECT JSON_SET(a, '$.x[0]', JSON_OBJECT('q', 9)) FROM jt
+('{"k": null, "x": ["{\\"q\\": 9}", 2, {"y": "z"}]}',)
+=== SELECT JSON_INSERT(a, '$.x[0]', 0) FROM jt
+('{"k": null, "x": [1, 2, {"y": "z"}]}',)
+=== SELECT JSON_REPLACE(a, '$.nope', 1) FROM jt
+('{"k": null, "x": [1, 2, {"y": "z"}]}',)
+=== SELECT JSON_REMOVE(a, '$.x[0]') FROM jt
+('{"k": null, "x": [2, {"y": "z"}]}',)
+=== SELECT JSON_MERGE_PATCH(a, '{"m":[1]}') FROM jt
+('{"k": null, "m": [1], "x": [1, 2, {"y": "z"}]}',)
+=== SELECT JSON_MERGE_PRESERVE(a, '{"k":[2]}') FROM jt
+('{"k": [null, 2], "x": [1, 2, {"y": "z"}]}',)
+=== SELECT JSON_ARRAY(1, 'a', NULL, a) FROM jt
+('[1, "a", null, {"k": null, "x": [1, 2, {"y": "z"}]}]',)
+=== SELECT JSON_OBJECT('k', a, 'n', NULL) FROM jt
+('{"k": {"k": null, "x": [1, 2, {"y": "z"}]}, "n": null}',)
+=== SELECT JSON_QUOTE('a"b'), JSON_UNQUOTE('"\\"a\\""')
+('"a\\"b"', '"a"')
+=== SELECT JSON_CONTAINS(a, '1', '$.x') FROM jt
+(1,)
+=== SELECT JSON_CONTAINS_PATH(a, 'one', '$.x', '$.zz') FROM jt
+(1,)
+=== SELECT JSON_CONTAINS_PATH(a, 'all', '$.x', '$.zz') FROM jt
+(0,)
+=== SELECT JSON_KEYS(a), JSON_KEYS(a, '$.x[2]') FROM jt
+('["k", "x"]', '["y"]')
+=== SELECT JSON_LENGTH(a), JSON_LENGTH(a, '$.x') FROM jt
+(2, 3)
+=== SELECT JSON_DEPTH(a), JSON_DEPTH('[]'), JSON_DEPTH('1') FROM jt
+(4, 1, 1)
+=== SELECT JSON_TYPE(a), JSON_VALID(a), JSON_VALID('{bad') FROM jt
+('OBJECT', 1, 0)
+=== SELECT JSON_SEARCH(a, 'all', 'z'), JSON_SEARCH(a, 'all', '%z%'), JSON_SEARCH(a, 'all', 'z', NULL, '$.x[2]') FROM jt
+('"$.x[2].y"', '"$.x[2].y"', '"$.x[2].y"')
+=== SELECT JSON_PRETTY(a) FROM jt
+('{\n  "k": null,\n  "x": [\n    1,\n    2,\n    {\n      "y": "z"\n    }\n  ]\n}',)
+=== SELECT JSON_STORAGE_SIZE(a), JSON_STORAGE_FREE(a) FROM jt
+(94, 0)
+=== SELECT JSON_MEMBEROF(2, a->'$.x') FROM jt
+ERR (1105, 'this builtin is not yet built for chunk evaluation') | WARN Error:1105:this builtin is not yet built for chunk evaluation
+=== SELECT a->'$.x[1]', a->>'$.x[2].y' FROM jt
+('2', 'z')
+=== SELECT a->'$."k"' FROM jt
+('null',)
+=== SELECT JSON_OVERLAPS('[1,2]','[2,3]'), JSON_OVERLAPS('[1]','"1"'), JSON_OVERLAPS('{"a":1}','{"a":1}')
+(1, 0, 1)
+=== SELECT JSON_SCHEMA_VALID('{"type":"object"}', a) FROM jt
+(1,)
+=== SELECT JSON_SCHEMA_VALID('{"type":"string"}', a) FROM jt
+(0,)
+=== SELECT JSON_TABLE(a, '$.x[*]' COLUMNS(v INT PATH '$')) AS t FROM jt
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 37 near "COLUMNS(v INT PATH \'$\')) AS t FROM jt" ')
+=== UPDATE jt SET a = JSON_SET(a, '$.z', true)
+(ok)
+=== SELECT a FROM jt
+('{"k": null, "x": [1, 2, {"y": "z"}], "z": true}',)
+=== SELECT JSON_EXTRACT('{"a":1}', '$.a') = 1
+(1,)
+=== SELECT CAST(a AS CHAR) FROM jt
+('{"k": null, "x": [1, 2, {"y": "z"}], "z": true}',)
+=== SELECT CAST(a AS DOUBLE), CAST(a AS UNSIGNED) FROM jt
+(0.0, 0)

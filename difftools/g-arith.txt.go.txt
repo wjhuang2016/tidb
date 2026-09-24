@@ -1,0 +1,81 @@
+(ok)
+(ok)
+(ok)
+=== SELECT 7 DIV 2, -7 DIV 2, 7 DIV -2, -7 DIV -2, 7 % 2, -7 % 2, 7 % -2, MOD(-7, 2)
+(3, -3, -3, 3, 1, -1, 1, -1)
+=== SELECT 1 DIV 0, 1 % 0, MOD(1, 0)
+(None, None, None) | WARN Warning:1365:Division by 0; Warning:1365:Division by 0; Warning:1365:Division by 0
+=== SELECT 9223372036854775807 + 1, -9223372036854775808 - 1
+ERR (1690, "BIGINT value is out of range in '(9223372036854775807 + 1)'")
+=== SELECT 18446744073709551615 + 1, 18446744073709551615 + 0
+ERR (1690, "BIGINT UNSIGNED value is out of range in '(18446744073709551615 + 1)'")
+=== SELECT 5 / 2, 5.0 / 2, 1 / 3, -1 / 3, 1 / 0, 0 / 0
+(Decimal('2.5000'), Decimal('2.50000'), Decimal('0.3333'), Decimal('-0.3333'), None, None) | WARN Warning:1365:Division by 0; Warning:1365:Division by 0
+=== SELECT CAST(1 AS UNSIGNED) + CAST(-1 AS SIGNED)
+(0,)
+=== SELECT CAST(-1 AS UNSIGNED)
+(18446744073709551615,)
+=== SELECT CAST(9223372036854775808 AS UNSIGNED) + 0
+(9223372036854775808,)
+=== SELECT 18446744073709551615 DIV 1
+(18446744073709551615,)
+=== SELECT -9223372036854775808 DIV -1
+ERR (1690, "BIGINT value is out of range in '(-9223372036854775808, -1)'")
+=== SELECT 2.5 ROUND, ROUND(2.5), ROUND(-2.5), ROUND(2.5, 0), ROUND(1.005, 2), ROUND(1234567.891, -3)
+(Decimal('2.5'), Decimal('3'), Decimal('-3'), Decimal('3'), Decimal('1.01'), Decimal('1235000'))
+=== SELECT CEIL(2.5), CEILING(-2.5), FLOOR(2.5), FLOOR(-2.5), CEIL('x'), FLOOR('x')
+(3, -2, 2, -3, 0.0, 0.0) | WARN Warning:1292:Truncated incorrect DOUBLE value: 'x'; Warning:1292:Truncated incorrect DOUBLE value: 'x'
+=== SELECT TRUNCATE(1.999, 0), TRUNCATE(-1.999, 0), TRUNCATE(123.456, -1), TRUNCATE(1.5, 100)
+(Decimal('1'), Decimal('-1'), Decimal('120'), Decimal('1.500000000000000000000000000000'))
+=== SELECT ABS(-9223372036854775808), ABS(-1.5), ABS('x')
+ERR (1690, "BIGINT value is out of range in 'abs(-9223372036854775808)'") | WARN Warning:1292:Truncated incorrect DOUBLE value: 'x'
+=== SELECT SIGN(-5), SIGN(0), SIGN('a')
+(-1, 0, 0) | WARN Warning:1292:Truncated incorrect DOUBLE value: 'a'
+=== SELECT POW(2, 10), POW(-2, 0.5), POW(2, 1000), POWER(2, 63)
+ERR (1690, "DOUBLE value is out of range in 'pow(-2, 0.5)'")
+=== SELECT SQRT(4), SQRT(-1), SQRT('x')
+(2.0, None, 0.0) | WARN Warning:1292:Truncated incorrect DOUBLE value: 'x'
+=== SELECT EXP(1), EXP(1000), LN(0), LOG(0), LOG(2, 8), LOG(8, 2), LOG(1, 5), LOG2(8), LOG10(1000)
+ERR (1690, "DOUBLE value is out of range in 'exp(1000)'") | WARN Warning:3020:Invalid argument for logarithm; Warning:3020:Invalid argument for logarithm; Warning:3020:Invalid argument for logarithm
+=== SELECT PI(), SIN(PI()), COS(0), TAN(PI()/2), ASIN(2), ACOS(2), ASIN(-1), ACOS(-1)
+(3.141593, 1.2246467991473515e-16, 1.0, 1.6331239353195392e+16, None, None, -1.5707963267948966, 3.141592653589793)
+=== SELECT COT(0), DEGREES(PI()), RADIANS(180)
+ERR (1690, "DOUBLE value is out of range in 'cot(0)'")
+=== SELECT RAND(), RAND(1) > 0 AND RAND(1) < 1, RAND('x')
+(0.6405606927727915, 1, 0.15522042769493574) | WARN Warning:1292:Truncated incorrect INTEGER value: 'x'
+=== SELECT 1e308 * 10, -1e308 * 10, 1e308 + 1e308
+ERR (1690, "DOUBLE value is out of range in '(1e+308 * 10)'")
+=== SELECT 0.1 + 0.2 = 0.3, 0.1 + 0.2
+(1, Decimal('0.3'))
+=== SELECT 1.7976931348623157E309
+ERR (1367, "Illegal double '1.7976931348623157E309' value found during parsing") | WARN Error:1367:Illegal double '1.7976931348623157E309' value found during parsing
+=== SELECT 1.7976931348623157E308 * 2
+ERR (1690, "DOUBLE value is out of range in '(1.7976931348623157e+308 * 2)'")
+=== SELECT CAST('1e300' AS DOUBLE), CAST('1e300' AS DECIMAL), CAST('1e300' AS FLOAT)
+ERR (1690, 'constant 1e+300 overflows float') | WARN Warning:1690:%s value is out of range in '%s'; Warning:1690:DECIMAL value is out of range in '(10, 0)'
+=== SELECT CAST(1.5 AS SIGNED), CAST(-1.5 AS SIGNED), CAST('1.5e2' AS SIGNED), CAST(0.1 AS SIGNED)
+(2, -2, 1, 0) | WARN Warning:1292:Truncated incorrect INTEGER value: '1.5e2'
+=== SELECT CAST(12345 AS CHAR), CAST(123.456 AS CHAR), CAST(NULL AS CHAR)
+('12345', '123.456', None)
+=== SELECT 1 = '1', 1 = '1a', 0 = 'a', '2a' = 2, 10 + '5abc', 'abc' + 0
+(1, 1, 1, 1, 15.0, 0.0) | WARN Warning:1292:Truncated incorrect DOUBLE value: '1a'; Warning:1292:Truncated incorrect DOUBLE value: 'a'; Warning:1292:Truncated incorrect DOUBLE value: '2a'; Warning:1292:Truncated incorrect DOUBLE value: '5abc'; Warning:1292:Truncated incorrect DOUBLE value: 'abc'
+=== SELECT 1 < '2', '10' < '9', 10 < '9'
+(1, 1, 0)
+=== SELECT INTERVAL(5, 1, 2, 3, 4, 6), INTERVAL(NULL, 1, 2), INTERVAL(1, NULL, 0), INTERVAL(1, 2, NULL)
+(4, -1, 2, 0)
+=== SELECT GREATEST(1, 'a'), GREATEST(1, 2.5, '3'), LEAST('b', 'a'), GREATEST(NULL, 1)
+('a', '3', 'a', None)
+=== SELECT COALESCE(NULL, NULL, 3), ISNULL(NULL), ISNULL(0), ISNULL(1/0)
+(3, 1, 0, 1) | WARN Warning:1365:Division by 0
+=== SELECT NULLIF(1, 1), NULLIF(1, 2), IFNULL(NULL, 'd'), IF(1, 'y', 'n'), IF(NULL, 'y', 'n')
+(None, 1, 'd', 'y', 'n')
+=== SELECT 1 AND 2, 0 AND 2, 1 OR 0, NULL AND 1, NULL OR 1, NOT NULL, NOT 0, !5, XOR 1, 1 XOR NULL
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 82 near "1, 1 XOR NULL" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 82 near "1, 1 XOR NULL" 
+=== SELECT TRUE, FALSE, TRUE + TRUE, TRUE = 1, FALSE = 0
+(1, 0, 2, 1, 1)
+=== SELECT BINARY 'a' = 'A', 0x61 = 'a', X'41' = 'A', b'1' + 0, b'11' + 0
+(0, 1, 1, 1, 3)
+=== SELECT 1 <=> 1, 1 <=> NULL, NULL <=> NULL
+(1, 0, 1)
+=== SELECT 5 & 3, 5 | 3, 5 ^ 3, ~5, 1 << 62, 1 << 63, 1 << 64, -1 >> 1, 18446744073709551615 >> 1
+(1, 7, 6, 18446744073709551610, 4611686018427387904, 9223372036854775808, 0, 9223372036854775807, 9223372036854775807)

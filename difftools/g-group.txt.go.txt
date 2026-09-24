@@ -1,0 +1,95 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE go1(g INT, v INT, s VARCHAR(5))
+(ok)
+=== INSERT INTO go1 VALUES (1,1,'a'),(1,2,'b'),(2,3,'c'),(2,3,'d'),(3,5,'e'),(NULL,9,'f')
+(ok)
+=== SELECT g, COUNT(*) FROM go1 GROUP BY g
+(None, 1); (1, 2); (3, 1); (2, 2)
+=== SELECT g, COUNT(*) FROM go1 GROUP BY g ORDER BY g DESC
+(3, 1); (2, 2); (1, 2); (None, 1)
+=== SELECT g, COUNT(*) FROM go1 GROUP BY g ORDER BY 1
+(None, 1); (1, 2); (2, 2); (3, 1)
+=== SELECT g, COUNT(*) FROM go1 GROUP BY 1
+(None, 1); (2, 2); (1, 2); (3, 1)
+=== SELECT COUNT(*) FROM go1 GROUP BY g
+(1,); (2,); (1,); (2,)
+=== SELECT g FROM go1 GROUP BY g HAVING COUNT(*) > 1
+(1,); (2,)
+=== SELECT g, ANY_VALUE(v) FROM go1 GROUP BY g
+(None, 9); (1, 1); (2, 3); (3, 5)
+=== SELECT g, v FROM go1 GROUP BY g
+ERR (1055, "Expression #2 of SELECT list is not in GROUP BY clause and contains nonaggregated column 'fdq.go1.v' which is not functionally dependent on columns in GROUP BY clause; this is incompatible with sql_mode=only_full_group_by") | WARN Error:1055:Expression #2 of SELECT list is not in GROUP BY clause and contains nonaggregated column 'fdq.go1.v' which is not functionally dependent on columns in GROUP BY clause; this is incompatible 
+=== SELECT g, v FROM go1 GROUP BY g WITH ROLLUP
+ERR (3602, 'Argument 2 of GROUPING function is not in GROUP BY') | WARN Error:3602:Argument 2 of GROUPING function is not in GROUP BY
+=== SELECT g, s, COUNT(*) FROM go1 GROUP BY g, s
+(2, 'd', 1); (None, 'f', 1); (2, 'c', 1); (1, 'a', 1); (1, 'b', 1); (3, 'e', 1)
+=== SELECT s, GROUP_CONCAT(v) FROM go1 GROUP BY s
+('c', '3'); ('b', '2'); ('d', '3'); ('e', '5'); ('f', '9'); ('a', '1')
+=== SELECT s, GROUP_CONCAT(v ORDER BY v) FROM go1 GROUP BY s
+('a', '1'); ('b', '2'); ('c', '3'); ('d', '3'); ('e', '5'); ('f', '9')
+=== SELECT s, GROUP_CONCAT(v ORDER BY v DESC SEPARATOR '|') FROM go1 GROUP BY s
+('a', '1'); ('b', '2'); ('c', '3'); ('d', '3'); ('e', '5'); ('f', '9')
+=== SELECT s, GROUP_CONCAT(DISTINCT v) FROM go1 GROUP BY s
+('c', '3'); ('b', '2'); ('d', '3'); ('e', '5'); ('f', '9'); ('a', '1')
+=== SELECT COUNT(DISTINCT g, v) FROM go1
+(4,)
+=== SELECT SUM(v), AVG(v), MIN(v), MAX(v), STD(v), STDDEV_POP(v), VAR_SAMP(v) FROM go1
+(Decimal('23'), Decimal('3.8333'), 1, 9, 2.6087459737497545, 2.6087459737497545, 8.166666666666666)
+=== SELECT SUM(g) FROM go1 HAVING SUM(g) > 0
+(Decimal('9'),)
+=== SELECT BIT_OR(v), BIT_XOR(v), BIT_AND(v) FROM go1
+(15, 15, 0)
+=== SELECT JSON_ARRAYAGG(v) FROM go1
+('[1, 2, 3, 3, 5, 9]',)
+=== SELECT JSON_OBJECTAGG(g, v) FROM go1
+ERR (3158, 'JSON documents may not contain NULL member names.')
+=== SELECT APPROX_COUNT_DISTINCT(g) FROM go1
+(3,)
+=== SELECT COUNT(*) FROM go1 WHERE g = NULL
+(0,)
+=== SELECT g, COUNT(*) FROM go1 WHERE v > 0 GROUP BY g HAVING g IS NOT NULL
+(1, 2); (2, 2); (3, 1)
+=== SELECT * FROM go1 ORDER BY g, v
+(None, 9, 'f'); (1, 1, 'a'); (1, 2, 'b'); (2, 3, 'c'); (2, 3, 'd'); (3, 5, 'e')
+=== SELECT * FROM go1 ORDER BY g ASC, v DESC
+(None, 9, 'f'); (1, 2, 'b'); (1, 1, 'a'); (2, 3, 'c'); (2, 3, 'd'); (3, 5, 'e')
+=== SELECT * FROM go1 ORDER BY 2, 1
+(1, 1, 'a'); (1, 2, 'b'); (2, 3, 'c'); (2, 3, 'd'); (3, 5, 'e'); (None, 9, 'f')
+=== SELECT * FROM go1 ORDER BY s COLLATE utf8mb4_general_ci
+(1, 1, 'a'); (1, 2, 'b'); (2, 3, 'c'); (2, 3, 'd'); (3, 5, 'e'); (None, 9, 'f')
+=== SELECT * FROM go1 ORDER BY g + v
+(None, 9, 'f'); (1, 1, 'a'); (1, 2, 'b'); (2, 3, 'c'); (2, 3, 'd'); (3, 5, 'e')
+=== SELECT * FROM go1 ORDER BY v = 3, g
+(None, 9, 'f'); (1, 1, 'a'); (1, 2, 'b'); (3, 5, 'e'); (2, 3, 'c'); (2, 3, 'd')
+=== SELECT * FROM go1 ORDER BY RAND()
+(None, 9, 'f'); (3, 5, 'e'); (1, 1, 'a'); (2, 3, 'c'); (1, 2, 'b'); (2, 3, 'd')
+=== SELECT * FROM go1 ORDER BY g LIMIT 2
+(None, 9, 'f'); (1, 2, 'b')
+=== SELECT * FROM go1 ORDER BY g LIMIT 1, 2
+(1, 2, 'b'); (1, 1, 'a')
+=== SELECT * FROM go1 ORDER BY g LIMIT 2 OFFSET 1
+(1, 2, 'b'); (1, 1, 'a')
+=== SELECT * FROM go1 ORDER BY g LIMIT 0
+(ok)
+=== SELECT * FROM go1 ORDER BY g LIMIT 100
+(None, 9, 'f'); (1, 2, 'b'); (1, 1, 'a'); (2, 3, 'c'); (2, 3, 'd'); (3, 5, 'e')
+=== SELECT * FROM go1 ORDER BY g LIMIT -1
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 36 near "-1" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 36 near "-1" 
+=== SELECT * FROM go1 LIMIT 18446744073709551615
+(1, 1, 'a'); (1, 2, 'b'); (2, 3, 'c'); (2, 3, 'd'); (3, 5, 'e'); (None, 9, 'f')
+=== SELECT * FROM go1 WHERE v = 3 ORDER BY s
+(2, 3, 'c'); (2, 3, 'd')
+=== SELECT s FROM go1 GROUP BY s HAVING s LIKE 'a%'
+('a',)
+=== SELECT * FROM go1 WHERE (g, v) IN ((1,1),(2,3))
+(1, 1, 'a'); (2, 3, 'c'); (2, 3, 'd')
+=== SELECT * FROM go1 WHERE g IS NULL OR g = 1
+(1, 1, 'a'); (1, 2, 'b'); (None, 9, 'f')
+=== SELECT * FROM go1 WHERE NOT (g = 1)
+(2, 3, 'c'); (2, 3, 'd'); (3, 5, 'e')
+=== SELECT * FROM go1 WHERE g <=> NULL
+(None, 9, 'f')
+=== SELECT * FROM go1 WHERE v BETWEEN 1 AND 3 AND g IN (1, 2)
+(1, 1, 'a'); (1, 2, 'b'); (2, 3, 'c'); (2, 3, 'd')

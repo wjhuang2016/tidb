@@ -1,0 +1,89 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE dv(a INT PRIMARY KEY, b INT)
+(ok)
+=== CREATE TABLE dv2(a INT PRIMARY KEY, b INT)
+(ok)
+=== INSERT INTO dv VALUES (1,1),(2,2),(3,3)
+(ok)
+=== INSERT INTO dv VALUES (1, 99)
+ERR (1062, "Duplicate entry '1' for key 'dv.PRIMARY'") | WARN Error:1062:Duplicate entry '1' for key 'dv.PRIMARY'
+=== INSERT IGNORE INTO dv VALUES (1, 99), (4, 4)
+(ok) | WARN Warning:1062:Duplicate entry '1' for key 'dv.PRIMARY'
+=== INSERT INTO dv VALUES (5,5) ON DUPLICATE KEY UPDATE b = b + 1
+(ok)
+=== INSERT INTO dv VALUES (1, 0) ON DUPLICATE KEY UPDATE b = VALUES(b)
+(ok)
+=== INSERT INTO dv VALUES (1, 0) ON DUPLICATE KEY UPDATE a = a
+(ok)
+=== REPLACE INTO dv VALUES (1, 100)
+(ok)
+=== INSERT INTO dv SELECT a + 10, b FROM dv2
+(ok)
+=== INSERT INTO dv (a, b) VALUES (6, DEFAULT), (7, DEFAULT)
+(ok)
+=== INSERT INTO dv SET a = 8, b = 8
+(ok)
+=== INSERT LOW_PRIORITY INTO dv VALUES (9,9)
+(ok)
+=== INSERT INTO dv VALUES (10, 10), (1, 1)
+ERR (1062, "Duplicate entry '1' for key 'dv.PRIMARY'") | WARN Error:1062:Duplicate entry '1' for key 'dv.PRIMARY'
+=== UPDATE dv SET b = b * 10 WHERE a = 1
+(ok)
+=== UPDATE dv SET b = b * 10 ORDER BY a LIMIT 2
+(ok)
+=== UPDATE dv SET b = 1 WHERE no_such = 1
+ERR (1054, "Unknown column 'no_such' in 'where clause'") | WARN Error:1054:Unknown column 'no_such' in 'where clause'
+=== UPDATE dv SET no_such = 1
+ERR (1054, "Unknown column 'no_such' in 'field list'") | WARN Error:1054:Unknown column 'no_such' in 'field list'
+=== UPDATE dv dv1 JOIN dv2 dv2 ON dv1.a = dv2.a SET dv1.b = 0
+(ok)
+=== UPDATE dv SET b = (SELECT MAX(b) FROM dv) WHERE a = 2
+(ok)
+=== DELETE FROM dv WHERE a = 9
+(ok)
+=== DELETE FROM dv ORDER BY a DESC LIMIT 1
+(ok)
+=== DELETE dv FROM dv JOIN dv2 ON dv.a = dv2.a
+(ok)
+=== DELETE dv1, dv2 FROM dv dv1 JOIN dv2 ON dv1.a = dv2.a
+(ok)
+=== DELETE FROM dv WHERE b IN (SELECT b FROM dv WHERE a > 100)
+(ok)
+=== DELETE FROM no_such
+ERR (1146, "Table 'fdq.no_such' doesn't exist") | WARN Error:1146:Table 'fdq.no_such' doesn't exist
+=== TRUNCATE TABLE dv2
+(ok)
+=== INSERT INTO dv2 VALUES (1,1),(2,2)
+(ok)
+=== TRUNCATE dv2
+(ok)
+=== REPLACE INTO dv2 VALUES (1, 5), (1, 6)
+(ok)
+=== SELECT ROW_COUNT()
+(0,)
+=== SELECT a FROM dv WHERE a > 1000 FOR UPDATE
+(ok)
+=== CALL no_such_proc()
+ERR (8108, 'Unsupported type *ast.CallStmt') | WARN Error:8108:Unsupported type *ast.CallStmt
+=== PREPARE p1 FROM 'SELECT a FROM dv WHERE a = ?'
+(ok)
+=== SET @x = 1
+(ok)
+=== EXECUTE p1 USING @x
+(1,)
+=== DEALLOCATE PREPARE p1
+(ok)
+=== EXECUTE p1 USING @x
+ERR (8111, 'Prepared statement not found') | WARN Error:8111:Prepared statement not found
+=== PREPARE p2 FROM 'SELECT ?'
+(ok)
+=== PREPARE p3 FROM 'BOGUS SQL HERE'
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "BOGUS SQL HERE" ') | WARN Error:1105:line 1 column 5 near "BOGUS SQL HERE" ; Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "BOGUS SQL HERE" 
+=== PREPARE p4 FROM 'SELECT a FROM dv WHERE a = ?'
+(ok)
+=== PREPARE p4 FROM 'SELECT b FROM dv WHERE b = ?'
+(ok)
+=== SHOW WARNINGS
+(ok)

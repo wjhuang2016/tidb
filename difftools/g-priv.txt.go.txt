@@ -1,0 +1,75 @@
+(ok)
+(ok)
+(ok)
+=== CREATE USER 'u1'@'%' IDENTIFIED BY 'pw'
+(ok)
+=== CREATE USER 'u1'@'%' IDENTIFIED BY 'pw'
+ERR (1396, "Operation CREATE USER failed for 'u1'@'%'") | WARN Error:1396:Operation CREATE USER failed for 'u1'@'%'
+=== CREATE USER 'u2'@'localhost' IDENTIFIED WITH mysql_native_password AS ''
+(ok)
+=== CREATE USER IF NOT EXISTS 'u1'@'%'
+(ok) | WARN Note:3163:User 'u1'@'%' already exists.
+=== CREATE USER 'bad user name'
+(ok)
+=== ALTER USER 'u1'@'%' IDENTIFIED BY 'pw2'
+(ok)
+=== ALTER USER 'no_such'@'%' IDENTIFIED BY 'x'
+ERR (1396, "Operation ALTER USER failed for 'no_such'@'%'") | WARN Error:1396:Operation ALTER USER failed for 'no_such'@'%'
+=== ALTER USER 'u1'@'%' PASSWORD EXPIRE
+(ok)
+=== ALTER USER 'u1'@'%' ACCOUNT LOCK
+(ok)
+=== ALTER USER 'u1'@'%' ACCOUNT UNLOCK
+(ok)
+=== ALTER USER 'u1'@'%' PASSWORD HISTORY 5
+(ok)
+=== ALTER USER 'u1'@'%' REQUIRE SSL
+(ok)
+=== ALTER USER 'u1'@'%' WITH MAX_USER_CONNECTIONS 5
+(ok) | WARN Warning:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 47 near ""TiDB does not support WITH ConnectionOptio
+=== DROP USER 'u2'@'localhost'
+(ok)
+=== DROP USER 'no_such'@'%'
+ERR (1396, 'Operation DROP USER failed for no_such@%') | WARN Error:1396:Operation DROP USER failed for no_such@%
+=== CREATE ROLE 'r1'@'%'
+(ok)
+=== CREATE ROLE IF NOT EXISTS 'r1'@'%'
+(ok) | WARN Note:3163:User 'r1'@'%' already exists.
+=== GRANT SELECT ON fdq.* TO 'u1'@'%'
+(ok)
+=== GRANT ALL PRIVILEGES ON fdq.* TO 'u1'@'%'
+(ok)
+=== GRANT SELECT (a) ON fdq.sb TO 'u1'@'%'
+ERR (1146, "Table 'fdq.sb' doesn't exist") | WARN Error:1146:Table 'fdq.sb' doesn't exist
+=== GRANT SELECT, INSERT ON *.* TO 'u1'@'%'
+(ok)
+=== GRANT BOGUS_PRIV ON fdq.* TO 'u1'@'%'
+ERR (3619, 'Illegal privilege level specified for BOGUS_PRIV') | WARN Error:3619:Illegal privilege level specified for BOGUS_PRIV
+=== GRANT SELECT ON fdq.* TO 'no_such'@'%'
+ERR (1410, 'You are not allowed to create a user with GRANT') | WARN Error:1410:You are not allowed to create a user with GRANT
+=== GRANT r1 TO 'u1'@'%'
+(ok)
+=== REVOKE SELECT ON fdq.* FROM 'u1'@'%'
+(ok)
+=== REVOKE ALL ON *.* FROM 'u1'@'%'
+(ok)
+=== SET DEFAULT ROLE r1 TO 'u1'@'%'
+(ok)
+=== SET GLOBAL grant_option = 1
+ERR (1193, "Unknown system variable 'grant_option'") | WARN Error:1193:Unknown system variable 'grant_option'
+=== SHOW GRANTS FOR 'u1'@'%'
+("GRANT USAGE ON *.* TO 'u1'@'%'",); ("GRANT INSERT,UPDATE,DELETE,CREATE,DROP,REFERENCES,LOCK TABLES,CREATE TEMPORARY TABLES,EVENT,CREATE ROUTINE,ALTER ROUTINE,ALTER,EXECUTE,INDEX,CREATE VIEW,SHOW VIEW,OPERATE VIEW,TRIGGER ON `fdq`.* TO 'u1'@'%'",); ("GRANT 'r1'@'%' TO 'u1'@'%'",)
+=== SELECT user, host, authentication_string FROM mysql.user ORDER BY user
+('bad user name', '%', ''); ('r1', '%', ''); ('root', '%', ''); ('u1', '%', '*B27918D2D9402882CEADA0EF687D35FBDC137D72')
+=== SELECT user, host, db, table_name,_priv FROM mysql.db WHERE user = 'u1'
+ERR (1054, "Unknown column 'table_name' in 'field list'") | WARN Error:1054:Unknown column 'table_name' in 'field list'
+=== RENAME USER 'u1'@'%' TO 'u1r'@'%'
+(ok)
+=== SET PASSWORD FOR 'u1r'@'%' = 'x'
+(ok)
+=== FLUSH PRIVILEGES
+(ok)
+=== DROP ROLE 'r1'@'%'
+(ok)
+=== DROP USER 'u1r'@'%'
+(ok)

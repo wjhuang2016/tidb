@@ -1,0 +1,103 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE isx(a INT PRIMARY KEY, b VARCHAR(20) COLLATE utf8mb4_general_ci, INDEX(b))
+(ok)
+=== INSERT INTO isx VALUES (1, 'aa'), (2, 'bb')
+(ok)
+=== SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE, ENGINE, TABLE_ROWS, TABLE_COLLATION FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'fdq'
+('fdq', 'isx', 'BASE TABLE', 'InnoDB', 0, 'utf8mb4_bin')
+=== SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, COLUMN_TYPE, IS_NULLABLE, COLUMN_KEY, EXTRA FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'fdq' ORDER BY TABLE_NAME, ORDINAL_POSITION
+('isx', 'a', 1, 'int', 'NO', 'PRI', ''); ('isx', 'b', 2, 'varchar(20)', 'YES', 'MUL', '')
+=== SELECT INDEX_NAME, SEQ_IN_INDEX, COLUMN_NAME, NON_UNIQUE, INDEX_TYPE FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = 'fdq'
+('PRIMARY', 1, 'a', '0', 'BTREE'); ('b', 1, 'b', '1', 'BTREE')
+=== SELECT * FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = 'fdq'
+('def', 'fdq', 'PRIMARY', 'def', 'fdq', 'isx', 'a', 1, 1, None, None, None)
+=== SELECT * FROM information_schema.SCHEMA_PRIVILEGES
+(ok)
+=== SELECT * FROM information_schema.TABLE_PRIVILEGES
+(ok)
+=== SELECT * FROM information_schema.COLUMN_PRIVILEGES
+(ok)
+=== SELECT * FROM information_schema.USER_PRIVILEGES
+("'root'@'%'", 'def', 'SELECT', 'YES'); ("'root'@'%'", 'def', 'INSERT', 'YES'); ("'root'@'%'", 'def', 'UPDATE', 'YES'); ("'root'@'%'", 'def', 'DELETE', 'YES'); ("'root'@'%'", 'def', 'CREATE', 'YES'); ("'root'@'%'", 'def', 'DROP', 'YES'); ("'root'@'%'", 'def', 'PROCESS', 'YES'); ("'root'@'%'", 'def', 'REFERENCES', 'YES'); ("'root'@'%'", 'def', 'ALTER', 'YES'); ("'root'@'%'", 'def', 'SHOW DATABASES', 'YES'); ("'root'@'%'", 'def', 'SUPER', 'YES'); ("'root'@'%'", 'def', 'EXECUTE', 'YES'); ("'root'@'%'", 'def', 'INDEX', 'YES'); ("'root'@'%'", 'def', 'CREATE USER', 'YES'); ("'root'@'%'", 'def', 'CREATE TABLESPACE', 'YES'); ("'root'@'%'", 'def', 'TRIGGER', 'YES'); ("'root'@'%'", 'def', 'CREATE VIEW', 'YES'); ("'root'@'%'", 'def', 'SHOW VIEW', 'YES'); ("'root'@'%'", 'def', 'OPERATE VIEW', 'YES'); ("'root'@'%'", 'def', 'CREATE ROLE', 'YES'); ("'root'@'%'", 'def', 'DROP ROLE', 'YES'); ("'root'@'%'", 'def', 'CREATE TEMPORARY TABLES', 'YES'); ("'root'@'%'", 'def', 'LOCK TABLES', 'YES'); ("'root'@'%'", 'def', 'CREATE ROUTINE', 'YES'); ("'root'@'%'", 'def', 'ALTER ROUTINE', 'YES'); ("'root'@'%'", 'def', 'EVENT', 'YES'); ("'root'@'%'", 'def', 'SHUTDOWN', 'YES'); ("'root'@'%'", 'def', 'RELOAD', 'YES'); ("'root'@'%'", 'def', 'FILE', 'YES'); ("'root'@'%'", 'def', 'CONFIG', 'YES'); ("'root'@'%'", 'def', 'REPLICATION CLIENT', 'YES'); ("'root'@'%'", 'def', 'REPLICATION SLAVE', 'YES')
+=== SELECT * FROM information_schema.COLLATIONS WHERE COLLATION_NAME LIKE 'utf8mb4%' LIMIT 30
+('utf8mb4_0900_ai_ci', 'utf8mb4', 255, '', 'Yes', 0, 'NO PAD'); ('utf8mb4_0900_bin', 'utf8mb4', 309, '', 'Yes', 1, 'NO PAD'); ('utf8mb4_bin', 'utf8mb4', 46, 'Yes', 'Yes', 1, 'PAD SPACE'); ('utf8mb4_general_ci', 'utf8mb4', 45, '', 'Yes', 1, 'PAD SPACE'); ('utf8mb4_unicode_ci', 'utf8mb4', 224, '', 'Yes', 8, 'PAD SPACE')
+=== SELECT * FROM information_schema.CHARACTER_SETS LIMIT 50
+('ascii', 'ascii_bin', 'US ASCII', 1); ('binary', 'binary', 'binary', 1); ('gb18030', 'gb18030_chinese_ci', 'China National Standard GB18030', 4); ('gbk', 'gbk_chinese_ci', 'Chinese Internal Code Specification', 2); ('latin1', 'latin1_bin', 'Latin1', 1); ('utf8', 'utf8_bin', 'UTF-8 Unicode', 3); ('utf8mb4', 'utf8mb4_bin', 'UTF-8 Unicode', 4)
+=== SELECT * FROM information_schema.ENGINES
+('InnoDB', 'DEFAULT', 'Supports transactions, row-level locking, and foreign keys', 'YES', 'YES', 'YES')
+=== SELECT * FROM information_schema.SCHEMATA ORDER BY SCHEMA_NAME
+('def', 'INFORMATION_SCHEMA', 'utf8mb4', 'utf8mb4_bin', None, None); ('def', 'METRICS_SCHEMA', 'utf8mb4', 'utf8mb4_bin', None, None); ('def', 'PERFORMANCE_SCHEMA', 'utf8mb4', 'utf8mb4_bin', None, None); ('def', 'chk', 'utf8mb4', 'utf8mb4_bin', None, None); ('def', 'chk2', 'utf8mb4', 'utf8mb4_bin', None, None); ('def', 'fdq', 'utf8mb4', 'utf8mb4_bin', None, None); ('def', 'mysql', 'utf8mb4', 'utf8mb4_bin', None, None); ('def', 'sys', 'utf8mb4', 'utf8mb4_bin', None, None); ('def', 'test', 'utf8mb4', 'utf8mb4_bin', None, None)
+=== SELECT * FROM information_schema.VIEWS WHERE TABLE_SCHEMA = 'fdq'
+(ok)
+=== SELECT * FROM information_schema.TRIGGERS
+(ok)
+=== SELECT * FROM information_schema.ROUTINES
+(ok)
+=== SELECT * FROM information_schema.EVENTS
+(ok)
+=== SELECT * FROM information_schema.PARAMETERS
+(ok)
+=== SELECT * FROM information_schema.PROCESSLIST
+(2097182, 'root', 'ADDR', 'fdq', 'Query', 0, 'autocommit', 'SELECT * FROM information_schema.PROCESSLIST', '4b5e7cdd5d3ed84d6c1a6d56403a3d512554b534313caf296268abdec1c9ea99', 4096, None, None, None, 0, '', 'default', '', 0, 0, 0)
+=== SELECT * FROM information_schema.PLUGINS
+(ok)
+=== SELECT * FROM information_schema.SESSION_VARIABLES LIMIT 20
+ERR (1146, "Table 'information_schema.SESSION_VARIABLES' doesn't exist") | WARN Error:1146:Table 'information_schema.SESSION_VARIABLES' doesn't exist
+=== SELECT * FROM information_schema.GLOBAL_VARIABLES LIMIT 20
+ERR (1146, "Table 'information_schema.GLOBAL_VARIABLES' doesn't exist") | WARN Error:1146:Table 'information_schema.GLOBAL_VARIABLES' doesn't exist
+=== SELECT * FROM information_schema.SESSION_STATUS LIMIT 20
+ERR (1146, "Table 'information_schema.SESSION_STATUS' doesn't exist") | WARN Error:1146:Table 'information_schema.SESSION_STATUS' doesn't exist
+=== SELECT * FROM information_schema.GLOBAL_STATUS LIMIT 20
+ERR (1146, "Table 'information_schema.GLOBAL_STATUS' doesn't exist") | WARN Error:1146:Table 'information_schema.GLOBAL_STATUS' doesn't exist
+=== SELECT * FROM information_schema.PARTITIONS LIMIT 5
+('def', 'chk', 't', None, None, None, None, None, None, None, None, None, 1, 8, 8, None, 0, None, datetime.datetime(2026, 9, 24, 15, 11, 32), None, None, None, None, None, None, None, None, None, None); ('def', 'fdq', 'isx', None, None, None, None, None, None, None, None, None, 0, 0, 0, None, 0, None, datetime.datetime(2026, 9, 24, 15, 19, 27), None, None, None, None, None, None, None, None, None, None); ('def', 'INFORMATION_SCHEMA', 'CLUSTER_STATEMENTS_SUMMARY_EVICTED', None, None, None, None, None, None, None, None, None, 0, 0, 0, None, 0, None, datetime.datetime(1970, 1, 1, 8, 0), None, None, None, None, None, None, None, None, None, None); ('def', 'INFORMATION_SCHEMA', 'PARAMETERS', None, None, None, None, None, None, None, None, None, 0, 0, 0, None, 0, None, datetime.datetime(1970, 1, 1, 8, 0), None, None, None, None, None, None, None, None, None, None); ('def', 'INFORMATION_SCHEMA', 'INSPECTION_SUMMARY', None, None, None, None, None, None, None, None, None, 0, 0, 0, None, 0, None, datetime.datetime(1970, 1, 1, 8, 0), None, None, None, None, None, None, None, None, None, None)
+=== SELECT * FROM information_schema.SIZING LIMIT 5
+ERR (1146, "Table 'information_schema.SIZING' doesn't exist") | WARN Error:1146:Table 'information_schema.SIZING' doesn't exist
+=== SELECT * FROM information_schema.TIDB_INDEXES LIMIT 5
+('chk', 't', 0, 'PRIMARY', 1, 'a', None, '', None, 0, 'YES', 'YES', 0, None); ('fdq', 'isx', 0, 'PRIMARY', 1, 'a', None, '', None, 0, 'YES', 'YES', 0, None); ('fdq', 'isx', 1, 'b', 1, 'b', None, '', None, 1, 'YES', 'NO', 0, None); ('INFORMATION_SCHEMA', 'CLUSTER_SLOW_QUERY', 0, 'primary', 1, 'Time', None, '', None, 0, 'YES', 'YES', 0, None); ('mysql', 'db', 0, 'PRIMARY', 1, 'Host', None, '', None, 1, 'YES', 'NO', 0, None)
+=== SELECT * FROM information_schema.TIDB_TABLES LIMIT 3
+ERR (1146, "Table 'information_schema.TIDB_TABLES' doesn't exist") | WARN Error:1146:Table 'information_schema.TIDB_TABLES' doesn't exist
+=== SELECT * FROM information_schema.TIFLASH_SEGMENTS LIMIT 3
+(ok)
+=== SELECT * FROM information_schema.TIFLASH_TABLES LIMIT 3
+(ok)
+=== SELECT * FROM information_schema.TIKV_STORE_STATUS LIMIT 3
+ERR (1105, 'pd http client unavailable')
+=== SELECT * FROM information_schema.CLUSTER_INFO
+('tidb', 'ADDR', 'ADDR', '8.4.0-this-is-a-placeholder', 'None', datetime.datetime(2026, 9, 24, 15, 19, 27), '598.871216ms', 1); ('tikv', 'store1', '', '', '', datetime.datetime(2026, 9, 24, 15, 19, 27), '', 0)
+=== SELECT * FROM information_schema.CLUSTER_CONFIG LIMIT 3
+('tidb', 'ADDR', 'advertise-address', '127.0.0.1'); ('tidb', 'ADDR', 'alter-primary-key', 'false'); ('tidb', 'ADDR', 'autoscaler-addr', 'tiflash-autoscale-lb.tiflash-autoscale.svc.cluster.local:8081') | WARN Warning:1105:tikv node store1 does not contain status address
+=== SELECT * FROM information_schema.CLUSTER_LOG LIMIT 3
+ERR (1105, "denied to scan logs, please specified the start time, such as `time > '2020-01-01 00:00:00'`")
+=== SELECT * FROM information_schema.INSPECTION_SUMMARY LIMIT 3
+ERR (1105, "execute 'select avg(value),min(value),max(value),`instance` from `metrics_schema`.`tidb_connection_count` where time>='2026-09-24 14:49:27.601' and time<='2026-09-24 15:19:27.601' group by `instance` order by `instance`' failed: query metric error: pd unavailable")
+=== SELECT * FROM information_schema.INSPECTION_RESULT LIMIT 3
+('config', 'transparent_hugepage_enabled', 'tidb', 'ADDR', 'ADDR', 'always [madvise] never', 'always madvise [never]', 'warning', 'Transparent HugePages can cause memory allocation delays during runtime, TiDB recommends that you disable Transparent HugePages on all TiDB servers') | WARN Warning:1105:tikv node store1 does not contain status address; Warning:1105:rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: dial tcp: address store1: missing port in address"; Warning:1105:check configuration in reason failed: query metric error: pd unavailable; Warning:1105:execute 'select t1.instance, t1.max_load , 0.7*t2.cpu_count from
+			(select instance,max(value) as max_load  from metrics_schema.node_load1 where time>='2026-09-24 14:49:28.109' and time<; Warning:1105:execute 'select t1.instance, t1.max_load , 0.7*t2.cpu_count from
+			(select instance,max(value) as max_load  from metrics_schema.node_load5 where time>='2026-09-24 14:49:28.109' and time<; Warning:1105:execute 'select t1.instance, t1.max_load , 0.7*t2.cpu_count from
+			(select instance,max(value) as max_load  from metrics_schema.node_load15 where time>='2026-09-24 14:49:28.109' and time; Warning:1105:execute 'select instance, max(value) as max_usage from metrics_schema.node_memory_usage where time>='2026-09-24 14:49:28.109' and time<='2026-09-24 15:19:28.109' group by instance having ; Warning:1105:execute 'select instance, max(value) as max_used from metrics_schema.node_memory_swap_used where time>='2026-09-24 14:49:28.109' and time<='2026-09-24 15:19:28.109' group by instance havi; Warning:1105:execute 'select instance, device, max(value) as max_usage from metrics_schema.node_disk_usage where time>='2026-09-24 14:49:28.109' and time<='2026-09-24 15:19:28.109' and device like '/%; Warning:1105:execute 'select `instance`,`type`,sum(value) as total from `metrics_schema`.`tikv_critical_error_total_count` where time>='2026-09-24 14:49:28.109' and time<='2026-09-24 15:19:28.109' gro; Warning:1105:execute 'select `instance`,sum(value) as total from `metrics_schema`.`tidb_panic_count_total_count` where time>='2026-09-24 14:49:28.109' and time<='2026-09-24 15:19:28.109' group by `ins; Warning:1105:execute 'select `instance`,sum(value) as total from `metrics_schema`.`tidb_binlog_error_total_count` where time>='2026-09-24 14:49:28.109' and time<='2026-09-24 15:19:28.109' group by `in; Warning:1105:execute 'select `instance`,`db`,`type`,`stage`,sum(value) as total from `metrics_schema`.`tikv_scheduler_is_busy_total_count` where time>='2026-09-24 14:49:28.109' and time<='2026-09-24 1; Warning:1105:execute 'select `instance`,`db`,sum(value) as total from `metrics_schema`.`tikv_coprocessor_is_busy_total_count` where time>='2026-09-24 14:49:28.109' and time<='2026-09-24 15:19:28.109' ; Warning:1105:execute 'select `instance`,`db`,`type`,sum(value) as total from `metrics_schema`.`tikv_channel_full_total_count` where time>='2026-09-24 14:49:28.109' and time<='2026-09-24 15:19:28.109' ; Warning:1105:execute 'select `instance`,`db`,sum(value) as total from `metrics_schema`.`tikv_engine_write_stall` where time>='2026-09-24 14:49:28.109' and time<='2026-09-24 15:19:28.109' group by `ins; Warning:1105:execute 'select t1.job,t1.instance, t2.min_time from
+		(select instance,job from metrics_schema.up where time>='2026-09-24 14:49:28.109' and time<='2026-09-24 15:19:28.109' group by insta; Warning:1105:tikv node store1 does not contain status address; Warning:1105:execute 'select t1.status_address, t1.cpu, (t2.value * 0.900000) as threshold, t2.value from
+				(select status_address, max(sum_value) as cpu from (select instance as status_address, sum; Warning:1105:execute 'select t1.status_address, t1.cpu, (t2.value * 0.900000) as threshold, t2.value from
+				(select status_address, max(sum_value) as cpu from (select instance as status_address, sum
+=== SELECT * FROM information_schema.METRICS_SUMMARY LIMIT 3
+ERR (1105, "execute 'select sum(value),avg(value),min(value),max(value) from `metrics_schema`.`abnormal_stores` where time>='2026-09-24 14:49:51.517' and time<='2026-09-24 15:19:51.517'' failed: query metric error: pd unavailable")
+=== SELECT * FROM information_schema.METRICS_TABLES LIMIT 3
+('abnormal_stores', 'sum(pd_cluster_status{ type=~"store_disconnected_count|store_unhealth_count|store_low_space_count|store_down_count|store_offline_count|store_tombstone_count"})', 'instance,type', 0.0, ''); ('etcd_disk_wal_fsync_rate', 'delta(etcd_disk_wal_fsync_duration_seconds_count{$LABEL_CONDITIONS}[$RANGE_DURATION])', 'instance', 0.0, 'The rate of writing WAL into the persistent storage'); ('etcd_wal_fsync_duration', 'histogram_quantile($QUANTILE, sum(rate(etcd_disk_wal_fsync_duration_seconds_bucket{$LABEL_CONDITIONS}[$RANGE_DURATION])) by (le,instance))', 'instance', 0.99, 'The quantile time consumed of writing WAL into the persistent storage')
+=== SELECT * FROM information_schema.RUNAWAY_WATCHES LIMIT 3
+(ok)
+=== SELECT * FROM information_schema.RUNAWAY_TASKS LIMIT 3
+ERR (1146, "Table 'information_schema.RUNAWAY_TASKS' doesn't exist") | WARN Error:1146:Table 'information_schema.RUNAWAY_TASKS' doesn't exist
+=== SELECT * FROM information_schema.KEYSPACE LIMIT 3
+ERR (1146, "Table 'information_schema.KEYSPACE' doesn't exist") | WARN Error:1146:Table 'information_schema.KEYSPACE' doesn't exist
+=== SELECT * FROM information_schema.TTL_TABLE_STATUS LIMIT 3
+ERR (1146, "Table 'information_schema.TTL_TABLE_STATUS' doesn't exist") | WARN Error:1146:Table 'information_schema.TTL_TABLE_STATUS' doesn't exist
+=== SELECT * FROM information_schema.RESOURCE_GROUPS
+('default', 'UNLIMITED', 'MEDIUM', 'UNLIMITED', None, "TASK_TYPES='stats'")
+=== SELECT * FROM information_schema.SEQUENCES LIMIT 3
+(ok)
+=== SELECT * FROM performance_schema.events_statements_summary_by_digest LIMIT 3
+(ok)
+=== SELECT * FROM metrics_schema.upstream_dashboard_emails LIMIT 3
+ERR (1146, "Table 'metrics_schema.upstream_dashboard_emails' doesn't exist") | WARN Error:1146:Table 'metrics_schema.upstream_dashboard_emails' doesn't exist

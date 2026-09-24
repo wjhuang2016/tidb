@@ -1,0 +1,117 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE ab(a INT, b VARCHAR(5), c INT, KEY ib(b))
+(ok)
+=== INSERT INTO ab VALUES (1,'x',1),(2,'y',2)
+(ok)
+=== ALTER TABLE ab ADD COLUMN d INT
+(ok)
+=== ALTER TABLE ab ADD COLUMN d INT
+ERR (1060, "Duplicate column name 'd'") | WARN Error:1060:Duplicate column name 'd'
+=== ALTER TABLE ab ADD COLUMN IF NOT EXISTS d INT
+(ok) | WARN Note:1060:Duplicate column name 'd'
+=== ALTER TABLE ab ADD COLUMN e INT FIRST
+(ok)
+=== ALTER TABLE ab ADD COLUMN f INT AFTER b
+(ok)
+=== ALTER TABLE ab ADD COLUMN (g INT, h INT)
+(ok)
+=== ALTER TABLE ab MODIFY COLUMN b VARCHAR(10)
+(ok)
+=== ALTER TABLE ab MODIFY COLUMN b INT
+ERR (1292, "Truncated incorrect DOUBLE value: 'x'") | WARN Error:1292:Truncated incorrect DOUBLE value: 'x'
+=== ALTER TABLE ab CHANGE COLUMN c c2 BIGINT
+(ok)
+=== ALTER TABLE ab CHANGE COLUMN no_such c3 BIGINT
+ERR (1054, "Unknown column 'no_such' in 'ab'") | WARN Error:1054:Unknown column 'no_such' in 'ab'
+=== ALTER TABLE ab DROP COLUMN h
+(ok)
+=== ALTER TABLE ab DROP COLUMN no_such
+ERR (1091, "Can't DROP 'no_such'; check that column/key exists") | WARN Error:1091:Can't DROP 'no_such'; check that column/key exists
+=== ALTER TABLE ab DROP COLUMN IF EXISTS no_such
+(ok) | WARN Note:1091:Can't DROP 'no_such'; check that column/key exists
+=== ALTER TABLE ab RENAME COLUMN d TO d2
+(ok)
+=== ALTER TABLE ab RENAME COLUMN d2 TO ab
+(ok)
+=== ALTER TABLE ab RENAME TO ab2
+(ok)
+=== ALTER TABLE ab2 RENAME fdq.ab3
+(ok)
+=== ALTER TABLE ab3 ENGINE = InnoDB
+(ok)
+=== ALTER TABLE ab3 ENGINE = Memory
+(ok)
+=== ALTER TABLE ab3 ROW_FORMAT = COMPACT
+(ok)
+=== ALTER TABLE ab3 CHARSET = utf8mb4
+(ok)
+=== ALTER TABLE ab3 COLLATE = utf8mb4_general_ci
+(ok)
+=== ALTER TABLE ab3 AUTO_INCREMENT = 1000
+(ok) | WARN Warning:1105:Can't reset AUTO_INCREMENT to 1000 without FORCE option, using 30001 instead
+=== ALTER TABLE ab3 ADD INDEX idx1(a) USING HASH
+(ok)
+=== ALTER TABLE ab3 ADD INDEX idx1(a)
+ERR (1061, "Duplicate key name 'idx1'") | WARN Error:1061:Duplicate key name 'idx1'
+=== ALTER TABLE ab3 ADD UNIQUE INDEX uq1(b)
+(ok)
+=== ALTER TABLE ab3 ADD FULLTEXT INDEX ft1(b)
+ERR (8200, 'FULLTEXT index is only supported in starter deployment mode') | WARN Error:8200:FULLTEXT index is only supported in starter deployment mode
+=== ALTER TABLE ab3 ADD INDEX idx2(a) COMMENT 'idx comment'
+(ok)
+=== ALTER TABLE ab3 ADD INDEX idx3(a) INVISIBLE
+(ok)
+=== ALTER TABLE ab3 ADD INDEX idx4(b(2))
+(ok)
+=== ALTER TABLE ab3 ADD INDEX idx5(a) KEY_BLOCK_SIZE = 8
+(ok)
+=== ALTER TABLE ab3 DROP INDEX idx3
+(ok)
+=== ALTER TABLE ab3 RENAME INDEX idx1 TO idx1r
+(ok)
+=== ALTER TABLE ab3 ALTER INDEX idx2 INVISIBLE
+(ok)
+=== ALTER TABLE ab3 ALTER INDEX idx2 VISIBLE
+(ok)
+=== ALTER TABLE ab3 RENAME KEY idx4 TO idx4r
+(ok)
+=== ALTER TABLE ab3 ALTER COLUMN a SET DEFAULT 5
+(ok)
+=== ALTER TABLE ab3 ALTER COLUMN a DROP DEFAULT
+(ok)
+=== ALTER TABLE ab3 COMMENT = 'table comment'
+(ok)
+=== ALTER TABLE ab3 COMMENT 'table comment2'
+(ok)
+=== ALTER TABLE ab3 FORCE
+ERR (8200, 'Unsupported Unsupported/unknown ALTER TABLE specification') | WARN Error:8200:Unsupported Unsupported/unknown ALTER TABLE specification
+=== ALTER TABLE ab3 VALIDATE
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 24 near "VALIDATE" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 24 near "VALIDATE" 
+=== ALTER TABLE ab3 WITH VALIDATION
+(ok) | WARN Warning:8200:ALTER TABLE WITH VALIDATION is currently unsupported
+=== ALTER TABLE ab3 ADD PRIMARY KEY (a)
+(ok)
+=== ALTER TABLE ab3 ADD PRIMARY KEY (a)
+ERR (1068, 'Multiple primary key defined') | WARN Error:1068:Multiple primary key defined
+=== ALTER TABLE ab3 DROP PRIMARY KEY
+(ok)
+=== ALTER TABLE ab3 CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
+ERR (8200, "Unsupported converting collation of column 'b' from 'utf8mb4_bin' to 'utf8mb4_general_ci' when index is defined on it.") | WARN Error:8200:Unsupported converting collation of column 'b' from 'utf8mb4_bin' to 'utf8mb4_general_ci' when index is defined on it.
+=== ALTER TABLE ab3 DEFAULT CHARACTER SET = utf8mb4
+(ok)
+=== ALTER TABLE ab3 STATS_PERSISTENT = 1, STATS_AUTO_RECALC = 1
+ERR (8200, 'This type of ALTER TABLE is currently unsupported') | WARN Error:8200:This type of ALTER TABLE is currently unsupported
+=== ALTER TABLE ab3 ADD PARTITION (PARTITION p0 VALUES LESS THAN (100))
+ERR (1505, 'Partition management on a not partitioned table is not possible') | WARN Error:1505:Partition management on a not partitioned table is not possible
+=== ALTER TABLE ab3 WITHOUT VALIDATION
+(ok) | WARN Warning:8200:ALTER TABLE WITHOUT VALIDATION is currently unsupported
+=== ALTER TABLE no_such ADD COLUMN x INT
+ERR (1146, "Table 'fdq.no_such' doesn't exist") | WARN Error:1146:Table 'fdq.no_such' doesn't exist
+=== ALTER TABLE ab3 ALGORITHM = INPLACE, ADD COLUMN z INT
+(ok) | WARN Error:1846:ALGORITHM=INPLACE is not supported. Reason: Cannot alter table by INPLACE. Try ALGORITHM=INSTANT.
+=== ALTER TABLE ab3 ALGORITHM = INSTANT, ADD COLUMN z2 INT
+(ok)
+=== ALTER TABLE ab3 LOCK = NONE, ADD COLUMN z3 INT
+(ok)

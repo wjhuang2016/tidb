@@ -1,0 +1,83 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE tt(a DATETIME, b TIMESTAMP NULL, c TIME)
+(ok)
+=== SET time_zone = '+08:00'
+(ok)
+=== SELECT CONVERT_TZ('2020-01-01 00:00:00','+00:00','+08:00')
+(datetime.datetime(2020, 1, 1, 8, 0),)
+=== SELECT CONVERT_TZ('2020-01-01 00:00:00','UTC','Asia/Shanghai')
+(datetime.datetime(2020, 1, 1, 8, 0),)
+=== SELECT CONVERT_TZ('2020-01-01 00:00:00','MET','America/New_York')
+(datetime.datetime(2019, 12, 31, 18, 0),)
+=== SELECT CONVERT_TZ('2020-01-01 00:00:00','bogus','UTC')
+(None,)
+=== SELECT FROM_UNIXTIME(1600000000), UNIX_TIMESTAMP('2020-09-13 12:26:40')
+(datetime.datetime(2020, 9, 13, 20, 26, 40), 1599971200)
+=== SELECT UTC_TIMESTAMP(), UTC_DATE(), UTC_TIME()
+(datetime.datetime(2026, 9, 24, 7, 19, 54), datetime.date(2026, 9, 24), datetime.timedelta(seconds=26393))
+=== SET time_zone = 'America/New_York'
+(ok)
+=== SELECT NOW(), CURDATE()
+(datetime.datetime(2026, 9, 24, 3, 19, 53), datetime.date(2026, 9, 24))
+=== SELECT TIMEDIFF(NOW(), UTC_TIMESTAMP())
+(datetime.timedelta(days=-1, seconds=71999),)
+=== SET time_zone = 'bogus/zone'
+ERR (1298, "Unknown or incorrect time zone: 'bogus/zone'") | WARN Error:1298:Unknown or incorrect time zone: 'bogus/zone'
+=== SET time_zone = '+14:00'
+(ok)
+=== SET time_zone = '-13:59'
+ERR (1298, "Unknown or incorrect time zone: '-13:59'") | WARN Error:1298:Unknown or incorrect time zone: '-13:59'
+=== SET time_zone = '+15:00'
+ERR (1298, "Unknown or incorrect time zone: '+15:00'") | WARN Error:1298:Unknown or incorrect time zone: '+15:00'
+=== SET time_zone = '+08:00:30'
+(ok)
+=== SET time_zone = '+8'
+(ok)
+=== SET time_zone = 'Etc/GMT+5'
+(ok)
+=== SET time_zone = 'SYSTEM'
+(ok)
+=== SELECT @@time_zone, @@system_time_zone
+('SYSTEM', 'Asia/Shanghai')
+=== SELECT TIMESTAMPADD(HOUR, 1, '2020-01-01')
+('2020-01-01 01:00:00',)
+=== SELECT TIMESTAMPADD(SQL_TSI_HOUR, 1, '2020-01-01')
+('2020-01-01 01:00:00',)
+=== SELECT TIMESTAMPADD(QUARTER, 1, '2020-01-01')
+('2020-04-01 00:00:00',)
+=== SELECT TIMESTAMPADD(WEEK, 1, '2020-01-01')
+('2020-01-08 00:00:00',)
+=== SELECT TIMESTAMPDIFF(MICROSECOND, '2020-01-01', '2020-01-02')
+(86400000000,)
+=== SELECT TIMESTAMPDIFF(SQL_TSI_FRAC_SECOND, '2020-01-01', '2020-01-02')
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 40 near "SQL_TSI_FRAC_SECOND, \'2020-01-01\', \'2020-01-02\')" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 40 near "SQL_TSI_FRAC_SECOND, '2020-01-01', '2020-01-0
+=== SELECT PERIOD_ADD(202001, 13), PERIOD_DIFF(202101, 202001)
+(202102, 12)
+=== SELECT MAKEDATE(2020, 0), MAKEDATE(2020, 367), MAKETIME(25, 0, 0), MAKETIME(23, 59, 61)
+(None, datetime.date(2021, 1, 1), datetime.timedelta(days=1, seconds=3600), None)
+=== SELECT SEC_TO_TIME(90061), TIME_TO_SEC('-838:59:59')
+(datetime.timedelta(days=1, seconds=3661), -3020399)
+=== SELECT DATE_FORMAT('2020-01-02 03:04:05', '%b %M %j %U %u %V %X %x %f %p %r %T')
+('Jan January 002 00 01 52 2019 2020 000000 AM 03:04:05 AM 03:04:05',)
+=== SELECT STR_TO_DATE('01,5,2013','%d,%m,%Y'), STR_TO_DATE('a','%d')
+(datetime.date(2013, 5, 1), None) | WARN Warning:1292:Incorrect datetime value: '0000-00-00 00:00:00'
+=== SELECT EXTRACT(YEAR FROM '2020-01-01'), EXTRACT(QUARTER FROM '2020-04-01'), EXTRACT(WEEK FROM '2020-01-01'), EXTRACT(WEEK(3) FROM '2020-01-01')
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 122 near "(3) FROM \'2020-01-01\')" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 122 near "(3) FROM '2020-01-01')" 
+=== SELECT LAST_DAY('2020-02-15'), LAST_DAY('2020-02-30')
+(datetime.date(2020, 2, 29), None) | WARN Warning:1292:Incorrect datetime value: '2020-2-30'
+=== SELECT ADDDATE('2020-12-31', INTERVAL 1 DAY), SUBDATE('2020-01-01', INTERVAL '1-1' YEAR_MONTH)
+('2021-01-01', '2018-12-01')
+=== SELECT DATE_ADD('2020-01-01', INTERVAL 1 MICROSECOND), DATE_SUB('2020-01-01', INTERVAL 999999999 MICROSECOND)
+('2020-01-01 00:00:00.000001', '2019-12-31 23:43:20.000001')
+=== SELECT WEEKOFYEAR('2020-12-31'), YEARWEEK('2020-01-01'), YEARWEEK('2020-01-01', 1)
+(53, 201952, 202001)
+=== SELECT DAYNAME('2020-01-01'), MONTHNAME('2020-01-01')
+('Wednesday', 'January')
+=== SELECT GET_FORMAT(DATE, 'USA'), GET_FORMAT(DATETIME, 'ISO'), GET_FORMAT(TIME, 'INTERNAL'), GET_FORMAT(DATE, 'bogus')
+('%m.%d.%Y', '%Y-%m-%d %H:%i:%s', '%H%i%s', '')
+=== SELECT TIME_FORMAT('25:00:00', '%H %i %s')
+('25 00 00',)
+=== SELECT DATEDIFF('2020-01-02', '2020-01-01'), DATEDIFF('x', 'y')
+(1, None) | WARN Warning:1292:Incorrect datetime value: 'x'; Warning:1292:Incorrect datetime value: 'y'

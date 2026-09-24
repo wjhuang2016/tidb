@@ -1,0 +1,38 @@
+# privilege / user battery
+>>>
+CREATE USER 'u1'@'%' IDENTIFIED BY 'pw';
+CREATE USER 'u1'@'%' IDENTIFIED BY 'pw';
+CREATE USER 'u2'@'localhost' IDENTIFIED WITH mysql_native_password AS '';
+CREATE USER IF NOT EXISTS 'u1'@'%';
+CREATE USER 'bad user name';
+ALTER USER 'u1'@'%' IDENTIFIED BY 'pw2';
+ALTER USER 'no_such'@'%' IDENTIFIED BY 'x';
+ALTER USER 'u1'@'%' PASSWORD EXPIRE;
+ALTER USER 'u1'@'%' ACCOUNT LOCK;
+ALTER USER 'u1'@'%' ACCOUNT UNLOCK;
+ALTER USER 'u1'@'%' PASSWORD HISTORY 5;
+ALTER USER 'u1'@'%' REQUIRE SSL;
+ALTER USER 'u1'@'%' WITH MAX_USER_CONNECTIONS 5;
+DROP USER 'u2'@'localhost';
+DROP USER 'no_such'@'%';
+CREATE ROLE 'r1'@'%';
+CREATE ROLE IF NOT EXISTS 'r1'@'%';
+GRANT SELECT ON fdq.* TO 'u1'@'%';
+GRANT ALL PRIVILEGES ON fdq.* TO 'u1'@'%';
+GRANT SELECT (a) ON fdq.sb TO 'u1'@'%';
+GRANT SELECT, INSERT ON *.* TO 'u1'@'%';
+GRANT BOGUS_PRIV ON fdq.* TO 'u1'@'%';
+GRANT SELECT ON fdq.* TO 'no_such'@'%';
+GRANT r1 TO 'u1'@'%';
+REVOKE SELECT ON fdq.* FROM 'u1'@'%';
+REVOKE ALL ON *.* FROM 'u1'@'%';
+SET DEFAULT ROLE r1 TO 'u1'@'%';
+SET GLOBAL grant_option = 1;
+SHOW GRANTS FOR 'u1'@'%';
+SELECT user, host, authentication_string FROM mysql.user ORDER BY user;
+SELECT user, host, db, table_name,_priv FROM mysql.db WHERE user = 'u1';
+RENAME USER 'u1'@'%' TO 'u1r'@'%';
+SET PASSWORD FOR 'u1r'@'%' = 'x';
+FLUSH PRIVILEGES;
+DROP ROLE 'r1'@'%';
+DROP USER 'u1r'@'%';

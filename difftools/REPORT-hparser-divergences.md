@@ -217,3 +217,99 @@ transcript 全 ERR 相等 → 假 IDENTICAL。修正（无 -D + 独立 fixture �
 - 'dtq 消失'结案：v2 harness 首版 -D 连接在 DROP 后握手失败所致，非服务器 bug。
 - rcdb 一次性 1049：与上同源，撤销。
 - SHOW TABLE STATUS 统计零值：归因 S20（auto-analyze 默认 OFF），并入 R5。
+
+---
+
+# Round 2 · 新头 7aff167d 复测（Go 已修 73 条中的多数，本轮重新全量挖掘）
+
+基线：hparser-integration @ 7aff167d（"planner: reject order-mismatched index paths before the plan-id burn"）。
+Go oracle 与 Rust 同源重建。抽查确认已修：B2 bitand 族、B4 from_days、D8 DECIMAL(66)（但错误消息文本仍分歧，见 N37）。
+E1 变形存活：1105 Debug 堆 → 8141 hex 断言（仍非 1062，见 N1）。
+
+## A · 错结果（rank 0-1，用户数据面）
+- N1 [rank1·开放变形] 任何 INSERT 撞**已提交**行的主键/唯一键 → Go 1062，Rust `[tikv:8141]assertion failed: key:<hex>, assertion: NotExist`。
+  同事务内批重复仍是 1062——预写断言只在对已提交数据时未映射。
+- N2 [rank1] OR 下推选择条件在索引全扫上错乱：`WHERE b=1 OR a=2` Go{(1,1),(2,2)} Rust{(2,2),(3,3)}；
+  `WHERE a=2 OR b=1` Go 两行 Rust 只剩不匹配的 (3,3)；`WHERE b=1 OR a=3` Rust 全表吐出。
+  Rust 计划把 or(eq(b,1),eq(a,2)) 下推进 IndexFullScan——非索引列谓词在索引行解码错位。
+- N3 [rank1] `JSON_SET(a,'$.x[0]', JSON_OBJECT('q',9))`：元素以**字符串**入库（`"{\"q\": 9}"` 带引号），Go 存真实对象。
+- N4 [rank2] `INSERT INTO t(c_dbl) VALUES (1e400)` 全列语句因字面量解析路径分歧被 Rust 当 1064 语法错（B11 开放）。
+
+## B · 输出顺序族（tie 顺序与 Go 不同；10 形态）
+- N5 GROUP BY 无 ORDER BY 输出行序（6 探针形态：简单/位置/裸计数/ANY_VALUE/双列/HAVING）
+- N6 GROUP_CONCAT 无 ORDER BY 组序；N7 GROUP_CONCAT(DISTINCT) 组序
+- N8 `ORDER BY g LIMIT 1,2` 窗口内 tie 行选取与顺序；N9 `LIMIT 2 OFFSET 1` 同
+- N10 UNION DISTINCT 行序；N11 UNION ALL 分段序；N12 派生表内 UNION 行序
+- N13 窗口函数+DISTINCT 行序；N14 SHOW STATS_META/STATS_HEALTHY 行序；N15 ORDER BY RAND()（噪音级，不计）→ 计 N5-N14 = **10 项**
+
+## C · 算值分歧
+- N16 `atan(b'1',x'41')`/`atan2`：Go 0.015383401780595152（17 位）vs Rust 0.01538340178059515（丢末位）
+- N17 `bitneg(1)`：Go 18446744073709551614（u64）vs Rust -2（i64）——wire 符号性
+- N18 `CAST('1e300' AS DOUBLE)`：Go 1690 overflows float vs Rust 接受 1e+300
+- N19 COMPRESS() 字节分歧（B1 开放，新头复现）
+
+## D · 功能缺口（响亮拒绝，Go 支持 Rust 拒）
+- N20 内联生成列 CREATE TABLE（D4 开放；gc/gcs 全链级联）
+- N21 `ALTER TABLE ... PARTITION BY` 表转分区（下游 I_S.PARTITIONS 空、分区管理 1505/1747、EXPLAIN 无 partition: 均为级联）
+- N22 前缀长度索引 `INDEX(b(2))`（Go OK）；N23 `ALTER TABLE ADD PRIMARY KEY`
+- N24 `FOR UPDATE SKIP LOCKED` 1235；N25 IGNORE_INDEX 提示 → Rust "physical planning produced no plan"
+- N26 EXPLAIN FORMAT='dot'；N27 FORMAT='cost_trace'；N28 EXPLAIN FORMAT='row' 通过（不计）
+- N29 ADMIN CHECKSUM TABLE；N30 ADMIN SHOW SLOW RECENT/TOP ×2；N31 ADMIN SHOW DDL JOBS（R14 开放）×2
+- N32 ADMIN CANCEL/PAUSE/RESUME DDL JOBS ×3；N33 ADMIN FLUSH/RELOAD BINDINGS ×2
+- N34 SHOW PRIVILEGES（开放）；N35 SHOW OPEN TABLES（开放）
+- N36 SHOW TRIGGERS/EVENTS/PROCEDURE STATUS/FUNCTION STATUS ×4；N37 SHOW CONFIG
+- N38 SHOW BACKUPS/RESTORES/IMPORT JOBS ×3；N39 SHOW placement FOR TABLE；N40 SHOW BINARY LOG STATUS
+- N41 ALTER USER PASSWORD HISTORY；N42 ALTER USER WITH MAX_USER_CONNECTIONS/RESOURCE GROUP
+- N43 JSON_MEMBEROF（B3 族成员，开放）；N44 bitand/bitor/bitxor(JSON,JSON) ×3；N45 char_func(JSON,·) 与 char_func(·,charset) ×2
+- N46 ALTER TABLE WITH/WITHOUT VALIDATION、ALGORITHM=INPLACE/INSTANT、LOCK=NONE、STATS_PERSISTENT、FORCE ×7（catalog-gate 白名单窄于 Go 接受面）
+
+## E · 错误码/消息保真
+- N47 `INSERT TIME(6) VALUES (1234567)`：1292 vs 1366；N48 `UPDATE ... SET no_such`：1054 vs 1105
+- N49 `LIMIT -1`：1064 vs 1105；N50 `GROUP BY g WITH ROLLUP` + 裸列：3602 vs 1055
+- N51 ORDER_INDEX：1815 vs 1105；N52 `JSON_EXTRACT(a,1)`：1105 vs 3143；N53 `case()`：1064 vs 1105
+- N54 `AS OF TIMESTAMP` 旧于历史：1146 vs 8135；N55 `CALL`：8108 vs 1105
+- N56 DROP COLUMN no_such：Go 1091 vs Rust 1105 内嵌 `catalog encode failed:` 前缀；N57 MODIFY COLUMN varchar→int 同前缀且类别错
+- N58 DECIMAL(66) 消息 "Too-big ... for 'a'" vs "Too big ... for column 'a'"
+- N59 bin_to_uuid "Incorrect **string** value" vs "Incorrect **uuid** value" ×6 参形
+- N60 cot 丢 `in 'cot(0)'` 后缀；N61 date_add() 1064 尾文本 `")"` vs `""`；N62 FULLTEXT 消息异文
+- N63 CONVERT TO CHARACTER SET 消息异文且 Rust 把 collation 名当列名（"column 'utf8mb4_bin'"）
+- N64 gbk introducer：Rust 1064 内嵌 `[parser:1115]`；N65 ADMIN 语法错列偏移 ×3（CLEANUP/FLUSH/ALL JOBS）
+- N66 ALTER VIEW 语法错偏移；N67 I_S 同缺失表错误文本大小写 `information_schema` vs `INFORMATION_SCHEMA` ×9
+- N68 ADMIN CAPTURE/EVOLVE 消息异文 ×2；N69 only_full_group_by 未强制：`SELECT * FROM ex1 GROUP BY b` Go 1055 vs Rust 出计划
+- N70 `REVOKE ALL ON *.*`：Rust 8121 privilege check fail（Go OK）→ SHOW GRANTS 内容级联
+- N71 `(a,b) = (单列子查询)`：Go 正常比较 vs Rust 1241；N72 CREATE TABLE `b INT DEFAULT (a)`：1054 vs 1105
+
+## F · warning 通道
+- N73 强转/截断 warning 缺失（Go 报 Rust 吞）：adddate/addtime 反向、and、bin、bit_count、CAST(JSON AS ·)、JSON_TABLE、STR_TO_DATE、EXTRACT WEEK(3)、TRIM 2参、CHAR USING、XOR-1、`SELECT 1 FROM dual` 形 ×25+ 探针
+- N74 反向噪音族：溢出 1690（`+1`/u64/DIV/POW/COT/1e308 组 ×9）、adtime(b'1',x'41')、RANDOM_BYTES(0)、LEADING、BEGIN、JSON_OBJECTAGG 3158
+- N75 LOG(0)/LOG(1,5)：Go 3020 ×3 vs Rust 1690；N76 ABS('x')：Go 1292 vs Rust 1292+1690 双报
+- N77 PASSWORD() 1681 弃用告警缺失；N78 CREATE TABLE(TIMESTAMP NULL) 1681 缺失
+- N79 DECIMAL 溢出 1366 warn 缺失；N80 SET time_zone 非法值 1298 warn 缺失 ×3
+- N81 ADMIN 语句 warn 通道 ×9；N82 hint 未知 8061 warn 缺失 ×8；N83 SAVEPOINT 1305 warn ×5
+- N84 SET GLOBAL grant_option 1193 warn 缺失；N85 PREPARE 'BOGUS' 双 warn 缺失
+
+## G · SHOW/元数据
+- N86 SHOW STATUS 'Ssl%'：明文连接上 Rust 报 Ssl_cipher TLS_AES_256_GCM_SHA384 + Ssl_version TLSv1.3（伪造）
+- N87 SHOW ERRORS/SHOW COUNT(*) ERRORS 记账（开放 S15 变形）
+- N88 SHOW MASTER STATUS position TSO vs 0；N89 SHOW TABLE STATUS CREATE_TIME NULL（开放 S27）×3
+- N90 SHOW DATABASES 缺 sys、METRICS_SCHEMA、PERFORMANCE_SCHEMA；N91 SHOW DATABASES 顺序（并入 N5 族不计）
+- N92 SHOW PROCESSLIST/FULL 泄漏内部会话含真实内部 SQL 文本（开放 W1 增强）
+
+## H · INFORMATION_SCHEMA
+- N93 缺失虚拟表 ×19：ENGINES、TRIGGERS、ROUTINES、EVENTS、PARAMETERS、PLUGINS、TIDB_INDEXES、TIFLASH_SEGMENTS、TIFLASH_TABLES、CLUSTER_CONFIG、INSPECTION_RESULT、INSPECTION_SUMMARY、METRICS_TABLES、METRICS_SUMMARY、CLUSTER_LOG、TIKV_STORE_STATUS、RUNAWAY_WATCHES、RESOURCE_GROUPS、SEQUENCES
+- N94 I_S.PARTITIONS 数据源错（列 character_sets 等 I_S 自身行）
+- N95 I_S.CLUSTER_INFO：版本串、git_hash 暴露、START_TIME 时区、uptime ×3 成员
+- N96 缺失 schema：performance_schema 1049、metrics_schema 1049、sys 缺失（并入 N90 一处，此处计 2）
+- N97 I_S.PARTITIONS Go 侧列出用户表 vs Rust 全 NULL（与 N94 同根，并入）
+
+## I · 排序外计划元信息
+- N98 EXPLAIN ANALYZE 缺 RU/rpc 细节；N99 计划节点 id 编号偏移（IndexLookUp_7 vs _8 等，系统性）+ 标量子查询 Column# 偏移
+- N100 estRows 分歧：IGNORE_INDEX 10.00 vs 1.25；UNION HashAgg 16.00 vs 8000.00
+- N101 UPDATE/DELETE Point_Get 尾部 `, lock` 注记；N102 LIKE 上 int 列缺 `cast(b, var_string(20))` 计划环
+- N103 charset/latin1：`CREATE TABLE latin1_swedish_ci` Rust 接受（Go 1273 拒）
+
+---
+## Round 2 计数
+- 根因族 ≈ 40（A3 + B1 + C4 + D27 + E26 + F13 + G7 + H4 + I6，N15/N28/N91/N97 合并不计）
+- 按"用户可达面"计（与 Round 1 sysvar 计法一致）：**210 项**（N73×25+、N67×9、N93×19、N74×14、N65×3、N80×3、N83×5、N82×8、D 组各 1-3 成员展开）
+- 累计（Round 1 修复后仍开放 9 条 + Round 2 新增）：**开放问题 219 项**，全部附复现语句，harness 快照在 difftools/*.go.txt/*.rust.txt

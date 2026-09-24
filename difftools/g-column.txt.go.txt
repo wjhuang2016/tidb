@@ -1,0 +1,97 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE tc( c_tiny TINYINT, c_tinyu TINYINT UNSIGNED, c_small SMALLINT, c_int INT, c_intu INT UNSIGNED, c_big BIGINT, c_bigu BIGINT UNSIGNED, c_dbl DOUBLE, c_flt FLOAT, c_dec DECIMAL(10,4), c_bit BIT(8), c_date DATE, c_dt DATETIME(6), c_ts TIMESTAMP NULL, c_time TIME(6), c_yr YEAR, c_ch CHAR(10), c_vc VARCHAR(100), c_bin BINARY(4), c_vb VARBINARY(100), c_blob BLOB, c_txt TEXT, c_js JSON, c_en ENUM('x','y'), c_st SET('p','q'))
+(ok) | WARN Warning:1681:The ZEROFILL attribute is deprecated and will be removed in a future release. Use the LPAD function to zero-pad numbers, or store the formatted numbers in a CHAR column.
+=== INSERT INTO tc(c_tiny) VALUES (128)
+ERR (1264, "Out of range value for column 'c_tiny' at row 1") | WARN Error:1264:Out of range value for column 'c_tiny' at row 1
+=== INSERT INTO tc(c_tiny) VALUES (-129)
+ERR (1264, "Out of range value for column 'c_tiny' at row 1") | WARN Error:1264:Out of range value for column 'c_tiny' at row 1
+=== INSERT INTO tc(c_tinyu) VALUES (256)
+ERR (1264, "Out of range value for column 'c_tinyu' at row 1") | WARN Error:1264:Out of range value for column 'c_tinyu' at row 1
+=== INSERT INTO tc(c_tinyu) VALUES (-1)
+ERR (1264, "Out of range value for column 'c_tinyu' at row 1") | WARN Error:1264:Out of range value for column 'c_tinyu' at row 1
+=== INSERT INTO tc(c_small) VALUES (32768)
+ERR (1264, "Out of range value for column 'c_small' at row 1") | WARN Error:1264:Out of range value for column 'c_small' at row 1
+=== INSERT INTO tc(c_int) VALUES (2147483648)
+ERR (1264, "Out of range value for column 'c_int' at row 1") | WARN Error:1264:Out of range value for column 'c_int' at row 1
+=== INSERT INTO tc(c_intu) VALUES (4294967296)
+ERR (1264, "Out of range value for column 'c_intu' at row 1") | WARN Error:1264:Out of range value for column 'c_intu' at row 1
+=== INSERT INTO tc(c_big) VALUES (9223372036854775808)
+ERR (1264, "Out of range value for column 'c_big' at row 1") | WARN Error:1264:Out of range value for column 'c_big' at row 1
+=== INSERT INTO tc(c_bigu) VALUES (18446744073709551616)
+ERR (1264, "Out of range value for column 'c_bigu' at row 1") | WARN Error:1264:Out of range value for column 'c_bigu' at row 1
+=== INSERT INTO tc(c_dbl) VALUES (1e400)
+ERR (1367, "Illegal double '1e400' value found during parsing") | WARN Error:1367:Illegal double '1e400' value found during parsing
+=== INSERT INTO tc(c_flt) VALUES (1e40)
+ERR (1264, "Out of range value for column 'c_flt' at row 1") | WARN Error:1264:Out of range value for column 'c_flt' at row 1
+=== INSERT INTO tc(c_dec) VALUES (12345678901)
+ERR (1264, "Out of range value for column 'c_dec' at row 1") | WARN Error:1264:Out of range value for column 'c_dec' at row 1
+=== INSERT INTO tc(c_dec) VALUES (99999.99999)
+(ok) | WARN Warning:1366:Incorrect decimal value: '99999.99999' for column 'c_dec' at row 1
+=== INSERT INTO tc(c_bit) VALUES (256)
+ERR (1406, "Data too long for column 'c_bit' at row 1") | WARN Error:1406:Data too long for column 'c_bit' at row 1
+=== INSERT INTO tc(c_bit) VALUES (b'111111111')
+ERR (1406, "Data too long for column 'c_bit' at row 1") | WARN Error:1406:Data too long for column 'c_bit' at row 1
+=== INSERT INTO tc(c_date) VALUES ('2020-02-30')
+ERR (1292, "Incorrect date value: '2020-02-30' for column 'c_date' at row 1") | WARN Error:1292:Incorrect date value: '2020-02-30' for column 'c_date' at row 1
+=== INSERT INTO tc(c_date) VALUES (20200101)
+(ok)
+=== INSERT INTO tc(c_date) VALUES ('2020-01-01 10:20:30')
+(ok)
+=== INSERT INTO tc(c_dt) VALUES ('2020-01-01 10:20:30.9999999')
+(ok)
+=== INSERT INTO tc(c_ts) VALUES ('2038-01-20 00:00:00')
+ERR (1292, "Incorrect timestamp value: '2038-01-20 00:00:00' for column 'c_ts' at row 1") | WARN Error:1292:Incorrect timestamp value: '2038-01-20 00:00:00' for column 'c_ts' at row 1
+=== INSERT INTO tc(c_ts) VALUES ('1969-12-31 23:59:59')
+ERR (1292, "Incorrect timestamp value: '1969-12-31 23:59:59' for column 'c_ts' at row 1") | WARN Error:1292:Incorrect timestamp value: '1969-12-31 23:59:59' for column 'c_ts' at row 1
+=== INSERT INTO tc(c_time) VALUES ('25:00:00')
+(ok)
+=== INSERT INTO tc(c_time) VALUES (1234567)
+ERR (1292, "Incorrect time value: '1234567' for column 'c_time' at row 1") | WARN Error:1292:Incorrect time value: '1234567' for column 'c_time' at row 1
+=== INSERT INTO tc(c_yr) VALUES (2156)
+ERR (1264, "Out of range value for column 'c_yr' at row 1") | WARN Error:1264:Out of range value for column 'c_yr' at row 1
+=== INSERT INTO tc(c_yr) VALUES (99)
+(ok)
+=== INSERT INTO tc(c_ch) VALUES ('abcdefghijk')
+ERR (1406, "Data too long for column 'c_ch' at row 1") | WARN Error:1406:Data too long for column 'c_ch' at row 1
+=== INSERT INTO tc(c_ch) VALUES (123456789012345)
+ERR (1406, "Data too long for column 'c_ch' at row 1") | WARN Error:1406:Data too long for column 'c_ch' at row 1
+=== INSERT INTO tc(c_vc) VALUES (REPEAT('x', 101))
+ERR (1406, "Data too long for column 'c_vc' at row 1") | WARN Error:1406:Data too long for column 'c_vc' at row 1
+=== INSERT INTO tc(c_bin) VALUES ('abcde')
+ERR (1406, "Data too long for column 'c_bin' at row 1") | WARN Error:1406:Data too long for column 'c_bin' at row 1
+=== INSERT INTO tc(c_vb) VALUES (REPEAT('b', 101))
+ERR (1406, "Data too long for column 'c_vb' at row 1") | WARN Error:1406:Data too long for column 'c_vb' at row 1
+=== INSERT INTO tc(c_blob) VALUES (x'FF')
+(ok)
+=== INSERT INTO tc(c_txt) VALUES ('中文字超过很多字的文本内容文本内容')
+(ok)
+=== INSERT INTO tc(c_js) VALUES ('[1,2]')
+(ok)
+=== INSERT INTO tc(c_js) VALUES ('{bad json}')
+ERR (3140, 'Invalid JSON text: The document root must not be followed by other values.') | WARN Error:3140:Invalid JSON text: The document root must not be followed by other values.
+=== INSERT INTO tc(c_js) VALUES (123)
+(ok)
+=== INSERT INTO tc(c_en) VALUES ('z')
+ERR (1265, "Data truncated for column 'c_en' at row 1") | WARN Error:1265:Data truncated for column 'c_en' at row 1
+=== INSERT INTO tc(c_en) VALUES (3)
+ERR (1265, "Data truncated for column 'c_en' at row 1") | WARN Error:1265:Data truncated for column 'c_en' at row 1
+=== INSERT INTO tc(c_en) VALUES (0)
+ERR (1265, "Data truncated for column 'c_en' at row 1") | WARN Error:1265:Data truncated for column 'c_en' at row 1
+=== INSERT INTO tc(c_st) VALUES ('p,q,r')
+ERR (1265, "Data truncated for column 'c_st' at row 1") | WARN Error:1265:Data truncated for column 'c_st' at row 1
+=== INSERT INTO tc(c_st) VALUES (4)
+ERR (1265, "Data truncated for column 'c_st' at row 1") | WARN Error:1265:Data truncated for column 'c_st' at row 1
+=== SELECT * FROM tc
+(None, None, None, None, None, None, None, None, None, Decimal('100000.0000'), None, None, None, None, None, None, None, None, None, None, None, None, None, None, None); (None, None, None, None, None, None, None, None, None, None, None, datetime.date(2020, 1, 1), None, None, None, None, None, None, None, None, None, None, None, None, None); (None, None, None, None, None, None, None, None, None, None, None, datetime.date(2020, 1, 1), None, None, None, None, None, None, None, None, None, None, None, None, None); (None, None, None, None, None, None, None, None, None, None, None, None, datetime.datetime(2020, 1, 1, 10, 20, 31), None, None, None, None, None, None, None, None, None, None, None, None); (None, None, None, None, None, None, None, None, None, None, None, None, None, None, datetime.timedelta(days=1, seconds=3600), None, None, None, None, None, None, None, None, None, None); (None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, 1999, None, None, None, None, None, None, None, None, None); (None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, b'\xff', None, None, None, None); (None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, '中文字超过很多字的文本内容文本内容', None, None, None); (None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, '[1, 2]', None, None); (None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, '123', None, None)
+=== SELECT c_tiny+0, c_tinyu+0, c_bit+0, c_js FROM tc
+(None, None, None, None); (None, None, None, None); (None, None, None, None); (None, None, None, None); (None, None, None, None); (None, None, None, None); (None, None, None, None); (None, None, None, None); (None, None, None, '[1, 2]'); (None, None, None, '123')
+=== SELECT c_ts, UNIX_TIMESTAMP(c_ts) FROM tc
+(None, None); (None, None); (None, None); (None, None); (None, None); (None, None); (None, None); (None, None); (None, None); (None, None)
+=== SELECT CONCAT('[', c_ch, ']'), LENGTH(c_bin), HEX(c_vb) FROM tc
+(None, None, None); (None, None, None); (None, None, None); (None, None, None); (None, None, None); (None, None, None); (None, None, None); (None, None, None); (None, None, None); (None, None, None)
+=== UPDATE tc SET c_int = c_big
+(ok)
+=== SELECT c_int FROM tc
+(None,); (None,); (None,); (None,); (None,); (None,); (None,); (None,); (None,); (None,)

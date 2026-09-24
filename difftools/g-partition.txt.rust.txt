@@ -1,0 +1,79 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE pa(a INT, b DATE, c VARCHAR(5))
+(ok)
+=== >>>
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 2 near ">>>" ')
+=== ALTER TABLE pa PARTITION BY RANGE (a) (PARTITION p0 VALUES LESS THAN (10), PARTITION p1 VALUES LESS THAN (100))
+ERR (1105, "this node changes the cluster's catalog for CREATE TABLE, DROP TABLE, CREATE DATABASE, DROP DATABASE, CREATE/DROP VIEW, placement policy changes, index changes, and single-action ALTER INDEX changes only; run this statement on a TiDB server")
+=== INSERT INTO pa VALUES (5,'2020-01-01','x'),(50,'2020-01-01','y'),(500,'2020-01-01','z')
+(ok)
+=== SELECT * FROM pa
+(5, datetime.date(2020, 1, 1), 'x'); (50, datetime.date(2020, 1, 1), 'y'); (500, datetime.date(2020, 1, 1), 'z')
+=== EXPLAIN SELECT * FROM pa WHERE a = 5
+('TableReader_7', '10.00', 'root', '', 'data:Selection_6'); ('└─Selection_6', '10.00', 'cop[tikv]', '', 'eq(fdq.pa.a, 5)'); ('  └─TableFullScan_5', '10000.00', 'cop[tikv]', 'table:pa', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM pa WHERE a > 5
+('TableReader_7', '3333.33', 'root', '', 'data:Selection_6'); ('└─Selection_6', '3333.33', 'cop[tikv]', '', 'gt(fdq.pa.a, 5)'); ('  └─TableFullScan_5', '10000.00', 'cop[tikv]', 'table:pa', 'keep order:false, stats:pseudo')
+=== EXPLAIN FORMAT='brief' SELECT * FROM pa WHERE a = 50
+('TableReader', '10.00', 'root', '', 'data:Selection'); ('└─Selection', '10.00', 'cop[tikv]', '', 'eq(fdq.pa.a, 50)'); ('  └─TableFullScan', '10000.00', 'cop[tikv]', 'table:pa', 'keep order:false, stats:pseudo')
+=== SELECT * FROM pa PARTITION (p0)
+ERR (1747, 'PARTITION () clause on non partitioned table') | WARN Error:1747:PARTITION () clause on non partitioned table
+=== SELECT * FROM pa PARTITION (p1)
+ERR (1747, 'PARTITION () clause on non partitioned table') | WARN Error:1747:PARTITION () clause on non partitioned table
+=== ALTER TABLE pa ADD PARTITION (PARTITION p2 VALUES LESS THAN (1000))
+ERR (1505, 'Partition management on a not partitioned table is not possible')
+=== ALTER TABLE pa DROP PARTITION p2
+ERR (1505, 'Partition management on a not partitioned table is not possible')
+=== ALTER TABLE pa TRUNCATE PARTITION p1
+ERR (1505, 'Partition management on a not partitioned table is not possible')
+=== SELECT * FROM pa
+(5, datetime.date(2020, 1, 1), 'x'); (50, datetime.date(2020, 1, 1), 'y'); (500, datetime.date(2020, 1, 1), 'z')
+=== CREATE TABLE pb(a INT) PARTITION BY RANGE COLUMNS(a) (PARTITION p0 VALUES LESS THAN (5), PARTITION p1 VALUES LESS THAN (10))
+(ok)
+=== CREATE TABLE pc(a INT, b VARCHAR(5)) PARTITION BY LIST COLUMNS(b) (PARTITION p0 VALUES IN ('x'), PARTITION p1 VALUES IN ('y'))
+(ok)
+=== INSERT INTO pc VALUES (1,'x'),(2,'y')
+(ok)
+=== SELECT * FROM pc PARTITION (p0)
+(1, 'x')
+=== INSERT INTO pc VALUES (3,'z')
+ERR (1526, 'Table has no partition for value from column_list') | WARN Error:1526:Table has no partition for value from column_list
+=== CREATE TABLE pd(a INT, b INT) PARTITION BY LIST(a) (PARTITION p0 VALUES IN (1,2,3), PARTITION p1 VALUES IN (4,5))
+(ok)
+=== INSERT INTO pd VALUES (1,'x'),(4,'y')
+ERR (1366, "Incorrect int value: 'x' for column 'b' at row 1") | WARN Error:1366:Incorrect int value: 'x' for column 'b' at row 1
+=== SELECT * FROM pd
+(ok)
+=== INSERT INTO pd VALUES (9,'z')
+ERR (1366, "Incorrect int value: 'z' for column 'b' at row 1") | WARN Error:1366:Incorrect int value: 'z' for column 'b' at row 1
+=== CREATE TABLE pe(a INT) PARTITION BY KEY(a) PARTITIONS 3
+(ok)
+=== INSERT INTO pe VALUES (1),(2),(3)
+(ok)
+=== SELECT * FROM pe PARTITION (p0)
+(ok)
+=== CREATE TABLE pf(a INT, b DATE) PARTITION BY RANGE COLUMNS(b) (PARTITION p0 VALUES LESS THAN ('2021-01-01'), PARTITION p1 VALUES LESS THAN ('2022-01-01'))
+(ok)
+=== INSERT INTO pf VALUES (1,'2020-06-01'),(2,'2021-06-01')
+(ok)
+=== EXPLAIN SELECT * FROM pf WHERE b = '2020-06-01'
+('TableReader_7', '10.00', 'root', 'partition:p0', 'data:Selection_6'); ('└─Selection_6', '10.00', 'cop[tikv]', '', 'eq(fdq.pf.b, 2020-06-01 00:00:00.000000)'); ('  └─TableFullScan_5', '10000.00', 'cop[tikv]', 'table:pf', 'keep order:false, stats:pseudo')
+=== ALTER TABLE pf REORGANIZE PARTITION p1 INTO (PARTITION p1 VALUES LESS THAN ('2021-06-01'), PARTITION p2 VALUES LESS THAN ('2022-01-01'))
+ERR (1105, "this node changes the cluster's catalog for CREATE TABLE, DROP TABLE, CREATE DATABASE, DROP DATABASE, CREATE/DROP VIEW, placement policy changes, index changes, and single-action ALTER INDEX changes only; run this statement on a TiDB server")
+=== SHOW CREATE TABLE pf
+('pf', "CREATE TABLE `pf` (\n  `a` int DEFAULT NULL,\n  `b` date DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin\nPARTITION BY RANGE COLUMNS(`b`)\n(PARTITION `p0` VALUES LESS THAN ('2021-01-01'),\n PARTITION `p1` VALUES LESS THAN ('2022-01-01'))")
+=== CREATE TABLE pg(a INT) PARTITION BY HASH(a) PARTITIONS 2 SUBPARTITION BY HASH(a) SUBPARTITIONS 2
+ERR (1500, 'It is only possible to mix RANGE/LIST partitioning with HASH/KEY partitioning for subpartitioning')
+=== CREATE TABLE ph(a INT) PARTITION BY RANGE (a) (PARTITION p0 VALUES LESS THAN (MAXVALUE))
+(ok)
+=== ALTER TABLE ph REORGANIZE PARTITION p0 INTO (PARTITION p0 VALUES LESS THAN (10), PARTITION p1 VALUES LESS THAN MAXVALUE)
+ERR (1105, "this node changes the cluster's catalog for CREATE TABLE, DROP TABLE, CREATE DATABASE, DROP DATABASE, CREATE/DROP VIEW, placement policy changes, index changes, and single-action ALTER INDEX changes only; run this statement on a TiDB server")
+=== ALTER TABLE pe COALESCE PARTITION 1
+ERR (1105, "this node changes the cluster's catalog for CREATE TABLE, DROP TABLE, CREATE DATABASE, DROP DATABASE, CREATE/DROP VIEW, placement policy changes, index changes, and single-action ALTER INDEX changes only; run this statement on a TiDB server")
+=== SHOW CREATE TABLE pe
+('pe', 'CREATE TABLE `pe` (\n  `a` int DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin\nPARTITION BY KEY (`a`) PARTITIONS 3')
+=== SELECT PARTITION_NAME, PARTITION_METHOD, PARTITION_EXPRESSION, PARTITION_DESCRIPTION FROM information_schema.PARTITIONS WHERE TABLE_SCHEMA='fdq' AND TABLE_NAME='pa'
+(None, None, None, None)
+=== ALTER TABLE pa EXCHANGE PARTITION p0 WITH TABLE cl_stub
+ERR (1146, "Table 'fdq.cl_stub' doesn't exist")

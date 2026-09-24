@@ -1,0 +1,69 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE adm(a INT PRIMARY KEY)
+(ok)
+=== INSERT INTO adm VALUES (1),(2)
+(ok)
+=== CREATE INDEX ib ON adm(a)
+(ok)
+=== ADMIN CHECKSUM TABLE adm
+('fdq', 'adm', 0, 2, 2)
+=== ADMIN CHECK TABLE adm
+(ok)
+=== ADMIN CHECK INDEX adm ib
+(ok)
+=== ADMIN CHECKSUM TABLE no_such
+ERR (1146, "Table 'fdq.no_such' doesn't exist") | WARN Error:1146:Table 'fdq.no_such' doesn't exist
+=== ADMIN RELOAD OPT_RULE_BLACKLIST
+(ok)
+=== ADMIN RELOAD EXPRESSION_PUSHDOWN_BLACKLIST
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 42 near "EXPRESSION_PUSHDOWN_BLACKLIST" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 42 near "EXPRESSION_PUSHDOWN_BLACKLIST" 
+=== ADMIN PLUG-IN ENABLE 'audit'
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN PLUG-IN ENABLE \'audit\'" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN PLUG-IN ENABLE 'audit'" 
+=== ADMIN PLUG-IN DISABLE 'audit'
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN PLUG-IN DISABLE \'audit\'" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN PLUG-IN DISABLE 'audit'" 
+=== ADMIN FLUSH BINDINGS
+(ok)
+=== ADMIN CAPTURE BINDINGS
+ERR (1105, 'Auto Capture is not supported') | WARN Error:1105:Auto Capture is not supported
+=== ADMIN EVOLVE BINDINGS
+ERR (1105, 'Cannot enable baseline evolution feature, it is not generally available now') | WARN Error:1105:Cannot enable baseline evolution feature, it is not generally available now
+=== ADMIN RELOAD BINDINGS
+(ok)
+=== ADMIN SHOW SLOW RECENT 5
+('SELECT * FROM information_schema.METRICS_SUMMARY LIMIT 3', datetime.datetime(2026, 9, 24, 15, 19, 51, 517330), datetime.timedelta(0), '', 0, 2097182, 0, 'root@%', 'fdq', '', '', 0, 'fe779d8ad4519b393a073ea7272e1eee8f22d60cdc46acfcc3e79aaf3be12816', ''); ("select sum(value),avg(value),min(value),max(value) from `metrics_schema`.`abnormal_stores` where time>='2026-09-24 14:49:51.517' and time<='2026-09-24 15:19:51.517'", datetime.datetime(2026, 9, 24, 15, 19, 51, 518573), datetime.timedelta(0), '', 0, 0, 0, '', '', '', '', 1, 'c67f585c26d57eac7f43e7f682fc9890481eba634d582789076244cf13f1fbe9', ''); ('SELECT * FROM information_schema.INSPECTION_RESULT LIMIT 3', datetime.datetime(2026, 9, 24, 15, 19, 28, 109321), datetime.timedelta(seconds=23), '', 1, 2097182, 0, 'root@%', 'fdq', '', '', 0, '0d24d90ec2de4d2ca614cd3bf0d5ac1b1e76a423aa915ad971d5f36242c88121', ''); ("select address,min(value) as mi,max(value) as mx from metrics_schema.pd_scheduler_store_status where time>='2026-09-24 14:49:28.109' and time<='2026-09-24 15:19:28.109' and type='leader_count' group by address having mx-mi>50", datetime.datetime(2026, 9, 24, 15, 19, 51, 7228), datetime.timedelta(0), '', 0, 0, 0, '', '', '', '', 1, 'c669e89ce30f807468abb79bb13a912311306e430e7bbeb98569157798fdbd38; ("select address, max(value) from metrics_schema.pd_scheduler_store_status where time>='2026-09-24 14:49:28.109' and time<='2026-09-24 15:19:28.109' and type='region_count' and value > 20000 group by address", datetime.datetime(2026, 9, 24, 15, 19, 50, 501853), datetime.timedelta(0), '', 0, 0, 0, '', '', '', '', 1, '54cee65b500864b361795aebd5687aa4cafec99474eff811997bd7a910d64205', '')
+=== ADMIN SHOW SLOW TOP 5
+('SELECT * FROM information_schema.INSPECTION_RESULT LIMIT 3', datetime.datetime(2026, 9, 24, 15, 19, 28, 109321), datetime.timedelta(seconds=23), '', 1, 2097182, 0, 'root@%', 'fdq', '', '', 0, '0d24d90ec2de4d2ca614cd3bf0d5ac1b1e76a423aa915ad971d5f36242c88121', ''); ('SELECT * FROM information_schema.METRICS_SUMMARY LIMIT 3', datetime.datetime(2026, 9, 24, 15, 19, 51, 517330), datetime.timedelta(0), '', 0, 2097182, 0, 'root@%', 'fdq', '', '', 0, 'fe779d8ad4519b393a073ea7272e1eee8f22d60cdc46acfcc3e79aaf3be12816', ''); ('SELECT * FROM information_schema.INSPECTION_SUMMARY LIMIT 3', datetime.datetime(2026, 9, 24, 15, 19, 27, 601756), datetime.timedelta(0), '', 0, 2097182, 0, 'root@%', 'fdq', '', '', 0, '6c2c0eeb769f267bcf69d0fef49288a4232310c7d1105982606c20c3f9b82edd', '')
+=== ADMIN SHOW DDL JOBS 10
+(212, 'fdq', 'adm', 'add index', 'public', 208, 210, 2, datetime.datetime(2026, 9, 24, 15, 19, 53, 241000), datetime.datetime(2026, 9, 24, 15, 19, 53, 242000), datetime.datetime(2026, 9, 24, 15, 19, 53, 279000), 'synced', 'txn-merge, max_node_count=3'); (211, 'fdq', 'adm', 'create table', 'public', 208, 210, 0, datetime.datetime(2026, 9, 24, 15, 19, 53, 232000), datetime.datetime(2026, 9, 24, 15, 19, 53, 233000), datetime.datetime(2026, 9, 24, 15, 19, 53, 238000), 'synced', ''); (209, 'fdq', '', 'create schema', 'public', 208, 0, 0, datetime.datetime(2026, 9, 24, 15, 19, 53, 226000), datetime.datetime(2026, 9, 24, 15, 19, 53, 227000), datetime.datetime(2026, 9, 24, 15, 19, 53, 230000), 'synced', ''); (207, 'fdq', '', 'drop schema', 'none', 203, 0, 0, datetime.datetime(2026, 9, 24, 15, 19, 53, 209000), datetime.datetime(2026, 9, 24, 15, 19, 53, 210000), datetime.datetime(2026, 9, 24, 15, 19, 53, 223000), 'synced', ''); (206, 'fdq', 'hi', 'create table', 'public', 203, 205, 0, datetime.datetime(2026, 9, 24, 15, 19, 52, 605000), datetime.datetime(2026, 9, 24, 15, 19, 52, 606000), datetime.datetime(2026, 9, 24, 15, 19, 52, 610000), 'synced', ''); (204, 'fdq', '', 'create schema', 'public', 203, 0, 0, datetime.datetime(2026, 9, 24, 15, 19, 52, 599000), datetime.datetime(2026, 9, 24, 15, 19, 52, 599000), datetime.datetime(2026, 9, 24, 15, 19, 52, 603000), 'synced', ''); (202, 'fdq', '', 'drop schema', 'none', 198, 0, 0, datetime.datetime(2026, 9, 24, 15, 19, 52, 583000), datetime.datetime(2026, 9, 24, 15, 19, 52, 584000), datetime.datetime(2026, 9, 24, 15, 19, 52, 596000), 'synced', ''); (201, 'fdq', 'isx', 'create table', 'public', 198, 200, 0, datetime.datetime(2026, 9, 24, 15, 19, 27, 550000), datetime.datetime(2026, 9, 24, 15, 19, 27, 551000), datetime.datetime(2026, 9, 24, 15, 19, 27, 555000), 'synced', ''); (199, 'fdq', '', 'create schema', 'public', 198, 0, 0, datetime.datetime(2026, 9, 24, 15, 19, 27, 542000), datetime.datetime(2026, 9, 24, 15, 19, 27, 543000), datetime.datetime(2026, 9, 24, 15, 19, 27, 548000), 'synced', ''); (197, 'fdq', '', 'drop schema', 'none', 193, 0, 0, datetime.datetime(2026, 9, 24, 15, 19, 27, 525000), datetime.datetime(2026, 9, 24, 15, 19, 27, 526000), datetime.datetime(2026, 9, 24, 15, 19, 27, 539000), 'synced', '')
+=== ADMIN SHOW DDL JOBS 10 WHERE job_id > 0
+(212, 'fdq', 'adm', 'add index', 'public', 208, 210, 2, datetime.datetime(2026, 9, 24, 15, 19, 53, 241000), datetime.datetime(2026, 9, 24, 15, 19, 53, 242000), datetime.datetime(2026, 9, 24, 15, 19, 53, 279000), 'synced', 'txn-merge, max_node_count=3'); (211, 'fdq', 'adm', 'create table', 'public', 208, 210, 0, datetime.datetime(2026, 9, 24, 15, 19, 53, 232000), datetime.datetime(2026, 9, 24, 15, 19, 53, 233000), datetime.datetime(2026, 9, 24, 15, 19, 53, 238000), 'synced', ''); (209, 'fdq', '', 'create schema', 'public', 208, 0, 0, datetime.datetime(2026, 9, 24, 15, 19, 53, 226000), datetime.datetime(2026, 9, 24, 15, 19, 53, 227000), datetime.datetime(2026, 9, 24, 15, 19, 53, 230000), 'synced', ''); (207, 'fdq', '', 'drop schema', 'none', 203, 0, 0, datetime.datetime(2026, 9, 24, 15, 19, 53, 209000), datetime.datetime(2026, 9, 24, 15, 19, 53, 210000), datetime.datetime(2026, 9, 24, 15, 19, 53, 223000), 'synced', ''); (206, 'fdq', 'hi', 'create table', 'public', 203, 205, 0, datetime.datetime(2026, 9, 24, 15, 19, 52, 605000), datetime.datetime(2026, 9, 24, 15, 19, 52, 606000), datetime.datetime(2026, 9, 24, 15, 19, 52, 610000), 'synced', ''); (204, 'fdq', '', 'create schema', 'public', 203, 0, 0, datetime.datetime(2026, 9, 24, 15, 19, 52, 599000), datetime.datetime(2026, 9, 24, 15, 19, 52, 599000), datetime.datetime(2026, 9, 24, 15, 19, 52, 603000), 'synced', ''); (202, 'fdq', '', 'drop schema', 'none', 198, 0, 0, datetime.datetime(2026, 9, 24, 15, 19, 52, 583000), datetime.datetime(2026, 9, 24, 15, 19, 52, 584000), datetime.datetime(2026, 9, 24, 15, 19, 52, 596000), 'synced', ''); (201, 'fdq', 'isx', 'create table', 'public', 198, 200, 0, datetime.datetime(2026, 9, 24, 15, 19, 27, 550000), datetime.datetime(2026, 9, 24, 15, 19, 27, 551000), datetime.datetime(2026, 9, 24, 15, 19, 27, 555000), 'synced', ''); (199, 'fdq', '', 'create schema', 'public', 198, 0, 0, datetime.datetime(2026, 9, 24, 15, 19, 27, 542000), datetime.datetime(2026, 9, 24, 15, 19, 27, 543000), datetime.datetime(2026, 9, 24, 15, 19, 27, 548000), 'synced', ''); (197, 'fdq', '', 'drop schema', 'none', 193, 0, 0, datetime.datetime(2026, 9, 24, 15, 19, 27, 525000), datetime.datetime(2026, 9, 24, 15, 19, 27, 526000), datetime.datetime(2026, 9, 24, 15, 19, 27, 539000), 'synced', '')
+=== ADMIN SHOW NEXT_ROW_ID
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN SHOW NEXT_ROW_ID" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN SHOW NEXT_ROW_ID" 
+=== ADMIN SHOW TELEMETRY
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN SHOW TELEMETRY" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN SHOW TELEMETRY" 
+=== ADMIN CANCEL DDL JOBS 1
+('1', 'error: [ddl:8224]DDL Job:1 not found')
+=== ADMIN PAUSE DDL JOBS 1
+('1', 'error: [ddl:8224]DDL Job:1 not found')
+=== ADMIN RESUME DDL JOBS 1
+('1', 'error: [ddl:8224]DDL Job:1 not found')
+=== ADMIN SHOW DDL
+(154, 'b2782228-bc41-4d1d-89f5-71b04dcc9bd9', 'ADDR', '', 'b2782228-bc41-4d1d-89f5-71b04dcc9bd9', '')
+=== ADMIN REPAIR TABLE adm CREATE TABLE adm(a INT)
+ERR (8215, 'Failed to repair table: TiDB is not in REPAIR MODE') | WARN Error:8215:Failed to repair table: TiDB is not in REPAIR MODE
+=== ADMIN UPDATE STATS_META SET count = 1 WHERE table_id = 1
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN UPDATE STATS_META SET count = 1 WHERE table_id = 1" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN UPDATE STATS_META SET count = 1 WHERE ta
+=== ADMIN DELETE RANGE META 1
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN DELETE RANGE META 1" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN DELETE RANGE META 1" 
+=== ADMIN CLEANUP INDEX LOCK adm ib
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 24 near "LOCK adm ib" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 24 near "LOCK adm ib" 
+=== ADMIN FLUSH STATS_META
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 22 near "STATS_META" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 22 near "STATS_META" 
+=== ADMIN SHOW ALL JOBS
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 14 near "ALL JOBS" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 14 near "ALL JOBS" 
+=== ADMIN REFRESH CLUSTER_CONFIG TO 'x'
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN REFRESH CLUSTER_CONFIG TO \'x\'" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN REFRESH CLUSTER_CONFIG TO 'x'" 
+=== ADMIN RESET TELEMETRY DATA
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN RESET TELEMETRY DATA" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "ADMIN RESET TELEMETRY DATA" 

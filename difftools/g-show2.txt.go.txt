@@ -1,0 +1,147 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE sb(a INT PRIMARY KEY, b VARCHAR(5), KEY(b))
+(ok)
+=== INSERT INTO sb VALUES (1,'x'),(2,'y')
+(ok)
+=== SHOW CHARSET
+('ascii', 'US ASCII', 'ascii_bin', 1); ('binary', 'binary', 'binary', 1); ('gb18030', 'China National Standard GB18030', 'gb18030_chinese_ci', 4); ('gbk', 'Chinese Internal Code Specification', 'gbk_chinese_ci', 2); ('latin1', 'Latin1', 'latin1_bin', 1); ('utf8', 'UTF-8 Unicode', 'utf8_bin', 3); ('utf8mb4', 'UTF-8 Unicode', 'utf8mb4_bin', 4)
+=== SHOW COLLATION
+('ascii_bin', 'ascii', 65, 'Yes', 'Yes', 1, 'PAD SPACE'); ('binary', 'binary', 63, 'Yes', 'Yes', 1, 'NO PAD'); ('gb18030_bin', 'gb18030', 249, '', 'Yes', 1, 'PAD SPACE'); ('gb18030_chinese_ci', 'gb18030', 248, 'Yes', 'Yes', 1, 'PAD SPACE'); ('gbk_bin', 'gbk', 87, '', 'Yes', 1, 'PAD SPACE'); ('gbk_chinese_ci', 'gbk', 28, 'Yes', 'Yes', 1, 'PAD SPACE'); ('latin1_bin', 'latin1', 47, 'Yes', 'Yes', 1, 'PAD SPACE'); ('utf8_bin', 'utf8', 83, 'Yes', 'Yes', 1, 'PAD SPACE'); ('utf8_general_ci', 'utf8', 33, '', 'Yes', 1, 'PAD SPACE'); ('utf8_unicode_ci', 'utf8', 192, '', 'Yes', 8, 'PAD SPACE'); ('utf8mb4_0900_ai_ci', 'utf8mb4', 255, '', 'Yes', 0, 'NO PAD'); ('utf8mb4_0900_bin', 'utf8mb4', 309, '', 'Yes', 1, 'NO PAD'); ('utf8mb4_bin', 'utf8mb4', 46, 'Yes', 'Yes', 1, 'PAD SPACE'); ('utf8mb4_general_ci', 'utf8mb4', 45, '', 'Yes', 1, 'PAD SPACE'); ('utf8mb4_unicode_ci', 'utf8mb4', 224, '', 'Yes', 8, 'PAD SPACE')
+=== SHOW COLLATION WHERE Charset = 'utf8mb4'
+('utf8mb4_0900_ai_ci', 'utf8mb4', 255, '', 'Yes', 0, 'NO PAD'); ('utf8mb4_0900_bin', 'utf8mb4', 309, '', 'Yes', 1, 'NO PAD'); ('utf8mb4_bin', 'utf8mb4', 46, 'Yes', 'Yes', 1, 'PAD SPACE'); ('utf8mb4_general_ci', 'utf8mb4', 45, '', 'Yes', 1, 'PAD SPACE'); ('utf8mb4_unicode_ci', 'utf8mb4', 224, '', 'Yes', 8, 'PAD SPACE')
+=== SHOW CREATE DATABASE fdq
+('fdq', 'CREATE DATABASE `fdq` /*!40100 DEFAULT CHARACTER SET utf8mb4 */')
+=== SHOW CREATE DATABASE dtq
+ERR (1049, "Unknown database 'dtq'")
+=== SHOW TABLES
+('sb',)
+=== SHOW FULL TABLES
+('sb', 'BASE TABLE')
+=== SHOW TABLE STATUS
+('sb', 'InnoDB', 10, 'Compact', 0, 0, 0, 0, 0, 0, None, datetime.datetime(2026, 9, 24, 15, 24, 36), None, None, 'utf8mb4_bin', '', '', '')
+=== SHOW TABLE STATUS LIKE 'sb'
+('sb', 'InnoDB', 10, 'Compact', 0, 0, 0, 0, 0, 0, None, datetime.datetime(2026, 9, 24, 15, 24, 36), None, None, 'utf8mb4_bin', '', '', '')
+=== SHOW TABLE STATUS WHERE Name = 'sb'
+('sb', 'InnoDB', 10, 'Compact', 0, 0, 0, 0, 0, 0, None, datetime.datetime(2026, 9, 24, 15, 24, 36), None, None, 'utf8mb4_bin', '', '', '')
+=== SHOW COLUMNS FROM sb
+('a', 'int', 'NO', 'PRI', None, ''); ('b', 'varchar(5)', 'YES', 'MUL', None, '')
+=== SHOW FULL COLUMNS FROM sb
+('a', 'int', None, 'NO', 'PRI', None, '', 'select,insert,update,references', ''); ('b', 'varchar(5)', 'utf8mb4_bin', 'YES', 'MUL', None, '', 'select,insert,update,references', '')
+=== SHOW COLUMNS FROM sb LIKE 'a%'
+('a', 'int', 'NO', 'PRI', None, '')
+=== SHOW FIELDS FROM sb
+('a', 'int', 'NO', 'PRI', None, ''); ('b', 'varchar(5)', 'YES', 'MUL', None, '')
+=== SHOW DESCRIBE sb
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 13 near "DESCRIBE sb" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 13 near "DESCRIBE sb" 
+=== SHOW INDEX FROM sb
+('sb', 0, 'PRIMARY', 1, 'a', 'A', 0, None, None, '', 'BTREE', '', '', 'YES', None, 'YES', 'NO'); ('sb', 1, 'b', 1, 'b', 'A', 0, None, None, 'YES', 'BTREE', '', '', 'YES', None, 'NO', 'NO')
+=== SHOW INDEXES FROM sb
+('sb', 0, 'PRIMARY', 1, 'a', 'A', 0, None, None, '', 'BTREE', '', '', 'YES', None, 'YES', 'NO'); ('sb', 1, 'b', 1, 'b', 'A', 0, None, None, 'YES', 'BTREE', '', '', 'YES', None, 'NO', 'NO')
+=== SHOW KEYS FROM sb
+('sb', 0, 'PRIMARY', 1, 'a', 'A', 0, None, None, '', 'BTREE', '', '', 'YES', None, 'YES', 'NO'); ('sb', 1, 'b', 1, 'b', 'A', 0, None, None, 'YES', 'BTREE', '', '', 'YES', None, 'NO', 'NO')
+=== SHOW ENGINES
+('InnoDB', 'DEFAULT', 'Supports transactions, row-level locking, and foreign keys', 'YES', 'YES', 'YES')
+=== SHOW PLUGINS
+(ok)
+=== SHOW PROCESSLIST
+(2097206, 'root', 'ADDR', 'fdq', 'Query', 0, 'autocommit', 'SHOW PROCESSLIST')
+=== SHOW FULL PROCESSLIST
+(2097206, 'root', 'ADDR', 'fdq', 'Query', 0, 'autocommit', 'SHOW FULL PROCESSLIST')
+=== SHOW GRANTS
+("GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION",)
+=== SHOW GRANTS FOR CURRENT_USER()
+("GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION",)
+=== SHOW GRANTS FOR 'root'@'%'
+("GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION",)
+=== SHOW PRIVILEGES
+('Alter', 'Tables', 'To alter the table'); ('Alter routine', 'Functions,Procedures', 'To alter or drop stored functions/procedures'); ('Config', 'Server Admin', 'To use SHOW CONFIG and SET CONFIG statements'); ('Create', 'Databases,Tables,Indexes', 'To create new databases and tables'); ('Create routine', 'Databases', 'To use CREATE FUNCTION/PROCEDURE'); ('Create role', 'Server Admin', 'To create new roles'); ('Create temporary tables', 'Databases', 'To use CREATE TEMPORARY TABLE'); ('Create view', 'Tables', 'To create new views'); ('Create user', 'Server Admin', 'To create new users'); ('Delete', 'Tables', 'To delete existing rows'); ('Drop', 'Databases,Tables', 'To drop databases, tables, and views'); ('Drop role', 'Server Admin', 'To drop roles'); ('Event', 'Server Admin', 'To create, alter, drop and execute events'); ('Execute', 'Functions,Procedures', 'To execute stored routines'); ('File', 'File access on server', 'To read and write files on the server'); ('Grant option', 'Databases,Tables,Functions,Procedures', 'To give to other users those privileges you possess'); ('Index', 'Tables', 'To create or drop indexes'); ('Insert', 'Tables', 'To insert data into tables'); ('Lock tables', 'Databases', 'To use LOCK TABLES (together with SELECT privilege)'); ('Process', 'Server Admin', 'To view the plain text of currently executing queries'); ('Proxy', 'Server Admin', 'To make proxy user possible'); ('References', 'Databases,Tables', 'To have references on tables'); ('Reload', 'Server Admin', 'To reload or refresh tables, logs and privileges'); ('Replication client', 'Server Admin', 'To ask where the slave or master servers are'); ('Replication slave', 'Server Admin', 'To read binary log events from the master'); ('Select', 'Tables', 'To retrieve rows from table'); ('Show databases', 'Server Admin', 'To see all databases with SHOW DATABASES'); ('Show view', 'Tables', 'To see views with SHOW CREATE VIEW'); ('Shutdown', 'Server Admin', 'To shut down the server'); ('Super', 'Server Admin', 'To use KILL thread, SET GLOBAL, CHANGE MASTER, etc.'); ('Trigger', 'Tables', 'To use triggers'); ('Create tablespace', 'Server Admin', 'To create/alter/drop tablespaces'); ('Update', 'Tables', 'To update existing rows'); ('Usage', 'Server Admin', 'No privileges - allow connect only'); ('BACKUP_ADMIN', 'Server Admin', ''); ('RESTORE_ADMIN', 'Server Admin', ''); ('SYSTEM_USER', 'Server Admin', ''); ('SYSTEM_VARIABLES_ADMIN', 'Server Admin', ''); ('ROLE_ADMIN', 'Server Admin', ''); ('CONNECTION_ADMIN', 'Server Admin', ''); ('PLACEMENT_ADMIN', 'Server Admin', ''); ('DASHBOARD_CLIENT', 'Server Admin', ''); ('RESTRICTED_TABLES_ADMIN', 'Server Admin', ''); ('RESTRICTED_STATUS_ADMIN', 'Server Admin', ''); ('RESTRICTED_VARIABLES_ADMIN', 'Server Admin', ''); ('RESTRICTED_USER_ADMIN', 'Server Admin', ''); ('RESTRICTED_CONNECTION_ADMIN', 'Server Admin', ''); ('RESTRICTED_REPLICA_WRITER_ADMIN', 'Server Admin', ''); ('RESTRICTED_PRIV_ADMIN', 'Server Admin', ''); ('RESTRICTED_SQL_ADMIN', 'Server Admin', '')
+=== SHOW VARIABLES LIKE 'sql_mode'
+('sql_mode', 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION')
+=== SHOW GLOBAL VARIABLES LIKE 'sql_mode'
+('sql_mode', 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION')
+=== SHOW STATUS LIKE 'Ssl%'
+('Ssl_cipher', ''); ('Ssl_cipher_list', ''); ('Ssl_server_not_after', ''); ('Ssl_server_not_before', ''); ('Ssl_verify_mode', '0'); ('Ssl_version', '')
+=== SHOW GLOBAL STATUS LIKE 'Uptime'
+('Uptime', '811')
+=== SHOW WARNINGS LIMIT 2
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 19 near "LIMIT 2" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 19 near "LIMIT 2" 
+=== SHOW ERRORS
+('Error', 1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 19 near "LIMIT 2" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 19 near "LIMIT 2" 
+=== SHOW COUNT(*) ERRORS
+(1,) | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 19 near "LIMIT 2" 
+=== SHOW OPEN TABLES
+(ok)
+=== SHOW TRIGGERS
+(ok)
+=== SHOW EVENTS
+(ok)
+=== SHOW PROCEDURE STATUS
+(ok)
+=== SHOW FUNCTION STATUS
+(ok)
+=== SHOW DATABASES
+('INFORMATION_SCHEMA',); ('METRICS_SCHEMA',); ('PERFORMANCE_SCHEMA',); ('chk',); ('chk2',); ('fdq',); ('mysql',); ('orv',); ('sys',); ('test',)
+=== SHOW MASTER STATUS
+('tidb-binlog', 469299278966423552, '', '', '')
+=== SHOW BINARY LOG STATUS
+('tidb-binlog', 469299278966423553, '', '', '')
+=== SHOW REPLICAS
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 13 near "REPLICAS" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 13 near "REPLICAS" 
+=== SHOW SLAVE HOSTS
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 16 near "HOSTS" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 16 near "HOSTS" 
+=== SHOW BINARY LOGS
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 16 near "LOGS" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 16 near "LOGS" 
+=== SHOW ENGINE INNODB STATUS
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 11 near "ENGINE INNODB STATUS" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 11 near "ENGINE INNODB STATUS" 
+=== SHOW ENGINE TIDB METRICS
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 11 near "ENGINE TIDB METRICS" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 11 near "ENGINE TIDB METRICS" 
+=== SHOW ANOMALY
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "ANOMALY" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "ANOMALY" 
+=== SHOW CONFIG
+('tidb', 'ADDR', 'advertise-address', '127.0.0.1'); ('tidb', 'ADDR', 'alter-primary-key', 'false'); ('tidb', 'ADDR', 'autoscaler-addr', 'tiflash-autoscale-lb.tiflash-autoscale.svc.cluster.local:8081'); ('tidb', 'ADDR', 'autoscaler-cluster-id', ''); ('tidb', 'ADDR', 'autoscaler-type', 'aws'); ('tidb', 'ADDR', 'ballast-object-size', '0'); ('tidb', 'ADDR', 'compatible-kill-query', 'false'); ('tidb', 'ADDR', 'cors', ''); ('tidb', 'ADDR', 'cse.columnar-collect-timeout', '5000000000'); ('tidb', 'ADDR', 'cse.columnar-store-type', 'tiflash'); ('tidb', 'ADDR', 'delay-clean-table-lock', '0'); ('tidb', 'ADDR', 'deploy-mode', 'premium'); ('tidb', 'ADDR', 'deprecate-integer-display-length', 'true'); ('tidb', 'ADDR', 'disaggregated-tiflash', 'false'); ('tidb', 'ADDR', 'dxf-resource-limit', '100'); ('tidb', 'ADDR', 'enable-32bits-connection-id', 'true'); ('tidb', 'ADDR', 'enable-enum-length-limit', 'true'); ('tidb', 'ADDR', 'enable-forwarding', 'false'); ('tidb', 'ADDR', 'enable-global-kill', 'true'); ('tidb', 'ADDR', 'enable-table-lock', 'false'); ('tidb', 'ADDR', 'enable-tcp4-only', 'false'); ('tidb', 'ADDR', 'enable-telemetry', 'false'); ('tidb', 'ADDR', 'error-msg-extension', 'null'); ('tidb', 'ADDR', 'experimental.allow-enable-foreign-key-check-in-shared-lock', 'false'); ('tidb', 'ADDR', 'experimental.allow-expression-index', 'false'); ('tidb', 'ADDR', 'graceful-wait-before-shutdown', '0'); ('tidb', 'ADDR', 'host', '127.0.0.1'); ('tidb', 'ADDR', 'in-mem-slow-query-recent-num', '500'); ('tidb', 'ADDR', 'in-mem-slow-query-topn-num', '30'); ('tidb', 'ADDR', 'index-limit', '64'); ('tidb', 'ADDR', 'initialize-sql-file', ''); ('tidb', 'ADDR', 'instance.ddl_slow_threshold', '300'); ('tidb', 'ADDR', 'instance.max_connections', '0'); ('tidb', 'ADDR', 'instance.plugin_audit_log_buffer_size', '0'); ('tidb', 'ADDR', 'instance.plugin_audit_log_flush_interval', '30'); ('tidb', 'ADDR', 'instance.plugin_dir', '/data/deploy/plugin'); ('tidb', 'ADDR', 'instance.plugin_load', ''); ('tidb', 'ADDR', 'instance.tidb_check_mb4_value_in_utf8', 'true'); ('tidb', 'ADDR', 'instance.tidb_enable_collect_execution_info', 'true'); ('tidb', 'ADDR', 'instance.tidb_enable_ddl', 'true'); ('tidb', 'ADDR', 'instance.tidb_enable_slow_log', 'true'); ('tidb', 'ADDR', 'instance.tidb_enable_stats_owner', 'true'); ('tidb', 'ADDR', 'instance.tidb_expensive_query_time_threshold', '60'); ('tidb', 'ADDR', 'instance.tidb_expensive_txn_time_threshold', '600'); ('tidb', 'ADDR', 'instance.tidb_force_priority', 'NO_PRIORITY'); ('tidb', 'ADDR', 'instance.tidb_general_log', 'false'); ('tidb', 'ADDR', 'instance.tidb_instance_plan_cache_max_size', ''); ('tidb', 'ADDR', 'instance.tidb_mem_arbitrator_mode', ''); ('tidb', 'ADDR', 'instance.tidb_mem_arbitrator_soft_limit', ''); ('tidb', 'ADDR', 'instance.tidb_mem_quota_binding_cache', '0') | WARN Warning:1105:tikv node store1 does not contain status address
+=== SHOW REGIONS
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "REGIONS" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "REGIONS" 
+=== SHOW HOT REGIONS
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 8 near "HOT REGIONS" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 8 near "HOT REGIONS" 
+=== SHOW REGIONS FOR TABLE sb
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "REGIONS FOR TABLE sb" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "REGIONS FOR TABLE sb" 
+=== SHOW TABLE REGIONS
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 18 near "" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 18 near "" 
+=== SHOW BACKUPS
+(ok)
+=== SHOW RESTORES
+(ok)
+=== SHOW IMPORT JOBS
+(ok)
+=== SHOW STATS_META
+('orv', 'hi', '', datetime.datetime(2026, 9, 24, 15, 21, 24), 3, 3, None); ('chk', 't', '', datetime.datetime(2026, 9, 24, 15, 12, 48), 1, 1, None)
+=== SHOW STATS_HEALTHY
+('orv', 'hi', '', 0); ('chk', 't', '', 0)
+=== SHOW STATS_HISTOGRAMS
+(ok)
+=== SHOW STATS_BUCKETS
+(ok)
+=== SHOW STATS_TOPN
+(ok)
+=== SHOW STATS_EXTENDED
+ERR (1105, 'Extended statistics feature has been removed')
+=== SHOW STATS_LOCKED
+(ok)
+=== SHOW ANALYZE STATUS
+(ok)
+=== SHOW BINDINGS
+(ok)
+=== SHOW GLOBAL BINDINGS
+(ok)
+=== SHOW BUILTIN
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "BUILTIN" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "BUILTIN" 
+=== SHOW SESSION STATES
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 19 near "STATES" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 19 near "STATES" 
+=== SHOW RESOURCE GROUP rg1
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 13 near "RESOURCE GROUP rg1" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 13 near "RESOURCE GROUP rg1" 
+=== SHOW placement FOR TABLE sb
+(ok)
+=== SHOW CACHE INFO
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 10 near "CACHE INFO" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 10 near "CACHE INFO" 

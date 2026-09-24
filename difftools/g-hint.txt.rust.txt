@@ -1,0 +1,95 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE hi(a INT PRIMARY KEY, b INT, KEY(b))
+(ok)
+=== INSERT INTO hi VALUES (1,1),(2,2),(3,3)
+(ok)
+=== SELECT /*+ USE_INDEX(hi, b) */ * FROM hi WHERE b = 1
+(1, 1)
+=== SELECT /*+ IGNORE_INDEX(hi, b) */ * FROM hi WHERE b = 1
+ERR (1105, 'physical planning produced no plan') | WARN Error:1105:physical planning produced no plan
+=== SELECT /*+ FORCE_INDEX(hi, b) */ * FROM hi WHERE b = 1
+(1, 1)
+=== SELECT /*+ USE_INDEX_MERGE(hi, b, PRIMARY) */ * FROM hi WHERE b = 1 OR a = 2
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ NO_INDEX_MERGE() */ * FROM hi WHERE b = 1 OR a = 2
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ SM_JOIN(t1, t2) */ * FROM hi t1, hi t2 WHERE t1.a = t2.a
+(1, 1, 1, 1); (2, 2, 2, 2); (3, 3, 3, 3)
+=== SELECT /*+ INL_JOIN(t1, t2) */ * FROM hi t1, hi t2 WHERE t1.a = t2.a
+(1, 1, 1, 1); (2, 2, 2, 2); (3, 3, 3, 3)
+=== SELECT /*+ HASH_JOIN(t1, t2) */ * FROM hi t1, hi t2 WHERE t1.a = t2.a
+(1, 1, 1, 1); (2, 2, 2, 2); (3, 3, 3, 3)
+=== SELECT /*+ INL_HASH_JOIN(t1) */ * FROM hi t1 WHERE t1.b = 1
+(1, 1) | WARN Warning:1815:There are no matching table names for (t1) in optimizer hint /*+ INL_HASH_JOIN(t1) */. Maybe you can use the table alias name
+=== SELECT /*+ INL_MERGE_JOIN(t1) */ * FROM hi t1 WHERE t1.b = 1
+(1, 1) | WARN Warning:1815:The INDEX MERGE JOIN hint is deprecated for usage, try other hints.
+=== SELECT /*+ BROADCAST_JOIN(t1, t2) */ * FROM hi t1, hi t2 WHERE t1.a = t2.a
+(1, 1, 1, 1); (2, 2, 2, 2); (3, 3, 3, 3)
+=== SELECT /*+ SHUFFLE_JOIN(t1, t2) */ * FROM hi t1, hi t2 WHERE t1.a = t2.a
+(1, 1, 1, 1); (2, 2, 2, 2); (3, 3, 3, 3)
+=== SELECT /*+ HASH_AGG() */ COUNT(*) FROM hi
+(3,)
+=== SELECT /*+ STREAM_AGG() */ COUNT(*) FROM hi
+(3,)
+=== SELECT /*+ MPP_1PHASE_AGG() */ COUNT(*) FROM hi
+(3,)
+=== SELECT /*+ LIMIT_TO_COP() */ * FROM hi LIMIT 1
+(1, 1)
+=== SELECT /*+ READ_FROM_STORAGE(TIFLASH[hi]) */ * FROM hi
+(1, 1); (2, 2); (3, 3) | WARN Warning:1815:No available path for table fdq.hi with the store type tiflash of the hint /*+ read_from_storage */, please check the status of the table replica and variable value of tidb_isolation_read
+=== SELECT /*+ READ_FROM_STORAGE(TIKV[hi]) */ * FROM hi
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ MERGE_JOIN(t1) */ * FROM hi t1 WHERE t1.b = 1
+(1, 1) | WARN Warning:1815:There are no matching table names for (t1) in optimizer hint /*+ MERGE_JOIN(t1) */ or /*+ TIDB_SMJ(t1) */. Maybe you can use the table alias name
+=== SELECT /*+ ORDER_INDEX(hi, b) */ * FROM hi WHERE b = 1
+ERR (1105, 'physical planning produced no plan') | WARN Error:1105:physical planning produced no plan
+=== SELECT /*+ NO_ORDER_INDEX(hi, b) */ * FROM hi WHERE b = 1
+(1, 1)
+=== SELECT /*+ STRAIGHT_JOIN() */ * FROM hi t1, hi t2 WHERE t1.a = t2.a
+(1, 1, 1, 1); (2, 2, 2, 2); (3, 3, 3, 3)
+=== SELECT /*+ LEADING(t2) */ * FROM hi t1, hi t2 WHERE t1.a = t2.a
+(1, 1, 1, 1); (2, 2, 2, 2); (3, 3, 3, 3) | WARN Warning:1815:There are no matching table names for (t2) in optimizer hint /*+ LEADING(t2) */. Maybe you can use the table alias name
+=== SELECT /*+ MAX_EXECUTION_TIME(100) */ * FROM hi
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ MAX_EXECUTION_TIME(abc) */ * FROM hi
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ SET_VAR(sql_mode=STRICT) */ 1
+(1,)
+=== SELECT /*+ NTH_PLAN(3) */ * FROM hi
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ RESOURCE_GROUP(rg1) */ * FROM hi
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ MERGE() */ * FROM (SELECT * FROM hi) t
+(1, 1); (2, 2); (3, 3) | WARN Warning:1815:Hint merge() is inapplicable. Please check whether the hint is used in the right place, you should use this hint inside the CTE.
+=== SELECT /*+ NO_MERGE() */ * FROM (SELECT * FROM hi) t
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ QB_NAME(qb1) */ * FROM hi WHERE b = 1
+(1, 1)
+=== SELECT /*+ USE_INDEX(hi@qb1, b) */ * FROM hi WHERE b = 1
+(1, 1) | WARN Warning:1815:Hint use_index(`hi`@`qb1` `b`) is ignored due to unknown query block name
+=== SELECT /*+ MEMORY_QUOTA(1 GB) */ * FROM hi
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ QUEUE_TABLE(hi) */ * FROM hi
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ HJ(t1, t2) */ * FROM hi t1, hi t2 WHERE t1.a = t2.a
+(1, 1, 1, 1); (2, 2, 2, 2); (3, 3, 3, 3)
+=== SELECT /*+ AG_TO_COP() */ * FROM hi
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ READ_CONSISTENT_REPLICA() */ * FROM hi
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ NO_SKew_JOIN(hi) */ * FROM hi
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ DW_QB(qb1) */ * FROM hi
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ NO_DECORRELATE() */ * FROM hi t1 WHERE EXISTS (SELECT 1 FROM hi t2 WHERE t2.a = t1.a)
+(1, 1); (2, 2); (3, 3) | WARN Warning:1815:NO_DECORRELATE() is inapplicable because it's not in an IN subquery, an EXISTS subquery, an ANY/ALL/SOME subquery or a scalar subquery.
+=== SELECT /*+ MERGE_JOIN_INTRA_CITY() */ * FROM hi t1, hi t2 WHERE t1.a = t2.a
+(1, 1, 1, 1); (2, 2, 2, 2); (3, 3, 3, 3)
+=== SELECT /*+ UNKNOWN_HINT_XYZ(hi) */ * FROM hi
+(1, 1); (2, 2); (3, 3)
+=== SELECT /*+ USE_INDEX(hi, no_such_idx) */ * FROM hi
+(1, 1); (2, 2); (3, 3) | WARN Warning:1176:Key 'no_such_idx' doesn't exist in table 'hi'
+=== SELECT /*+ USE_INDEX(no_such_table, b) */ * FROM hi
+(1, 1); (2, 2); (3, 3) | WARN Warning:1815:use_index(fdq.no_such_table, b) is inapplicable, check whether the table(fdq.no_such_table) exists
