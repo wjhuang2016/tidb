@@ -1,0 +1,26 @@
+--- go
++++ rust
+@@ -21 +21 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "ORDER BY a, 1 FROM cb" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "ORDER BY a, 1 FROM cb" 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "ORDER BY a, 1 FROM cb" ')
+@@ -47 +47 @@
+-ERR (1115, "Unknown character set: 'utf16'") | WARN Error:1115:Unknown character set: 'utf16'
++ERR (1064, "You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1115]Unknown character set: 'utf16'")
+@@ -49 +49 @@
+-ERR (1115, "Unknown character set: 'utf32'") | WARN Error:1115:Unknown character set: 'utf32'
++ERR (1064, "You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1115]Unknown character set: 'utf32'")
+@@ -51 +51 @@
+-ERR (1115, "Unknown character set: 'ucs2'") | WARN Error:1115:Unknown character set: 'ucs2'
++ERR (1064, "You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1115]Unknown character set: 'ucs2'")
+@@ -53 +53 @@
+-ERR (1115, "Unknown character set: 'big5'") | WARN Error:1115:Unknown character set: 'big5'
++ERR (1064, "You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1115]Unknown character set: 'big5'")
+@@ -55 +55 @@
+-ERR (1115, "Unknown character set: 'latin2'") | WARN Error:1115:Unknown character set: 'latin2'
++ERR (1064, "You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1115]Unknown character set: 'latin2'")
+@@ -57 +57 @@
+-ERR (1115, "Unknown character set: 'cp1250'") | WARN Error:1115:Unknown character set: 'cp1250'
++ERR (1064, "You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1115]Unknown character set: 'cp1250'")
+@@ -61 +61 @@
+-ERR (1115, "Unknown character set: 'tis620'") | WARN Error:1115:Unknown character set: 'tis620'
++ERR (1064, "You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1115]Unknown character set: 'tis620'")

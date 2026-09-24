@@ -1,0 +1,32 @@
+--- go
++++ rust
+@@ -9 +9 @@
+-ERR (1105, 'open /tmp/syo1.csv: file exists') | WARN Error:1105:open /tmp/syo1.csv: file exists
++ERR (1105, 'SELECT ... INTO OUTFILE is not supported yet') | WARN Error:1105:SELECT ... INTO OUTFILE is not supported yet
+@@ -11 +11 @@
+-ERR (1105, 'open /tmp/syo2.tsv: file exists') | WARN Error:1105:open /tmp/syo2.tsv: file exists
++ERR (1105, 'SELECT ... INTO OUTFILE is not supported yet') | WARN Error:1105:SELECT ... INTO OUTFILE is not supported yet
+@@ -13 +13 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 30 near "DUMPFILE \'/tmp/syd1.bin\'" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 30 near "DUMPFILE '/tmp/syd1.bin'" 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 30 near "DUMPFILE \'/tmp/syd1.bin\'" ') | WARN Error:1105:SELECT ... INTO OUTFILE is not supported yet
+@@ -15 +15 @@
+-ERR (8154, "Don't support load data from tidb-server's disk. Or if you want to load local data via client, the path of INFILE '/tmp/syo2.tsv' needs to specify the clause of LOCAL first") | WARN Error:8154:Don't support load data from tidb-server's disk. Or if you want to load local data via client, the path of INFILE '/tmp/syo2.tsv' needs to specify the clause of LOCAL first
++ERR (1105, 'this DML statement kind (LoadData) is not supported yet') | WARN Error:1105:this DML statement kind (LoadData) is not supported yet
+@@ -17 +17 @@
+-ERR (8154, "Don't support load data from tidb-server's disk. Or if you want to load local data via client, the path of INFILE '/tmp/no_such.csv' needs to specify the clause of LOCAL first") | WARN Error:8154:Don't support load data from tidb-server's disk. Or if you want to load local data via client, the path of INFILE '/tmp/no_such.csv' needs to specify the clause of LOCAL first
++ERR (1105, 'this DML statement kind (LoadData) is not supported yet') | WARN Error:1105:this DML statement kind (LoadData) is not supported yet
+@@ -19 +19 @@
+-ERR (8154, "Don't support load data from tidb-server's disk. Or if you want to load local data via client, the path of INFILE '/tmp/syo2.tsv' needs to specify the clause of LOCAL first") | WARN Error:8154:Don't support load data from tidb-server's disk. Or if you want to load local data via client, the path of INFILE '/tmp/syo2.tsv' needs to specify the clause of LOCAL first
++ERR (1105, 'this DML statement kind (LoadData) is not supported yet') | WARN Error:1105:this DML statement kind (LoadData) is not supported yet
+@@ -21 +21 @@
+-ERR (1148, 'The used command is not allowed with this MySQL version') | WARN Error:8154:Don't support load data from tidb-server's disk. Or if you want to load local data via client, the path of INFILE '/tmp/syo2.tsv' needs to specify the clause of LOCAL first
++ERR (1105, 'this DML statement kind (LoadData) is not supported yet') | WARN Error:1105:this DML statement kind (LoadData) is not supported yet
+@@ -37 +37 @@
+-ERR (1054, "Unknown column 'b' in 'where clause'") | WARN Error:1054:Unknown column 'b' in 'where clause'
++ERR (1105, 'unknown column') | WARN Error:1105:unknown column
+@@ -57 +57 @@
+-ERR (1052, "Column 'a' in field list is ambiguous") | WARN Error:1052:Column 'a' in field list is ambiguous
++ERR (1054, "Unknown column 'a' in 'field list'") | WARN Error:1054:Unknown column 'a' in 'field list'
+@@ -81 +81 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 36 near "x) WHERE v.x = 1" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 36 near "x) WHERE v.x = 1" 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 21 near "VALUES ROW(1)) AS v(x) WHERE v.x = 1" ')

@@ -1,0 +1,10 @@
+### VALUE (0)
+### ERRCODE (2)
+  SELECT s, LAG(v, -1) OVER (ORDER BY d) FROM w2
+    GO  : ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 18 near "-1) OVER (ORDER BY d) FROM w2" ')
+    RUST: ERR (1210, 'Incorrect arguments to lag')
+  SELECT s, NTH_VALUE(s, 2) FROM w2
+    GO  : ERR (1305, 'FUNCTION fdq.nth_value does not exist')
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 30 near "FROM w2" ')
+### WARNONLY (0)
+### OTHER (0)

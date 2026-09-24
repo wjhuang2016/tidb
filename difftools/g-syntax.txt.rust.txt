@@ -1,0 +1,91 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE sy(a INT, b VARCHAR(10))
+(ok)
+=== INSERT INTO sy VALUES (1,'x'),(2,'y')
+(ok)
+=== SELECT * FROM sy INTO OUTFILE '/tmp/syo1.csv'
+ERR (1105, 'SELECT ... INTO OUTFILE is not supported yet') | WARN Error:1105:SELECT ... INTO OUTFILE is not supported yet
+=== SELECT a, b FROM sy INTO OUTFILE '/tmp/syo2.tsv' FIELDS TERMINATED BY '\t' ENCLOSED BY '"' LINES STARTING BY '>' TERMINATED BY ';\n'
+ERR (1105, 'SELECT ... INTO OUTFILE is not supported yet') | WARN Error:1105:SELECT ... INTO OUTFILE is not supported yet
+=== SELECT a FROM sy INTO DUMPFILE '/tmp/syd1.bin'
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 30 near "DUMPFILE \'/tmp/syd1.bin\'" ') | WARN Error:1105:SELECT ... INTO OUTFILE is not supported yet
+=== LOAD DATA INFILE '/tmp/syo2.tsv' INTO TABLE sy
+ERR (1105, 'this DML statement kind (LoadData) is not supported yet') | WARN Error:1105:this DML statement kind (LoadData) is not supported yet
+=== LOAD DATA INFILE '/tmp/no_such.csv' INTO TABLE sy
+ERR (1105, 'this DML statement kind (LoadData) is not supported yet') | WARN Error:1105:this DML statement kind (LoadData) is not supported yet
+=== LOAD DATA INFILE '/tmp/syo2.tsv' IGNORE INTO TABLE sy FIELDS TERMINATED BY '\t' (a, b)
+ERR (1105, 'this DML statement kind (LoadData) is not supported yet') | WARN Error:1105:this DML statement kind (LoadData) is not supported yet
+=== LOAD DATA LOCAL INFILE '/etc/hostname' INTO TABLE sy
+ERR (1105, 'this DML statement kind (LoadData) is not supported yet') | WARN Error:1105:this DML statement kind (LoadData) is not supported yet
+=== SELECT * FROM (SELECT 1) AS dual_like
+(1,)
+=== SELECT 1 FROM DUAL WHERE 1
+(1,)
+=== SELECT (SELECT 1 FROM DUAL)
+(1,)
+=== DESCRIBE sy
+('a', 'int', 'YES', '', None, ''); ('b', 'varchar(10)', 'YES', '', None, '')
+=== DESCRIBE sy a
+('a', 'int', 'YES', '', None, '')
+=== EXPLAIN sy
+('a', 'int', 'YES', '', None, ''); ('b', 'varchar(10)', 'YES', '', None, '')
+=== SHOW COLUMNS IN sy
+('a', 'int', 'YES', '', None, ''); ('b', 'varchar(10)', 'YES', '', None, '')
+=== SHOW COLUMNS FROM sy WHERE b IS NOT NULL
+ERR (1105, 'unknown column') | WARN Error:1105:unknown column
+=== SHOW FIELDS IN sy LIKE 'a'
+('a', 'int', 'YES', '', None, '')
+=== SELECT sy.a FROM fdq.sy AS t
+ERR (1054, "Unknown column 'sy.a' in 'field list'") | WARN Error:1054:Unknown column 'sy.a' in 'field list'
+=== SELECT t.a FROM sy sy
+ERR (1054, "Unknown column 't.a' in 'field list'") | WARN Error:1054:Unknown column 't.a' in 'field list'
+=== SELECT a FROM sy USE INDEX(PRIMARY)
+ERR (1176, "Key 'PRIMARY' doesn't exist in table 'sy'") | WARN Error:1176:Key 'PRIMARY' doesn't exist in table 'sy'
+=== SELECT DISTINCTROW a FROM sy
+(1,); (2,)
+=== SELECT ALL a FROM sy
+(1,); (2,)
+=== SELECT SQL_CALC_FOUND_ROWS a FROM sy
+ERR (1235, 'function SQL_CALC_FOUND_ROWS has only noop implementation in tidb now, use tidb_enable_noop_functions to enable these functions') | WARN Error:1235:function SQL_CALC_FOUND_ROWS has only noop implementation in tidb now, use tidb_enable_noop_functions to enable these functions
+=== SELECT FOUND_ROWS()
+(1,)
+=== SELECT HIGH_PRIORITY * FROM sy
+(1, 'x'); (2, 'y')
+=== SELECT STRAIGHT_JOIN a FROM sy, sy s2
+ERR (1054, "Unknown column 'a' in 'field list'") | WARN Error:1054:Unknown column 'a' in 'field list'
+=== SELECT a FROM sy PARTITION (p1)
+ERR (1747, 'PARTITION () clause on non partitioned table') | WARN Error:1747:PARTITION () clause on non partitioned table
+=== SELECT a AS 'q' FROM sy
+(1,); (2,)
+=== SELECT a 'q' FROM sy
+(1,); (2,)
+=== SELECT "quoted" FROM sy
+('quoted',); ('quoted',)
+=== SELECT `backtick` FROM sy
+ERR (1054, "Unknown column 'backtick' in 'field list'") | WARN Error:1054:Unknown column 'backtick' in 'field list'
+=== SELECT @`var name` := 1
+(1,)
+=== SELECT @@GLOBAL.max_connections IS NOT NULL, @@SESSION.autocommit
+(1, 1)
+=== SELECT !1, NOT NOT 2, ~0 = 18446744073709551615
+(0, 1, 1)
+=== SELECT 1 <=> NULL, NULL <=> NULL, '<=>' 
+(0, 1, '<=>')
+=== SELECT a, COUNT(*) OVER () FROM sy GROUP BY a ORDER BY a
+(1, 2); (2, 2)
+=== WITH a AS (SELECT 1) SELECT * FROM a
+(1,)
+=== SELECT * FROM (VALUES ROW(1)) AS v(x) WHERE v.x = 1
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 21 near "VALUES ROW(1)) AS v(x) WHERE v.x = 1" ')
+=== TABLE sy
+(1, 'x'); (2, 'y')
+=== TABLE sy LIMIT 1
+(1, 'x')
+=== SELECT 1 INTERSECT SELECT 1
+(1,)
+=== SELECT 1 EXCEPT SELECT 2
+(1,)
+=== SELECT 1 UNION SELECT 1 ORDER BY 1
+(1,)

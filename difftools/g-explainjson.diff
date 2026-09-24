@@ -1,0 +1,74 @@
+--- go
++++ rust
+@@ -9 +9 @@
+-ERR (1105, "explain format 'json' is not supported now") | WARN Error:1105:explain format 'json' is not supported now
++ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+@@ -11 +11 @@
+-ERR (1105, "explain format 'json' is not supported now") | WARN Error:1105:explain format 'json' is not supported now
++ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+@@ -13 +13 @@
+-ERR (1105, "explain format 'json' is not supported now") | WARN Error:1105:explain format 'json' is not supported now
++ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+@@ -15 +15 @@
+-ERR (1105, "explain format 'json' is not supported now") | WARN Error:1105:explain format 'json' is not supported now
++ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+@@ -17 +17 @@
+-ERR (1105, "explain format 'json' is not supported now") | WARN Error:1105:explain format 'json' is not supported now
++ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+@@ -19 +19 @@
+-ERR (1105, "explain format 'json' is not supported now") | WARN Error:1105:explain format 'json' is not supported now
++ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+@@ -21 +21 @@
+-ERR (1791, "Unknown EXPLAIN format name: 'tree'") | WARN Error:1791:Unknown EXPLAIN format name: 'tree'
++ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+@@ -23 +23 @@
+-('Update', 'N/A', 'root', '', 'N/A'); ('└─TableReader', '10000.00', 'root', '', 'data:TableFullScan'); ('  └─TableFullScan', '10000.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
++('Update', 'N/A', 'root', '', 'N/A'); ('└─SelectLock', '10000.00', 'root', '', 'for update 0'); ('  └─TableReader', '10000.00', 'root', '', 'data:TableFullScan'); ('    └─TableFullScan', '10000.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+@@ -25 +25 @@
+-('Delete', 'N/A', 'root', '', 'N/A'); ('└─TableReader', '10000.00', 'root', '', 'data:TableFullScan'); ('  └─TableFullScan', '10000.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
++('Delete', 'N/A', 'root', '', 'N/A'); ('└─SelectLock', '10000.00', 'root', '', 'for update 0'); ('  └─TableReader', '10000.00', 'root', '', 'data:TableFullScan'); ('    └─TableFullScan', '10000.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+@@ -29 +29 @@
+-ERR (1791, "Unknown EXPLAIN format name: 'true_cardinality'") | WARN Error:1791:Unknown EXPLAIN format name: 'true_cardinality'
++ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+@@ -31 +31 @@
+-ERR (1791, "Unknown EXPLAIN format name: 'opt_trace'") | WARN Error:1791:Unknown EXPLAIN format name: 'opt_trace'
++ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+@@ -33 +33 @@
+-ERR (1791, "Unknown EXPLAIN format name: 'opt_trace'") | WARN Error:1791:Unknown EXPLAIN format name: 'opt_trace'
++ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+@@ -35 +35 @@
+-ERR (1791, "Unknown EXPLAIN format name: 'bogus'") | WARN Error:1791:Unknown EXPLAIN format name: 'bogus'
++ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+@@ -37 +37 @@
+-ERR (1105, "explain format '' is not supported now") | WARN Error:1105:explain format '' is not supported now
++ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+@@ -43 +43 @@
+-('IndexLookUp_7', '10.00', 'root', '', ''); ('├─IndexRangeScan_5(Build)', '10.00', 'cop[tikv]', 'table:ej, index:ib(b)', 'range:[1,1], keep order:false, stats:pseudo'); ('└─TableRowIDScan_6(Probe)', '10.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
++('IndexLookUp_8', '10.00', 'root', '', ''); ('├─IndexRangeScan_6(Build)', '10.00', 'cop[tikv]', 'table:ej, index:ib(b)', 'range:[1,1], keep order:false, stats:pseudo'); ('└─TableRowIDScan_7(Probe)', '10.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+@@ -45 +45 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 46 near "b = 1" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 46 near "b = 1" 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 46 near "b = 1" ')
+@@ -47 +47 @@
+-('Projection_3', '10000.00', 'root', '', 'sleep(0)->Column#6'); ('└─IndexReader_9', '10000.00', 'root', '', 'index:IndexFullScan_8'); ('  └─IndexFullScan_8', '10000.00', 'cop[tikv]', 'table:ej, index:ic(c)', 'keep order:false, stats:pseudo') | WARN Warning:1105:Scalar function 'sleep'(signature: Unspecified, return type: bigint) is not supported to push down to tikv now.
++('Projection_3', '10000.00', 'root', '', 'sleep(0)->Column#6'); ('└─IndexReader_9', '10000.00', 'root', '', 'index:IndexFullScan_8'); ('  └─IndexFullScan_8', '10000.00', 'cop[tikv]', 'table:ej, index:ic(c)', 'keep order:false, stats:pseudo')
+@@ -49 +49 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 11 near "SET @x = 1" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 11 near "SET @x = 1" 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 18 near "" ')
+@@ -51 +51 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "1" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "1" 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "1" ')
+@@ -53 +53 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "SHOW TABLES" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "SHOW TABLES" 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 19 near "" ')
+@@ -55 +55 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 22 near "DDL" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 22 near "DDL" 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 18 near "SHOW DDL" ')
+@@ -59 +59 @@
+-('Point_Get', '1.00', '1', 'root', 'table:ej', 'time:77.1µs, open:2.32µs, close:5.37µs, loops:2, RU:0.47, Get:{num_rpc:1, total_time:27.9µs}', 'handle:1', 'N/A', 'N/A')
++('Point_Get', '1.00', '1', 'root', 'table:ej', 'time:151.6µs, open:2.55µs, close:12µs, loops:2', 'handle:1', 'N/A', 'N/A')
+@@ -61 +61 @@
+-('IndexLookUp_7', '10.00', '0', 'root', '', 'time:238.2µs, open:10.4µs, close:2.74µs, loops:1, RU:0.47', '', '216 Bytes', 'N/A'); ('├─IndexRangeScan_5(Build)', '10.00', '0', 'cop[tikv]', 'table:ej, index:ib(b)', 'time:139.2µs, open:0s, close:0s, loops:1, cop_task: {num: 1, max: 109.8µs, proc_keys: 0, copr_cache_hit_ratio: 0.00, build_task_duration: 14µs, max_distsql_concurrency: 1}, fetch_resp_duration: 128µs, rpc_info:{Cop:{num_rpc:1, total_time:85.7µs}}, tikv_task:{time:60.7µs, loops:0}', 'range:[999,999], keep order:false; ('└─TableRowIDScan_6(Probe)', '10.00', '0', 'cop[tikv]', 'table:ej', '', 'keep order:false, stats:pseudo', 'N/A', 'N/A')
++('IndexLookUp_8', '10.00', '0', 'root', '', 'time:853µs, open:468.4µs, close:12.4µs, loops:1', '', 'N/A', 'N/A'); ('├─IndexRangeScan_6(Build)', '10.00', 'N/A', 'cop[tikv]', 'table:ej, index:ib(b)', 'N/A', 'range:[999,999], keep order:false, stats:pseudo', 'N/A', 'N/A'); ('└─TableRowIDScan_7(Probe)', '10.00', 'N/A', 'cop[tikv]', 'table:ej', 'N/A', 'keep order:false, stats:pseudo', 'N/A', 'N/A')
+@@ -63 +63 @@
+-('Delete_2', 'N/A', '0', 'root', '', 'time:63.7µs, open:4.17µs, close:3.2µs, loops:1, RU:0.47', 'N/A', '0 Bytes', 'N/A'); ('└─Point_Get_1', '1.00', '0', 'root', 'table:ej', 'time:56.2µs, open:1.98µs, close:2.81µs, loops:1, Get:{num_rpc:1, total_time:21.1µs}', 'handle:999', 'N/A', 'N/A')
++('Delete_2', 'N/A', '0', 'root', '', 'N/A', 'N/A', 'N/A', 'N/A'); ('└─Point_Get_1', '1.00', '0', 'root', 'table:ej', 'time:90.2µs, open:1.83µs, close:10.3µs, loops:1', 'handle:999', 'N/A', 'N/A')

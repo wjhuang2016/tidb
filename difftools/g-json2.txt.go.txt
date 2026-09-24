@@ -1,0 +1,73 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE j2(a JSON, id INT PRIMARY KEY AUTO_INCREMENT)
+(ok)
+=== INSERT INTO j2(a) VALUES ('{"arr":[1,{"k":"v"},3,null,true],"s":"str","n":1.5,"b":false,"z":null}')
+(ok)
+=== SELECT * FROM JSON_TABLE(a, '$.arr[*]' COLUMNS(idx FOR ORDINALITY, val INT PATH '$')) AS jt
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.arr[*]\' COLUMNS(idx FOR ORDINALITY, val INT PATH \'$\')) AS jt" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, '$.arr[*]' COLUMNS(idx FOR ORDINALITY, val
+=== SELECT * FROM JSON_TABLE(a, '$.arr[*]' COLUMNS(val JSON PATH '$')) AS jt
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.arr[*]\' COLUMNS(val JSON PATH \'$\')) AS jt" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, '$.arr[*]' COLUMNS(val JSON PATH '$')) AS 
+=== SELECT * FROM JSON_TABLE(a, '$' COLUMNS(nest JSON PATH '$.arr[1]')) AS jt
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$\' COLUMNS(nest JSON PATH \'$.arr[1]\')) AS jt" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, '$' COLUMNS(nest JSON PATH '$.arr[1]')) AS
+=== SELECT * FROM JSON_TABLE(a, '$.nope[*]' COLUMNS(val INT PATH '$' DEFAULT '99' ON ERROR)) AS jt
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.nope[*]\' COLUMNS(val INT PATH \'$\' DEFAULT \'99\' ON ERROR)) AS jt" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, '$.nope[*]' COLUMNS(val INT PATH '$' DEFAU
+=== SELECT * FROM JSON_TABLE(a, '$.arr[*]' COLUMNS(val INT PATH '$' ERROR ON ERROR)) AS jt
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.arr[*]\' COLUMNS(val INT PATH \'$\' ERROR ON ERROR)) AS jt" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, '$.arr[*]' COLUMNS(val INT PATH '$' ERROR 
+=== SELECT * FROM JSON_TABLE(a, '$.arr[*]' COLUMNS(val INT PATH '$' DEFAULT '-1' ON EMPTY)) AS jt
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.arr[*]\' COLUMNS(val INT PATH \'$\' DEFAULT \'-1\' ON EMPTY)) AS jt" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, '$.arr[*]' COLUMNS(val INT PATH '$' DEFAUL
+=== SELECT jt.val, jt.idx FROM j2, JSON_TABLE(j2.a, '$.arr[*]' COLUMNS(idx FOR ORDINALITY, val INT PATH '$')) AS jt
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 44 near "j2.a, \'$.arr[*]\' COLUMNS(idx FOR ORDINALITY, val INT PATH \'$\')) AS jt" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 44 near "j2.a, '$.arr[*]' COLUMNS(idx FOR ORDINALITY, 
+=== SELECT JSON_DETAILED(a) FROM j2
+ERR (1305, 'FUNCTION fdq.json_detailed does not exist') | WARN Error:1305:FUNCTION fdq.json_detailed does not exist
+=== SELECT JSON_HISTOGRAM(a, '$.arr[*]') FROM j2
+ERR (1305, 'FUNCTION fdq.json_histogram does not exist') | WARN Error:1305:FUNCTION fdq.json_histogram does not exist
+=== SELECT JSON_ARRAY_INSERT(a, '$.arr[0]', 'new') FROM j2
+('{"arr": ["new", 1, {"k": "v"}, 3, null, true], "b": false, "n": 1.5, "s": "str", "z": null}',)
+=== SELECT JSON_ARRAY_APPEND(a, '$.arr', 'end') FROM j2
+('{"arr": [1, {"k": "v"}, 3, null, true, "end"], "b": false, "n": 1.5, "s": "str", "z": null}',)
+=== SELECT j2.a->'$.arr[1].k', j2.a->>'$.arr[1].k' FROM j2
+('"v"', 'v')
+=== SELECT JSON_CONTAINS(a, '{"k":"v"}', '$.arr[1]') FROM j2
+(1,)
+=== SELECT JSON_EXTRACT(a, '$.arr[*].k') FROM j2
+('["v"]',)
+=== SELECT JSON_EXTRACT(a, '$.b'), JSON_TYPE(JSON_EXTRACT(a, '$.b')) FROM j2
+('false', 'BOOLEAN')
+=== SELECT JSON_EXTRACT(a, '$.n'), JSON_TYPE(JSON_EXTRACT(a, '$.n')) FROM j2
+('1.5', 'DOUBLE')
+=== SELECT JSON_EXTRACT(a, '$.z'), JSON_TYPE(JSON_EXTRACT(a, '$.z')) FROM j2
+('null', 'NULL')
+=== SELECT a->'$.s' = 'str' FROM j2
+(1,)
+=== SELECT a->'$.n' = 1.5 FROM j2
+(1,)
+=== SELECT a->'$.arr' = '[1, {"k": "v"}, 3, null, true]' FROM j2
+(0,)
+=== SELECT JSON_OVERLAPS(a->'$.arr', '[3, 99]') FROM j2
+(1,)
+=== SELECT JSON_REMOVE(a, '$.z') FROM j2
+('{"arr": [1, {"k": "v"}, 3, null, true], "b": false, "n": 1.5, "s": "str"}',)
+=== SELECT JSON_SET(a, '$.s', 42) FROM j2
+('{"arr": [1, {"k": "v"}, 3, null, true], "b": false, "n": 1.5, "s": 42, "z": null}',)
+=== SELECT JSON_UNQUOTE(a->'$.s') FROM j2
+('str',)
+=== SELECT JSON_TYPE(a), JSON_VALID('[]'), JSON_VALID(''), JSON_VALID(NULL)
+ERR (1054, "Unknown column 'a' in 'field list'") | WARN Error:1054:Unknown column 'a' in 'field list'
+=== SELECT LENGTH(a), CHAR_LENGTH(a) FROM j2
+(84, 84)
+=== SELECT CAST(a->'$.n' AS DECIMAL(10,2)), CAST(a->'$.b' AS UNSIGNED) FROM j2
+(Decimal('1.50'), 0)
+=== SELECT a = a FROM j2
+(1,)
+=== SELECT a < a FROM j2
+(0,)
+=== CREATE TABLE jk(v JSON); INSERT INTO jk VALUES ('{"a":1}'), ('{"a":2}')
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== SELECT v->'$.a' FROM jk GROUP BY v->'$.a'
+ERR (1146, "Table 'fdq.jk' doesn't exist") | WARN Error:1146:Table 'fdq.jk' doesn't exist
+=== SELECT v FROM jk WHERE v->'$.a' IN (1)
+ERR (1146, "Table 'fdq.jk' doesn't exist") | WARN Error:1146:Table 'fdq.jk' doesn't exist
+=== SELECT v FROM jk WHERE JSON_EXTRACT(v, '$.a') > 1
+ERR (1146, "Table 'fdq.jk' doesn't exist") | WARN Error:1146:Table 'fdq.jk' doesn't exist

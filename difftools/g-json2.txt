@@ -1,0 +1,37 @@
+# json_table + json deep round 2
+CREATE TABLE j2(a JSON, id INT PRIMARY KEY AUTO_INCREMENT);
+INSERT INTO j2(a) VALUES ('{"arr":[1,{"k":"v"},3,null,true],"s":"str","n":1.5,"b":false,"z":null}');
+>>>
+SELECT * FROM JSON_TABLE(a, '$.arr[*]' COLUMNS(idx FOR ORDINALITY, val INT PATH '$')) AS jt;
+SELECT * FROM JSON_TABLE(a, '$.arr[*]' COLUMNS(val JSON PATH '$')) AS jt;
+SELECT * FROM JSON_TABLE(a, '$' COLUMNS(nest JSON PATH '$.arr[1]')) AS jt;
+SELECT * FROM JSON_TABLE(a, '$.nope[*]' COLUMNS(val INT PATH '$' DEFAULT '99' ON ERROR)) AS jt;
+SELECT * FROM JSON_TABLE(a, '$.arr[*]' COLUMNS(val INT PATH '$' ERROR ON ERROR)) AS jt;
+SELECT * FROM JSON_TABLE(a, '$.arr[*]' COLUMNS(val INT PATH '$' DEFAULT '-1' ON EMPTY)) AS jt;
+SELECT jt.val, jt.idx FROM j2, JSON_TABLE(j2.a, '$.arr[*]' COLUMNS(idx FOR ORDINALITY, val INT PATH '$')) AS jt;
+SELECT JSON_DETAILED(a) FROM j2;
+SELECT JSON_HISTOGRAM(a, '$.arr[*]') FROM j2;
+SELECT JSON_ARRAY_INSERT(a, '$.arr[0]', 'new') FROM j2;
+SELECT JSON_ARRAY_APPEND(a, '$.arr', 'end') FROM j2;
+SELECT j2.a->'$.arr[1].k', j2.a->>'$.arr[1].k' FROM j2;
+SELECT JSON_CONTAINS(a, '{"k":"v"}', '$.arr[1]') FROM j2;
+SELECT JSON_EXTRACT(a, '$.arr[*].k') FROM j2;
+SELECT JSON_EXTRACT(a, '$.b'), JSON_TYPE(JSON_EXTRACT(a, '$.b')) FROM j2;
+SELECT JSON_EXTRACT(a, '$.n'), JSON_TYPE(JSON_EXTRACT(a, '$.n')) FROM j2;
+SELECT JSON_EXTRACT(a, '$.z'), JSON_TYPE(JSON_EXTRACT(a, '$.z')) FROM j2;
+SELECT a->'$.s' = 'str' FROM j2;
+SELECT a->'$.n' = 1.5 FROM j2;
+SELECT a->'$.arr' = '[1, {"k": "v"}, 3, null, true]' FROM j2;
+SELECT JSON_OVERLAPS(a->'$.arr', '[3, 99]') FROM j2;
+SELECT JSON_REMOVE(a, '$.z') FROM j2;
+SELECT JSON_SET(a, '$.s', 42) FROM j2;
+SELECT JSON_UNQUOTE(a->'$.s') FROM j2;
+SELECT JSON_TYPE(a), JSON_VALID('[]'), JSON_VALID(''), JSON_VALID(NULL);
+SELECT LENGTH(a), CHAR_LENGTH(a) FROM j2;
+SELECT CAST(a->'$.n' AS DECIMAL(10,2)), CAST(a->'$.b' AS UNSIGNED) FROM j2;
+SELECT a = a FROM j2;
+SELECT a < a FROM j2;
+CREATE TABLE jk(v JSON); INSERT INTO jk VALUES ('{"a":1}'), ('{"a":2}');
+SELECT v->'$.a' FROM jk GROUP BY v->'$.a';
+SELECT v FROM jk WHERE v->'$.a' IN (1);
+SELECT v FROM jk WHERE JSON_EXTRACT(v, '$.a') > 1;

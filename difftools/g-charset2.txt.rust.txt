@@ -1,0 +1,85 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE cb(a VARCHAR(20) CHARACTER SET binary, b BINARY(10), c VARBINARY(10), d BLOB)
+(ok)
+=== INSERT INTO cb VALUES ('abc', 'abc', 'abc', 'abc')
+(ok)
+=== SELECT a, b, c, d FROM cb
+(b'abc', b'abc\x00\x00\x00\x00\x00\x00\x00', b'abc', b'abc')
+=== SELECT CHAR_LENGTH(a), LENGTH(b) FROM cb
+(3, 10)
+=== SELECT a = 'abc', b = 'abc', c = 'abc' FROM cb
+(1, 0, 1)
+=== SELECT a = 'ABC' FROM cb
+(0,)
+=== SELECT UPPER(a), LOWER(a) FROM cb
+(b'abc', b'abc')
+=== SELECT a LIKE 'ab%' FROM cb
+(1,)
+=== SELECT ORDER BY a, 1 FROM cb
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "ORDER BY a, 1 FROM cb" ')
+=== INSERT INTO cb (a) VALUES ('ABC')
+(ok)
+=== SELECT COUNT(*) FROM cb WHERE a = 'abc'
+(1,)
+=== SELECT SUBSTRING(b, 1, 2) FROM cb
+(b'ab',); (None,)
+=== SELECT CONCAT(b, c) FROM cb
+(b'abc\x00\x00\x00\x00\x00\x00\x00abc',); (None,)
+=== INSERT INTO cb (b) VALUES (0x0102)
+(ok)
+=== SELECT HEX(b) FROM cb
+('61626300000000000000',); (None,); ('01020000000000000000',)
+=== INSERT INTO cb (b) VALUES (0x0102030405060708090A0B0C)
+ERR (1406, "Data too long for column 'b' at row 1") | WARN Error:1406:Data too long for column 'b' at row 1
+=== SELECT HEX(b), LENGTH(b) FROM cb
+('61626300000000000000', 10); (None, None); ('01020000000000000000', 10)
+=== INSERT INTO cb (c) VALUES (REPEAT('x', 11))
+ERR (1406, "Data too long for column 'c' at row 1") | WARN Error:1406:Data too long for column 'c' at row 1
+=== INSERT INTO cb (c) VALUES (REPEAT('x', 10))
+(ok)
+=== SELECT LENGTH(c) FROM cb
+(3,); (None,); (None,); (10,)
+=== CREATE TABLE gk(a VARCHAR(10) CHARACTER SET gbk)
+(ok)
+=== CREATE TABLE gk2(a VARCHAR(10) CHARACTER SET utf16)
+ERR (1064, "You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1115]Unknown character set: 'utf16'")
+=== CREATE TABLE gk3(a VARCHAR(10) CHARACTER SET utf32)
+ERR (1064, "You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1115]Unknown character set: 'utf32'")
+=== CREATE TABLE gk4(a VARCHAR(10) CHARACTER SET ucs2)
+ERR (1064, "You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1115]Unknown character set: 'ucs2'")
+=== CREATE TABLE gk5(a VARCHAR(10) CHARACTER SET big5)
+ERR (1064, "You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1115]Unknown character set: 'big5'")
+=== CREATE TABLE gk6(a VARCHAR(10) CHARACTER SET latin2)
+ERR (1064, "You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1115]Unknown character set: 'latin2'")
+=== CREATE TABLE gk7(a VARCHAR(10) CHARACTER SET cp1250)
+ERR (1064, "You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1115]Unknown character set: 'cp1250'")
+=== CREATE TABLE gk8(a VARCHAR(10) CHARACTER SET binary)
+(ok)
+=== CREATE TABLE gk9(a VARCHAR(10) CHARACTER SET tis620)
+ERR (1064, "You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1115]Unknown character set: 'tis620'")
+=== SHOW CHARACTER SET
+('ascii', 'US ASCII', 'ascii_bin', 1); ('binary', 'binary', 'binary', 1); ('gb18030', 'China National Standard GB18030', 'gb18030_chinese_ci', 4); ('gbk', 'Chinese Internal Code Specification', 'gbk_chinese_ci', 2); ('latin1', 'Latin1', 'latin1_bin', 1); ('utf8', 'UTF-8 Unicode', 'utf8_bin', 3); ('utf8mb4', 'UTF-8 Unicode', 'utf8mb4_bin', 4)
+=== SHOW COLLATION WHERE Charset IN ('gbk','binary','latin1','utf16')
+('binary', 'binary', 63, 'Yes', 'Yes', 1, 'NO PAD'); ('gbk_bin', 'gbk', 87, '', 'Yes', 1, 'PAD SPACE'); ('gbk_chinese_ci', 'gbk', 28, 'Yes', 'Yes', 1, 'PAD SPACE'); ('latin1_bin', 'latin1', 47, 'Yes', 'Yes', 1, 'PAD SPACE')
+=== SELECT CHARSET(_binary'x'), COLLATION(_binary'x'), CHARSET(BINARY'x')
+('binary', 'binary', 'binary')
+=== SELECT CHARSET('x' COLLATE utf8mb4_bin)
+('utf8mb4',)
+=== SELECT COLLATION(CONVERT('x' USING binary))
+('binary',)
+=== SELECT _binary'a' = 'a', BINARY'a' = 'a', _binary'a' = BINARY'a'
+(1, 1, 1)
+=== SELECT HEX(_binary'中')
+('E4B8AD',)
+=== SELECT LENGTH('中'), CHAR_LENGTH('中'), LENGTH(_utf8mb4'中')
+(3, 1, 3)
+=== SELECT CONVERT(CONVERT('中' USING binary) USING utf8mb4)
+('中',)
+=== SELECT CONVERT('中', CHAR CHARACTER SET binary)
+(b'\xe4\xb8\xad',)
+=== SELECT CONCAT(_binary'a', 'b'), CHARSET(CONCAT(_binary'a','b'))
+(b'ab', 'binary')
+=== SELECT _binary'a' + 0
+(0.0,) | WARN Warning:1292:Truncated incorrect DOUBLE value: 'a'

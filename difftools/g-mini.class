@@ -1,0 +1,10 @@
+### VALUE (0)
+### ERRCODE (1)
+  SELECT * FROM mn WHERE b LIKE 'x' ESCAPE '!!'
+    GO  : ERR (1210, 'Incorrect arguments to ESCAPE')
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1210]Incorrect arguments to ESCAPE')
+### WARNONLY (1)
+  SELECT * FROM mn WHERE b REGEXP 'x', a REGEXP '[[:alpha:]]'
+    GO  : 1064
+    RUST: -
+### OTHER (0)

@@ -1,0 +1,67 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE mn(a INT, b VARCHAR(10), c CHAR(5))
+(ok)
+=== INSERT INTO mn VALUES (1,'x','y'),(2,NULL,NULL)
+(ok)
+=== INSERT INTO mn VALUES (3, DEFAULT, DEFAULT), (4, DEFAULT(b), DEFAULT(c))
+(ok)
+=== INSERT INTO mn SET a = 5, b = 'v'
+(ok)
+=== REPLACE mn SET a = 5, b = 'w'
+(ok)
+=== INSERT INTO mn (a, b) VALUES (6, 'x' COLLATE utf8mb4_bin)
+(ok)
+=== INSERT INTO mn (a, b) VALUES (7, 'x' COLLATE utf8_general_ci)
+ERR (1253, "COLLATION 'utf8_general_ci' is not valid for CHARACTER SET 'utf8mb4'") | WARN Error:1253:COLLATION 'utf8_general_ci' is not valid for CHARACTER SET 'utf8mb4'
+=== SELECT * FROM mn WHERE b COLLATE utf8mb4_bin = 'x'
+(1, 'x', 'y'); (6, 'x', None)
+=== SELECT * FROM mn WHERE b LIKE 'x' ESCAPE ''
+(1, 'x', 'y'); (6, 'x', None)
+=== SELECT * FROM mn WHERE b LIKE 'x' ESCAPE '!!'
+ERR (1210, 'Incorrect arguments to ESCAPE') | WARN Error:1210:Incorrect arguments to ESCAPE
+=== SELECT * FROM mn WHERE b REGEXP 'x', a REGEXP '[[:alpha:]]'
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 36 near ", a REGEXP \'[[:alpha:]]\'" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 36 near ", a REGEXP '[[:alpha:]]'" 
+=== SELECT * FROM mn WHERE b RLIKE 'x'
+(1, 'x', 'y'); (6, 'x', None)
+=== SELECT NOT NOT a FROM mn
+(1,); (1,); (1,); (1,); (1,); (1,); (1,)
+=== SELECT a = b, a <=> b FROM mn
+(0, 0); (None, 0); (None, 0); (None, 0); (0, 0); (0, 0); (0, 0) | WARN Warning:1292:Truncated incorrect DOUBLE value: 'x'; Warning:1292:Truncated incorrect DOUBLE value: 'v'; Warning:1292:Truncated incorrect DOUBLE value: 'w'; Warning:1292:Truncated incorrect DOUBLE value: 'x'; Warning:1292:Truncated incorrect DOUBLE value: 'x'; Warning:1292:Truncated incorrect DOUBLE value: 'v'; Warning:1292:Truncated incorrect DOUBLE value: 'w'; Warning:1292:Truncated incorrect DOUBLE value: 'x'
+=== SELECT COALESCE(b, c, a) FROM mn
+('x',); ('2',); ('3',); ('4',); ('v',); ('w',); ('x',)
+=== SELECT GREATEST(a, COALESCE(b, 0)) FROM mn
+('x',); ('2',); ('3',); ('4',); ('v',); ('w',); ('x',)
+=== SELECT mn.a + NULL, NULL + mn.a FROM mn
+(None, None); (None, None); (None, None); (None, None); (None, None); (None, None); (None, None)
+=== SELECT CONCAT(a, b) FROM mn
+('1x',); (None,); (None,); (None,); ('5v',); ('5w',); ('6x',)
+=== SELECT * FROM mn WHERE (a, b) = (1, 'x')
+(1, 'x', 'y')
+=== SELECT * FROM mn WHERE ROW(a, b) = ROW(1, 'x')
+(1, 'x', 'y')
+=== SELECT * FROM mn WHERE (a, b) > (1, 'x')
+(2, None, None); (3, None, None); (4, None, None); (5, 'v', None); (5, 'w', None); (6, 'x', None)
+=== SELECT DISTINCT b, a FROM mn ORDER BY b, a
+(None, 2); (None, 3); (None, 4); ('v', 5); ('w', 5); ('x', 1); ('x', 6)
+=== SELECT a, MIN(b), MAX(c) FROM mn GROUP BY a HAVING a > 0 ORDER BY MIN(b)
+(4, None, None); (2, None, None); (3, None, None); (5, 'v', None); (1, 'x', 'y'); (6, 'x', None)
+=== SELECT COUNT(b) = COUNT(*) FROM mn
+(0,)
+=== UPDATE mn SET a = a + 1 WHERE a IS NULL
+(ok)
+=== DELETE FROM mn WHERE (a, b) IN ((5, 'w'))
+(ok)
+=== TRUNCATE mn
+(ok)
+=== INSERT INTO mn VALUES (1, 'x', 'y')
+(ok)
+=== SELECT LAST_INSERT_ID(), ROW_COUNT()
+(0, 0)
+=== ALTER TABLE mn AUTO_INCREMENT = 100
+(ok) | WARN Warning:1105:Can't reset AUTO_INCREMENT to 100 without FORCE option, using 30001 instead
+=== INSERT INTO mn (a) VALUES (NULL)
+(ok)
+=== SELECT LAST_INSERT_ID()
+(0,)

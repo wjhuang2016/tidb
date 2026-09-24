@@ -1,0 +1,8 @@
+--- go
++++ rust
+@@ -23 +23 @@
+-ERR (1210, 'Incorrect arguments to ESCAPE') | WARN Error:1210:Incorrect arguments to ESCAPE
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use [parser:1210]Incorrect arguments to ESCAPE')
+@@ -25 +25 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 36 near ", a REGEXP \'[[:alpha:]]\'" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 36 near ", a REGEXP '[[:alpha:]]'" 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 36 near ", a REGEXP \'[[:alpha:]]\'" ')

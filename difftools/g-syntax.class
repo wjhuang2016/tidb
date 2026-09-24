@@ -1,0 +1,34 @@
+### VALUE (0)
+### ERRCODE (6)
+  LOAD DATA INFILE '/tmp/syo2.tsv' INTO TABLE sy
+    GO  : ERR (8154, "Don't support load data from tidb-server's disk. Or if you want to load local data via client, the path of INFILE '/tmp/syo2.tsv' needs to specify the clause of LOCAL first")
+    RUST: ERR (1105, 'this DML statement kind (LoadData) is not supported yet')
+  LOAD DATA INFILE '/tmp/no_such.csv' INTO TABLE sy
+    GO  : ERR (8154, "Don't support load data from tidb-server's disk. Or if you want to load local data via client, the path of INFILE '/tmp/no_such.csv' needs to specify the clause of LOCAL first")
+    RUST: ERR (1105, 'this DML statement kind (LoadData) is not supported yet')
+  LOAD DATA INFILE '/tmp/syo2.tsv' IGNORE INTO TABLE sy FIELDS TERMINATED BY '\t' (a, b)
+    GO  : ERR (8154, "Don't support load data from tidb-server's disk. Or if you want to load local data via client, the path of INFILE '/tmp/syo2.tsv' needs to specify the clause of LOCAL first")
+    RUST: ERR (1105, 'this DML statement kind (LoadData) is not supported yet')
+  LOAD DATA LOCAL INFILE '/etc/hostname' INTO TABLE sy
+    GO  : ERR (1148, 'The used command is not allowed with this MySQL version')
+    RUST: ERR (1105, 'this DML statement kind (LoadData) is not supported yet')
+  SHOW COLUMNS FROM sy WHERE b IS NOT NULL
+    GO  : ERR (1054, "Unknown column 'b' in 'where clause'")
+    RUST: ERR (1105, 'unknown column')
+  SELECT STRAIGHT_JOIN a FROM sy, sy s2
+    GO  : ERR (1052, "Column 'a' in field list is ambiguous")
+    RUST: ERR (1054, "Unknown column 'a' in 'field list'")
+### WARNONLY (1)
+  SELECT a FROM sy INTO DUMPFILE '/tmp/syd1.bin'
+    GO  : 1064
+    RUST: 1105
+### OTHER (3)
+  SELECT * FROM sy INTO OUTFILE '/tmp/syo1.csv'
+    GO  : ERR (1105, 'open /tmp/syo1.csv: file exists')
+    RUST: ERR (1105, 'SELECT ... INTO OUTFILE is not supported yet')
+  SELECT a, b FROM sy INTO OUTFILE '/tmp/syo2.tsv' FIELDS TERMINATED BY '\t' ENCLOSED BY '"' LINES STARTING BY '>' TERMINATED BY ';\n'
+    GO  : ERR (1105, 'open /tmp/syo2.tsv: file exists')
+    RUST: ERR (1105, 'SELECT ... INTO OUTFILE is not supported yet')
+  SELECT * FROM (VALUES ROW(1)) AS v(x) WHERE v.x = 1
+    GO  : ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 36 near "x) WHERE v.x = 1" ')
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 21 near "VALUES ROW(1)) AS v(x) W

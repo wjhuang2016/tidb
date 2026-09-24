@@ -1,0 +1,32 @@
+--- go
++++ rust
+@@ -9 +9 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.arr[*]\' COLUMNS(idx FOR ORDINALITY, val INT PATH \'$\')) AS jt" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, '$.arr[*]' COLUMNS(idx FOR ORDINALITY, val
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 25 near "(a, \'$.arr[*]\' COLUMNS(idx FOR ORDINALITY, val INT PATH \'$\')) AS jt" ')
+@@ -11 +11 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.arr[*]\' COLUMNS(val JSON PATH \'$\')) AS jt" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, '$.arr[*]' COLUMNS(val JSON PATH '$')) AS 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 25 near "(a, \'$.arr[*]\' COLUMNS(val JSON PATH \'$\')) AS jt" ')
+@@ -13 +13 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$\' COLUMNS(nest JSON PATH \'$.arr[1]\')) AS jt" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, '$' COLUMNS(nest JSON PATH '$.arr[1]')) AS
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 25 near "(a, \'$\' COLUMNS(nest JSON PATH \'$.arr[1]\')) AS jt" ')
+@@ -15 +15 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.nope[*]\' COLUMNS(val INT PATH \'$\' DEFAULT \'99\' ON ERROR)) AS jt" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, '$.nope[*]' COLUMNS(val INT PATH '$' DEFAU
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 25 near "(a, \'$.nope[*]\' COLUMNS(val INT PATH \'$\' DEFAULT \'99\' ON ERROR)) AS jt" ')
+@@ -17 +17 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.arr[*]\' COLUMNS(val INT PATH \'$\' ERROR ON ERROR)) AS jt" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, '$.arr[*]' COLUMNS(val INT PATH '$' ERROR 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 25 near "(a, \'$.arr[*]\' COLUMNS(val INT PATH \'$\' ERROR ON ERROR)) AS jt" ')
+@@ -19 +19 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.arr[*]\' COLUMNS(val INT PATH \'$\' DEFAULT \'-1\' ON EMPTY)) AS jt" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, '$.arr[*]' COLUMNS(val INT PATH '$' DEFAUL
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 25 near "(a, \'$.arr[*]\' COLUMNS(val INT PATH \'$\' DEFAULT \'-1\' ON EMPTY)) AS jt" ')
+@@ -21 +21 @@
+-ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 44 near "j2.a, \'$.arr[*]\' COLUMNS(idx FOR ORDINALITY, val INT PATH \'$\')) AS jt" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 44 near "j2.a, '$.arr[*]' COLUMNS(idx FOR ORDINALITY, 
++ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 42 near "(j2.a, \'$.arr[*]\' COLUMNS(idx FOR ORDINALITY, val INT PATH \'$\')) AS jt" ')
+@@ -43 +43 @@
+-(1,)
++(0,)
+@@ -47 +47 @@
+-(0,)
++(1,)
+@@ -61 +61 @@
+-(Decimal('1.50'), 0)
++(Decimal('1.50'), 0) | WARN Warning:1292:Truncated incorrect INTEGER value: 'false'

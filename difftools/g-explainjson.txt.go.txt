@@ -1,0 +1,63 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE ej(a INT PRIMARY KEY, b INT, c VARCHAR(5), d DECIMAL(10,2), KEY ib(b), KEY ic(c))
+(ok)
+=== INSERT INTO ej VALUES (1,1,'x',1.5),(2,2,'y',2.5),(3,3,'z',3.5)
+(ok)
+=== EXPLAIN FORMAT='json' SELECT * FROM ej WHERE a = 1
+ERR (1105, "explain format 'json' is not supported now") | WARN Error:1105:explain format 'json' is not supported now
+=== EXPLAIN FORMAT='json' SELECT * FROM ej WHERE b = 1 ORDER BY b
+ERR (1105, "explain format 'json' is not supported now") | WARN Error:1105:explain format 'json' is not supported now
+=== EXPLAIN FORMAT='json' SELECT COUNT(*) FROM ej
+ERR (1105, "explain format 'json' is not supported now") | WARN Error:1105:explain format 'json' is not supported now
+=== EXPLAIN FORMAT='json' SELECT * FROM ej e1 JOIN ej e2 ON e1.a = e2.a
+ERR (1105, "explain format 'json' is not supported now") | WARN Error:1105:explain format 'json' is not supported now
+=== EXPLAIN FORMAT='json' SELECT * FROM ej WHERE b IN (SELECT a FROM ej)
+ERR (1105, "explain format 'json' is not supported now") | WARN Error:1105:explain format 'json' is not supported now
+=== EXPLAIN FORMAT='json' SELECT * FROM (SELECT * FROM ej WHERE b = 1) t
+ERR (1105, "explain format 'json' is not supported now") | WARN Error:1105:explain format 'json' is not supported now
+=== EXPLAIN FORMAT='tree' SELECT * FROM ej WHERE a = 1
+ERR (1791, "Unknown EXPLAIN format name: 'tree'") | WARN Error:1791:Unknown EXPLAIN format name: 'tree'
+=== EXPLAIN FORMAT='brief' UPDATE ej SET b = 1
+('Update', 'N/A', 'root', '', 'N/A'); ('└─TableReader', '10000.00', 'root', '', 'data:TableFullScan'); ('  └─TableFullScan', '10000.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+=== EXPLAIN FORMAT='brief' DELETE FROM ej
+('Delete', 'N/A', 'root', '', 'N/A'); ('└─TableReader', '10000.00', 'root', '', 'data:TableFullScan'); ('  └─TableFullScan', '10000.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+=== EXPLAIN FORMAT='brief' INSERT INTO ej VALUES (9,9,'q',9.9)
+('Insert', 'N/A', 'root', '', 'N/A')
+=== EXPLAIN FORMAT='true_cardinality' SELECT * FROM ej WHERE b = 1
+ERR (1791, "Unknown EXPLAIN format name: 'true_cardinality'") | WARN Error:1791:Unknown EXPLAIN format name: 'true_cardinality'
+=== EXPLAIN FORMAT='opt_trace' SELECT * FROM ej WHERE b = 1
+ERR (1791, "Unknown EXPLAIN format name: 'opt_trace'") | WARN Error:1791:Unknown EXPLAIN format name: 'opt_trace'
+=== EXPLAIN FORMAT='opt_trace' SELECT * FROM ej WHERE b = 1 INTO OUTFILE '/tmp/ot.txt'
+ERR (1791, "Unknown EXPLAIN format name: 'opt_trace'") | WARN Error:1791:Unknown EXPLAIN format name: 'opt_trace'
+=== EXPLAIN FORMAT='bogus' SELECT 1
+ERR (1791, "Unknown EXPLAIN format name: 'bogus'") | WARN Error:1791:Unknown EXPLAIN format name: 'bogus'
+=== EXPLAIN FORMAT='' SELECT 1
+ERR (1105, "explain format '' is not supported now") | WARN Error:1105:explain format '' is not supported now
+=== EXPLAIN SELECT * FROM ej USE INDEX () WHERE b = 1
+('TableReader_7', '10.00', 'root', '', 'data:Selection_6'); ('└─Selection_6', '10.00', 'cop[tikv]', '', 'eq(fdq.ej.b, 1)'); ('  └─TableFullScan_5', '10000.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM ej FORCE INDEX (ib) WHERE b = 1
+('IndexLookUp_7', '10.00', 'root', '', ''); ('├─IndexRangeScan_5(Build)', '10.00', 'cop[tikv]', 'table:ej, index:ib(b)', 'range:[1,1], keep order:false, stats:pseudo'); ('└─TableRowIDScan_6(Probe)', '10.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT /*+ qb_name(myqb) */ * FROM ej WHERE b = 1
+('IndexLookUp_7', '10.00', 'root', '', ''); ('├─IndexRangeScan_5(Build)', '10.00', 'cop[tikv]', 'table:ej, index:ib(b)', 'range:[1,1], keep order:false, stats:pseudo'); ('└─TableRowIDScan_6(Probe)', '10.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM ej WHERE STRAIGHT_JOIN b = 1
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 46 near "b = 1" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 46 near "b = 1" 
+=== EXPLAIN SELECT SLEEP(0) FROM ej
+('Projection_3', '10000.00', 'root', '', 'sleep(0)->Column#6'); ('└─IndexReader_9', '10000.00', 'root', '', 'index:IndexFullScan_8'); ('  └─IndexFullScan_8', '10000.00', 'cop[tikv]', 'table:ej, index:ic(c)', 'keep order:false, stats:pseudo') | WARN Warning:1105:Scalar function 'sleep'(signature: Unspecified, return type: bigint) is not supported to push down to tikv now.
+=== EXPLAIN SET @x = 1
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 11 near "SET @x = 1" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 11 near "SET @x = 1" 
+=== EXPLAIN DO 1
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "1" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "1" 
+=== EXPLAIN SHOW TABLES
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "SHOW TABLES" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "SHOW TABLES" 
+=== EXPLAIN ADMIN SHOW DDL
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 22 near "DDL" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 22 near "DDL" 
+=== EXPLAIN FLUSH PRIVILEGES
+ERR (1146, "Table 'fdq.FLUSH' doesn't exist") | WARN Error:1146:Table 'fdq.FLUSH' doesn't exist
+=== EXPLAIN ANALYZE FORMAT='brief' SELECT * FROM ej WHERE a = 1
+('Point_Get', '1.00', '1', 'root', 'table:ej', 'time:77.1µs, open:2.32µs, close:5.37µs, loops:2, RU:0.47, Get:{num_rpc:1, total_time:27.9µs}', 'handle:1', 'N/A', 'N/A')
+=== EXPLAIN ANALYZE SELECT * FROM ej WHERE b = 999
+('IndexLookUp_7', '10.00', '0', 'root', '', 'time:238.2µs, open:10.4µs, close:2.74µs, loops:1, RU:0.47', '', '216 Bytes', 'N/A'); ('├─IndexRangeScan_5(Build)', '10.00', '0', 'cop[tikv]', 'table:ej, index:ib(b)', 'time:139.2µs, open:0s, close:0s, loops:1, cop_task: {num: 1, max: 109.8µs, proc_keys: 0, copr_cache_hit_ratio: 0.00, build_task_duration: 14µs, max_distsql_concurrency: 1}, fetch_resp_duration: 128µs, rpc_info:{Cop:{num_rpc:1, total_time:85.7µs}}, tikv_task:{time:60.7µs, loops:0}', 'range:[999,999], keep order:false; ('└─TableRowIDScan_6(Probe)', '10.00', '0', 'cop[tikv]', 'table:ej', '', 'keep order:false, stats:pseudo', 'N/A', 'N/A')
+=== EXPLAIN ANALYZE DELETE FROM ej WHERE a = 999
+('Delete_2', 'N/A', '0', 'root', '', 'time:63.7µs, open:4.17µs, close:3.2µs, loops:1, RU:0.47', 'N/A', '0 Bytes', 'N/A'); ('└─Point_Get_1', '1.00', '0', 'root', 'table:ej', 'time:56.2µs, open:1.98µs, close:2.81µs, loops:1, Get:{num_rpc:1, total_time:21.1µs}', 'handle:999', 'N/A', 'N/A')

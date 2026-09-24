@@ -1,0 +1,34 @@
+### VALUE (2)
+  SELECT a->'$.s' = 'str' FROM j2
+    GO  : (1,)
+    RUST: (0,)
+  SELECT a->'$.arr' = '[1, {"k": "v"}, 3, null, true]' FROM j2
+    GO  : (0,)
+    RUST: (1,)
+### ERRCODE (0)
+### WARNONLY (1)
+  SELECT CAST(a->'$.n' AS DECIMAL(10,2)), CAST(a->'$.b' AS UNSIGNED) FROM j2
+    GO  : -
+    RUST: 1292
+### OTHER (7)
+  SELECT * FROM JSON_TABLE(a, '$.arr[*]' COLUMNS(idx FOR ORDINALITY, val INT PATH '$')) AS jt
+    GO  : ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.arr[*]\' COLUMNS(
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 25 near "(a, \'$.arr[*]\' COLUMNS
+  SELECT * FROM JSON_TABLE(a, '$.arr[*]' COLUMNS(val JSON PATH '$')) AS jt
+    GO  : ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.arr[*]\' COLUMNS(
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 25 near "(a, \'$.arr[*]\' COLUMNS
+  SELECT * FROM JSON_TABLE(a, '$' COLUMNS(nest JSON PATH '$.arr[1]')) AS jt
+    GO  : ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$\' COLUMNS(nest JS
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 25 near "(a, \'$\' COLUMNS(nest J
+  SELECT * FROM JSON_TABLE(a, '$.nope[*]' COLUMNS(val INT PATH '$' DEFAULT '99' ON ERROR)) AS jt
+    GO  : ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.nope[*]\' COLUMNS
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 25 near "(a, \'$.nope[*]\' COLUMN
+  SELECT * FROM JSON_TABLE(a, '$.arr[*]' COLUMNS(val INT PATH '$' ERROR ON ERROR)) AS jt
+    GO  : ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.arr[*]\' COLUMNS(
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 25 near "(a, \'$.arr[*]\' COLUMNS
+  SELECT * FROM JSON_TABLE(a, '$.arr[*]' COLUMNS(val INT PATH '$' DEFAULT '-1' ON EMPTY)) AS jt
+    GO  : ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 26 near "a, \'$.arr[*]\' COLUMNS(
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 25 near "(a, \'$.arr[*]\' COLUMNS
+  SELECT jt.val, jt.idx FROM j2, JSON_TABLE(j2.a, '$.arr[*]' COLUMNS(idx FOR ORDINALITY, val INT PATH '$')) AS jt
+    GO  : ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 44 near "j2.a, \'$.arr[*]\' COLUM
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 42 near "(j2.a, \'$.arr[*]\' COLU

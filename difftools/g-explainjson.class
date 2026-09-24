@@ -1,0 +1,76 @@
+### VALUE (6)
+  EXPLAIN FORMAT='brief' UPDATE ej SET b = 1
+    GO  : ('Update', 'N/A', 'root', '', 'N/A'); ('└─TableReader', '10000.00', 'root', '', 'data:TableFullScan'); ('  └─TableFullScan', '10000.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+    RUST: ('Update', 'N/A', 'root', '', 'N/A'); ('└─SelectLock', '10000.00', 'root', '', 'for update 0'); ('  └─TableReader', '10000.00', 'root', '', 'data:TableFullScan'); ('    └─TableFullScan', '10000.00', '
+  EXPLAIN FORMAT='brief' DELETE FROM ej
+    GO  : ('Delete', 'N/A', 'root', '', 'N/A'); ('└─TableReader', '10000.00', 'root', '', 'data:TableFullScan'); ('  └─TableFullScan', '10000.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+    RUST: ('Delete', 'N/A', 'root', '', 'N/A'); ('└─SelectLock', '10000.00', 'root', '', 'for update 0'); ('  └─TableReader', '10000.00', 'root', '', 'data:TableFullScan'); ('    └─TableFullScan', '10000.00', '
+  EXPLAIN SELECT /*+ qb_name(myqb) */ * FROM ej WHERE b = 1
+    GO  : ('IndexLookUp_7', '10.00', 'root', '', ''); ('├─IndexRangeScan_5(Build)', '10.00', 'cop[tikv]', 'table:ej, index:ib(b)', 'range:[1,1], keep order:false, stats:pseudo'); ('└─TableRowIDScan_6(Probe)', '
+    RUST: ('IndexLookUp_8', '10.00', 'root', '', ''); ('├─IndexRangeScan_6(Build)', '10.00', 'cop[tikv]', 'table:ej, index:ib(b)', 'range:[1,1], keep order:false, stats:pseudo'); ('└─TableRowIDScan_7(Probe)', '
+  EXPLAIN ANALYZE FORMAT='brief' SELECT * FROM ej WHERE a = 1
+    GO  : ('Point_Get', '1.00', '1', 'root', 'table:ej', 'time:77.1µs, open:2.32µs, close:5.37µs, loops:2, RU:0.47, Get:{num_rpc:1, total_time:27.9µs}', 'handle:1', 'N/A', 'N/A')
+    RUST: ('Point_Get', '1.00', '1', 'root', 'table:ej', 'time:151.6µs, open:2.55µs, close:12µs, loops:2', 'handle:1', 'N/A', 'N/A')
+  EXPLAIN ANALYZE SELECT * FROM ej WHERE b = 999
+    GO  : ('IndexLookUp_7', '10.00', '0', 'root', '', 'time:238.2µs, open:10.4µs, close:2.74µs, loops:1, RU:0.47', '', '216 Bytes', 'N/A'); ('├─IndexRangeScan_5(Build)', '10.00', '0', 'cop[tikv]', 'table:ej, in
+    RUST: ('IndexLookUp_8', '10.00', '0', 'root', '', 'time:853µs, open:468.4µs, close:12.4µs, loops:1', '', 'N/A', 'N/A'); ('├─IndexRangeScan_6(Build)', '10.00', 'N/A', 'cop[tikv]', 'table:ej, index:ib(b)', 'N
+  EXPLAIN ANALYZE DELETE FROM ej WHERE a = 999
+    GO  : ('Delete_2', 'N/A', '0', 'root', '', 'time:63.7µs, open:4.17µs, close:3.2µs, loops:1, RU:0.47', 'N/A', '0 Bytes', 'N/A'); ('└─Point_Get_1', '1.00', '0', 'root', 'table:ej', 'time:56.2µs, open:1.98µs, 
+    RUST: ('Delete_2', 'N/A', '0', 'root', '', 'N/A', 'N/A', 'N/A', 'N/A'); ('└─Point_Get_1', '1.00', '0', 'root', 'table:ej', 'time:90.2µs, open:1.83µs, close:10.3µs, loops:1', 'handle:999', 'N/A', 'N/A')
+### ERRCODE (5)
+  EXPLAIN FORMAT='tree' SELECT * FROM ej WHERE a = 1
+    GO  : ERR (1791, "Unknown EXPLAIN format name: 'tree'")
+    RUST: ERR (1105, 'unknown EXPLAIN format name')
+  EXPLAIN FORMAT='true_cardinality' SELECT * FROM ej WHERE b = 1
+    GO  : ERR (1791, "Unknown EXPLAIN format name: 'true_cardinality'")
+    RUST: ERR (1105, 'unknown EXPLAIN format name')
+  EXPLAIN FORMAT='opt_trace' SELECT * FROM ej WHERE b = 1
+    GO  : ERR (1791, "Unknown EXPLAIN format name: 'opt_trace'")
+    RUST: ERR (1105, 'unknown EXPLAIN format name')
+  EXPLAIN FORMAT='opt_trace' SELECT * FROM ej WHERE b = 1 INTO OUTFILE '/tmp/ot.txt'
+    GO  : ERR (1791, "Unknown EXPLAIN format name: 'opt_trace'")
+    RUST: ERR (1105, 'unknown EXPLAIN format name')
+  EXPLAIN FORMAT='bogus' SELECT 1
+    GO  : ERR (1791, "Unknown EXPLAIN format name: 'bogus'")
+    RUST: ERR (1105, 'unknown EXPLAIN format name')
+### WARNONLY (3)
+  EXPLAIN SELECT * FROM ej WHERE STRAIGHT_JOIN b = 1
+    GO  : 1064
+    RUST: -
+  EXPLAIN SELECT SLEEP(0) FROM ej
+    GO  : 1105
+    RUST: -
+  EXPLAIN DO 1
+    GO  : 1064
+    RUST: -
+### OTHER (10)
+  EXPLAIN FORMAT='json' SELECT * FROM ej WHERE a = 1
+    GO  : ERR (1105, "explain format 'json' is not supported now")
+    RUST: ERR (1105, 'unknown EXPLAIN format name')
+  EXPLAIN FORMAT='json' SELECT * FROM ej WHERE b = 1 ORDER BY b
+    GO  : ERR (1105, "explain format 'json' is not supported now")
+    RUST: ERR (1105, 'unknown EXPLAIN format name')
+  EXPLAIN FORMAT='json' SELECT COUNT(*) FROM ej
+    GO  : ERR (1105, "explain format 'json' is not supported now")
+    RUST: ERR (1105, 'unknown EXPLAIN format name')
+  EXPLAIN FORMAT='json' SELECT * FROM ej e1 JOIN ej e2 ON e1.a = e2.a
+    GO  : ERR (1105, "explain format 'json' is not supported now")
+    RUST: ERR (1105, 'unknown EXPLAIN format name')
+  EXPLAIN FORMAT='json' SELECT * FROM ej WHERE b IN (SELECT a FROM ej)
+    GO  : ERR (1105, "explain format 'json' is not supported now")
+    RUST: ERR (1105, 'unknown EXPLAIN format name')
+  EXPLAIN FORMAT='json' SELECT * FROM (SELECT * FROM ej WHERE b = 1) t
+    GO  : ERR (1105, "explain format 'json' is not supported now")
+    RUST: ERR (1105, 'unknown EXPLAIN format name')
+  EXPLAIN FORMAT='' SELECT 1
+    GO  : ERR (1105, "explain format '' is not supported now")
+    RUST: ERR (1105, 'unknown EXPLAIN format name')
+  EXPLAIN SET @x = 1
+    GO  : ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 11 near "SET @x = 1" ')
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 18 near "" ')
+  EXPLAIN SHOW TABLES
+    GO  : ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "SHOW TABLES" ')
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 19 near "" ')
+  EXPLAIN ADMIN SHOW DDL
+    GO  : ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 22 near "DDL" ')
+    RUST: ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 18 near "SHOW DDL" ')

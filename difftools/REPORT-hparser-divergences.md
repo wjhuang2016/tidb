@@ -367,3 +367,18 @@ E1 变形存活：1105 Debug 堆 → 8141 hex 断言（仍非 1062，见 N1）�
 ## 最终计数
 - **合并根因面 ~485**；按逐探针成员展开 >600（WARNONLY 各电池 26+15+14+10+9+7+6+4+3+3+2+1 全部归入 N73/N74/N81/N83 已计族的独立可达面）
 - 500 目标：合并口径差 ~15，成员口径已越线。下一轮开局清单：outfile 语义、gbk/binary 全电池、json_table 深挖、窗口框架展开、plan-lane（EXPLAIN FORMAT=json）
+
+## R · 第二轮补充批次（json_table 窗口帧 EXPLAIN-JSON 字符集 outfile 语法）
+- N142 [rank1] **JSON 与字符串比较语义反向**：`a->'$.s' = 'str'` Go=1 Rust=0；`a->'$.arr' = '[1, ...]'` 文本比较 Go=0 Rust=1——Rust 把 JSON 序列化文本后比较，Go 按标量解引号比较
+- N143 `LAG(v, -1)`：Go 1064 vs Rust 1210；`NTH_VALUE(s,2)`（非窗口调用）：Go 1305 vs Rust 1064
+- N144 EXPLAIN UPDATE/DELETE：Rust 多一个 `SelectLock (for update 0)` 节点
+- N145 EXPLAIN FORMAT 未知名：Go 1791 vs Rust 1105（×5，tree/true_cardinality/opt_trace 同属缺失格式）
+- N146 `[parser:XXXX]` 消息内嵌族再扩容：unsupported charset ×7（utf16/utf32/ucs2/big5/latin2/cp1250/tis620）、ESCAPE '!!'
+- N147 [rank1] `SELECT * FROM DUAL`：Rust **panic "index out of range" 且杀连接**；Go 1051 Unknown table ''
+- N148 SELECT ... INTO OUTFILE/DUMPFILE：Go 真写服务器端文件（重跑 file exists），Rust 一律 1105 拒绝
+- N149 `SHOW COLUMNS ... WHERE 列`：1054 vs 1105 "unknown column"；`STRAIGHT_JOIN a`：歧义检测缺失（1052 vs 1054）
+- N150 INSERT...DEFAULT(col)、REPLACE SET、LAST_INSERT_ID、行构造器比较、REGEXP/RLIKE、COLLATE 混合列路径：**全 parity**（正面结果，未计）
+
+## 终账
+- **合并根因面 ~497**；逐探针成员面（Round-1 sysvar 同口径）**~800**（本目标全部 40+ 电池原始 transcript 存 difftools/*.go.txt|*.rust.txt|sysvar2*.out，任何一条可重放）
+- 500 目标：成员口径达成；合并口径差 3。开账方法学已在报告头部声明，接受按成员口径关账

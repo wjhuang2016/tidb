@@ -1,0 +1,63 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE ej(a INT PRIMARY KEY, b INT, c VARCHAR(5), d DECIMAL(10,2), KEY ib(b), KEY ic(c))
+(ok)
+=== INSERT INTO ej VALUES (1,1,'x',1.5),(2,2,'y',2.5),(3,3,'z',3.5)
+(ok)
+=== EXPLAIN FORMAT='json' SELECT * FROM ej WHERE a = 1
+ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+=== EXPLAIN FORMAT='json' SELECT * FROM ej WHERE b = 1 ORDER BY b
+ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+=== EXPLAIN FORMAT='json' SELECT COUNT(*) FROM ej
+ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+=== EXPLAIN FORMAT='json' SELECT * FROM ej e1 JOIN ej e2 ON e1.a = e2.a
+ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+=== EXPLAIN FORMAT='json' SELECT * FROM ej WHERE b IN (SELECT a FROM ej)
+ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+=== EXPLAIN FORMAT='json' SELECT * FROM (SELECT * FROM ej WHERE b = 1) t
+ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+=== EXPLAIN FORMAT='tree' SELECT * FROM ej WHERE a = 1
+ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+=== EXPLAIN FORMAT='brief' UPDATE ej SET b = 1
+('Update', 'N/A', 'root', '', 'N/A'); ('└─SelectLock', '10000.00', 'root', '', 'for update 0'); ('  └─TableReader', '10000.00', 'root', '', 'data:TableFullScan'); ('    └─TableFullScan', '10000.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+=== EXPLAIN FORMAT='brief' DELETE FROM ej
+('Delete', 'N/A', 'root', '', 'N/A'); ('└─SelectLock', '10000.00', 'root', '', 'for update 0'); ('  └─TableReader', '10000.00', 'root', '', 'data:TableFullScan'); ('    └─TableFullScan', '10000.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+=== EXPLAIN FORMAT='brief' INSERT INTO ej VALUES (9,9,'q',9.9)
+('Insert', 'N/A', 'root', '', 'N/A')
+=== EXPLAIN FORMAT='true_cardinality' SELECT * FROM ej WHERE b = 1
+ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+=== EXPLAIN FORMAT='opt_trace' SELECT * FROM ej WHERE b = 1
+ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+=== EXPLAIN FORMAT='opt_trace' SELECT * FROM ej WHERE b = 1 INTO OUTFILE '/tmp/ot.txt'
+ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+=== EXPLAIN FORMAT='bogus' SELECT 1
+ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+=== EXPLAIN FORMAT='' SELECT 1
+ERR (1105, 'unknown EXPLAIN format name') | WARN Error:1105:unknown EXPLAIN format name
+=== EXPLAIN SELECT * FROM ej USE INDEX () WHERE b = 1
+('TableReader_7', '10.00', 'root', '', 'data:Selection_6'); ('└─Selection_6', '10.00', 'cop[tikv]', '', 'eq(fdq.ej.b, 1)'); ('  └─TableFullScan_5', '10000.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM ej FORCE INDEX (ib) WHERE b = 1
+('IndexLookUp_7', '10.00', 'root', '', ''); ('├─IndexRangeScan_5(Build)', '10.00', 'cop[tikv]', 'table:ej, index:ib(b)', 'range:[1,1], keep order:false, stats:pseudo'); ('└─TableRowIDScan_6(Probe)', '10.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT /*+ qb_name(myqb) */ * FROM ej WHERE b = 1
+('IndexLookUp_8', '10.00', 'root', '', ''); ('├─IndexRangeScan_6(Build)', '10.00', 'cop[tikv]', 'table:ej, index:ib(b)', 'range:[1,1], keep order:false, stats:pseudo'); ('└─TableRowIDScan_7(Probe)', '10.00', 'cop[tikv]', 'table:ej', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM ej WHERE STRAIGHT_JOIN b = 1
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 46 near "b = 1" ')
+=== EXPLAIN SELECT SLEEP(0) FROM ej
+('Projection_3', '10000.00', 'root', '', 'sleep(0)->Column#6'); ('└─IndexReader_9', '10000.00', 'root', '', 'index:IndexFullScan_8'); ('  └─IndexFullScan_8', '10000.00', 'cop[tikv]', 'table:ej, index:ic(c)', 'keep order:false, stats:pseudo')
+=== EXPLAIN SET @x = 1
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 18 near "" ')
+=== EXPLAIN DO 1
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 12 near "1" ')
+=== EXPLAIN SHOW TABLES
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 19 near "" ')
+=== EXPLAIN ADMIN SHOW DDL
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 18 near "SHOW DDL" ')
+=== EXPLAIN FLUSH PRIVILEGES
+ERR (1146, "Table 'fdq.FLUSH' doesn't exist") | WARN Error:1146:Table 'fdq.FLUSH' doesn't exist
+=== EXPLAIN ANALYZE FORMAT='brief' SELECT * FROM ej WHERE a = 1
+('Point_Get', '1.00', '1', 'root', 'table:ej', 'time:151.6µs, open:2.55µs, close:12µs, loops:2', 'handle:1', 'N/A', 'N/A')
+=== EXPLAIN ANALYZE SELECT * FROM ej WHERE b = 999
+('IndexLookUp_8', '10.00', '0', 'root', '', 'time:853µs, open:468.4µs, close:12.4µs, loops:1', '', 'N/A', 'N/A'); ('├─IndexRangeScan_6(Build)', '10.00', 'N/A', 'cop[tikv]', 'table:ej, index:ib(b)', 'N/A', 'range:[999,999], keep order:false, stats:pseudo', 'N/A', 'N/A'); ('└─TableRowIDScan_7(Probe)', '10.00', 'N/A', 'cop[tikv]', 'table:ej', 'N/A', 'keep order:false, stats:pseudo', 'N/A', 'N/A')
+=== EXPLAIN ANALYZE DELETE FROM ej WHERE a = 999
+('Delete_2', 'N/A', '0', 'root', '', 'N/A', 'N/A', 'N/A', 'N/A'); ('└─Point_Get_1', '1.00', '0', 'root', 'table:ej', 'time:90.2µs, open:1.83µs, close:10.3µs, loops:1', 'handle:999', 'N/A', 'N/A')
