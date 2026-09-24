@@ -1,0 +1,149 @@
+== tidb_auto_analyze_end_time
+   SET G='x'
+   GO  : ERR (1105, 'parsing time "x" as "15:04": cannot parse "x" as "15"')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_auto_analyze_end_time'")
+== tidb_auto_analyze_start_time
+   SET G='x'
+   GO  : ERR (1105, 'parsing time "x" as "15:04": cannot parse "x" as "15"')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_auto_analyze_start_time'")
+== tidb_config
+   SELECT@@
+   GO  : ('{\n\t"advertise-address": "127.0.0.1",\n\t"alter-primary-key": false,\n\t"autoscaler-addr": "tiflash-autoscale-lb.tifl
+   RUST: ('{\n\t"advertise-address": "",\n\t"alter-primary-key": false,\n\t"autoscaler-addr": "tiflash-autoscale-lb.tiflash-autos
+   SELECT@G@
+   GO  : ('{\n\t"advertise-address": "127.0.0.1",\n\t"alter-primary-key": false,\n\t"autoscaler-addr": "tiflash-autoscale-lb.tifl
+   RUST: ('{\n\t"advertise-address": "",\n\t"alter-primary-key": false,\n\t"autoscaler-addr": "tiflash-autoscale-lb.tiflash-autos
+== tidb_current_ts
+   SELECT@@
+   GO  : ('0',)
+   RUST: (0,)
+== tidb_ddl_reorg_max_write_speed
+   SET G='x'
+   GO  : ERR (1105, "invalid size: 'x'")
+   RUST: (ok)
+   SELECT@@
+   GO  : ('0',)
+   RUST: ('x',)
+   SELECT@G@
+   GO  : ('0',)
+   RUST: ('x',)
+== tidb_enable_ddl
+   SET=0
+   GO  : ERR (8246, 'Error happened when disabling DDL: can not disable ddl owner when it is the only one tidb instance')
+   RUST: (ok)
+== tidb_evolve_plan_task_end_time
+   SET G='x'
+   GO  : ERR (1105, 'parsing time "x" as "15:04": cannot parse "x" as "15"')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_evolve_plan_task_end_time'")
+== tidb_evolve_plan_task_start_time
+   SET G='x'
+   GO  : ERR (1105, 'parsing time "x" as "15:04": cannot parse "x" as "15"')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_evolve_plan_task_start_time'")
+== tidb_external_ts
+   SET G='x'
+   GO  : ERR (1292, "Incorrect datetime value: 'x'")
+   RUST: (ok)
+   SELECT@@
+   GO  : ('0',)
+   RUST: ('x',)
+   SELECT@G@
+   GO  : ('0',)
+   RUST: ('x',)
+== tidb_gogc_tuner_threshold
+   SET G='x'
+   GO  : ERR (1232, "Incorrect argument type to variable 'tidb_gogc_tuner_threshold'")
+   RUST: (ok)
+== tidb_instance_plan_cache_max_size
+   SET G='x'
+   GO  : ERR (1105, 'invalid tidb_instance_plan_cache_max_mem_size value x')
+   RUST: (ok)
+   SELECT@@
+   GO  : ('104857600',)
+   RUST: ('x',)
+   SELECT@G@
+   GO  : ('104857600',)
+   RUST: ('x',)
+== tidb_mem_arbitrator_mode
+   SET G='x'
+   GO  : ERR (1105, 'tidb_mem_arbitrator_mode: disable; standard; priority;')
+   RUST: ERR (1105, 'incorrect value: x. tidb_mem_arbitrator_mode options: disable, standard, priority')
+== tidb_mem_arbitrator_soft_limit
+   SET G='x'
+   GO  : ERR (1105, 'strconv.ParseFloat: parsing "x": invalid syntax')
+   RUST: ERR (1105, 'tidb_mem_arbitrator_soft_limit: 0 (default); (0, 1.0] float-rate * server-limit; (1, server-limit] integer bytes; auto;')
+== tidb_server_memory_limit_gc_trigger
+   SET G='x'
+   GO  : ERR (1105, 'strconv.ParseFloat: parsing "x": invalid syntax')
+   RUST: ERR (1231, "Variable 'tidb_server_memory_limit_gc_trigger' can't be set to the value of 'x'")
+== tidb_server_memory_limit_sess_min_size
+   SET G='x'
+   GO  : ERR (1105, 'strconv.ParseUint: parsing "x": invalid syntax')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_server_memory_limit_sess_min_size'")
+== tidb_slow_log_rules
+   SET G='x'
+   GO  : ERR (1105, 'invalid slow log rule format:x')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (1105, 'invalid slow log rule format:0')
+   RUST: (ok)
+   SELECT@G@
+   GO  : ('',)
+   RUST: ('x',)
+== tidb_stmt_summary_enable_persistent
+   SELECT@@
+   GO  : ('OFF',)
+   RUST: ('',)
+   SELECT@G@
+   GO  : ('OFF',)
+   RUST: ('',)
+== tidb_stmt_summary_file_max_backups
+   SELECT@@
+   GO  : ('0',)
+   RUST: ('',)
+   SELECT@G@
+   GO  : ('0',)
+   RUST: ('',)
+== tidb_stmt_summary_file_max_days
+   SELECT@@
+   GO  : ('3',)
+   RUST: ('',)
+   SELECT@G@
+   GO  : ('3',)
+   RUST: ('',)
+== tidb_stmt_summary_file_max_size
+   SELECT@@
+   GO  : ('64',)
+   RUST: ('',)
+   SELECT@G@
+   GO  : ('64',)
+   RUST: ('',)
+== tidb_stmt_summary_filename
+   SELECT@@
+   GO  : ('tidb-statements.log',)
+   RUST: ('',)
+   SELECT@G@
+   GO  : ('tidb-statements.log',)
+   RUST: ('',)
+== tidb_trace_event
+   SET G='x'
+   GO  : ERR (1105, 'can only be set for TiDB X kernel')
+   RUST: ERR (2013, 'Lost connection to MySQL server during query')
+   SET=DEF
+   GO  : ERR (1105, 'can only be set for TiDB X kernel')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (1105, 'can only be set for TiDB X kernel')
+   RUST: ERR (1105, 'invalid type: integer `0`, expected struct FlightRecorderConfig at line 1 column 1')
+== tidb_ttl_job_schedule_window_end_time
+   SET G='x'
+   GO  : ERR (1105, 'parsing time "x" as "15:04": cannot parse "x" as "15"')
+   RUST: ERR (1105, 'invalid TTL job schedule window time: x')
+== tidb_ttl_job_schedule_window_start_time
+   SET G='x'
+   GO  : ERR (1105, 'parsing time "x" as "15:04": cannot parse "x" as "15"')
+   RUST: ERR (1105, 'invalid TTL job schedule window time: x')
+== tidb_workload_repository_dest
+   SET G='x'
+   GO  : ERR (1231, "Variable 'tidb_workload_repository_dest' can't be set to the value of 'x': valid values are '' and 'table'")
+   RUST: ERR (1105, "Variable 'tidb_workload_repository_dest' can't be set to the value of 'x': valid values are '' and 'table'")
+DIVERGENT VARS: 25

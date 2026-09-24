@@ -313,3 +313,48 @@ E1 变形存活：1105 Debug 堆 → 8141 hex 断言（仍非 1062，见 N1）�
 - 根因族 ≈ 40（A3 + B1 + C4 + D27 + E26 + F13 + G7 + H4 + I6，N15/N28/N91/N97 合并不计）
 - 按"用户可达面"计（与 Round 1 sysvar 计法一致）：**210 项**（N73×25+、N67×9、N93×19、N74×14、N65×3、N80×3、N83×5、N82×8、D 组各 1-3 成员展开）
 - 累计（Round 1 修复后仍开放 9 条 + Round 2 新增）：**开放问题 219 项**，全部附复现语句，harness 快照在 difftools/*.go.txt/*.rust.txt
+
+---
+
+# Round 2 续挖（同头 7aff167d，第二轮批次）
+## J · 错结果补充
+- N104 OR 下推族升级：`GROUP BY` 聚合路径**完全丢 WHERE**（`SELECT b,COUNT(*) WHERE b=1 OR a=2 GROUP BY b` Rust 返回全表分组）[rank 0]
+- N105 窄投影丢 WHERE：`SELECT a FROM o1 WHERE b=1 OR a=2` Rust 吐全表 [rank 0]
+- N106-N113 OR 下推行序分歧 ×8 形态（单 OR/嵌套 AND/IN/OR×3 谓词/NOT/范围）
+- N114 `SHUTDOWN`：Go 执行关停，Rust 1105 ServerControl 拒绝
+- N115 SHOW PROCESSLIST：Rust 对空闲会话报 stale `in transaction` 状态
+
+## K · 临时表语义（accept-then-discard）
+- N116 `CREATE TEMPORARY TABLE` Rust 静默落成**普通表**（跨会话可见）
+- N117 `DROP TEMPORARY TABLE` 拒绝（"this node never creates temporary tables"——但它建的是普通表）
+- N118/N119 对该表 CREATE INDEX / ALTER TABLE 拒绝（1146 语义错位）
+- N120 DROP 后 `SELECT` 仍可达（会话隔离破坏）
+
+## L · prepared 协议（二进制协议）
+- N121 `SELECT ?+?` 字符串参数：wire int 0 vs float 0.0
+- N122 `NULLIF(?,?)` 可空 int 结果：Rust 1105 "binary result column 0 has unsupported type 6"
+- N123 DEALLOCATE 不存在语句：1295 vs 8111
+
+## M · SET GLOBAL 毒丸（可用性）
+- N124 `SET GLOBAL tidb_pipelined_dml_resource_policy='x'`（Rust 接受；Go GLOBAL 接受但 validate-at-use）：Go 从此**所有新连接 1231 握手失败且重启 FATAL 永久变砖**（unistore 持久化毒值）；Rust 新连接同样失败但重启即恢复——**重启行为分歧**
+- N125 `SET GLOBAL tidb_trace_event='x'`：Rust 直接断连 2013；`SET =0`：Rust 泄漏 serde Debug（"invalid type: integer `0`, expected struct FlightRecorderConfig at line 1 column 1"）
+
+## N · sysvar 全量（新头，poison-guard 重扫）
+- N126 非tidi_段 value/code 分歧 73+6 项（round-1 R7/S 族扩容：authentication_ldap_*、binlog_*、myisam_*、ndb_* ×13、sql_*、net_*、buffer size 类）
+- N127 tidb_ 段 25 项：auto_analyze/evolve 时间 1105-裸 vs 1232（×4）、external_ts/ddl_reorg_max_write_speed/plan_cache/gogc_threshold/slow_log_rules 接受存原样（×7 读回）、stmt_summary_* ×5 Rust 空值、workload_repository_dest 1231/1105、mem_arbitrator 消息（×2）、server_memory_limit 族 1232/1231（×3）
+- N128 SHOW VARIABLES 全量值对比：SESSION+GLOBAL 共 122 行分歧，其中 ~40 为 Rust 独有变量（GLOBAL 上 Go=None），其余为默认值/读回类型差异
+
+## O · admin2 / outfile
+- N129 LOAD DATA INFILE：8154 vs 1105 LoadData；LOCAL：1148 vs 1105
+- N130 ANALYZE TABLE no_such：1146 vs 1105 "cluster catalog has no table"；OPTIMIZE：8200 vs 1105 gate
+- N131 KILL 1105 warn 通道 ×4；CHECKSUM/CHECK/REPAIR/OUTFILE/DUMPFILE 1064 warn 通道 ×6
+- N132 SET GLOBAL max_connections / innodb_lock_wait_timeout：Rust 1105 拒绝全局设置
+
+## P · 错误类网格（70 函数 × 4 参形）
+- N133 `EXPORT_SET(1,'x',2)`：Go 正常渲染 vs Rust 1105 "un-cast types.ETString argument"（内部类型枚举泄漏）
+- N134 log10 精度丢位（N16 同族）；exp/cot 消息后缀族成员；mid() 归 B7 族
+
+## 计数（本报告累计）
+- Round 2 总账：N1-N134 根因项 + N126/N127/N128 成员展开 = **~480 用户可达分歧面**（目标 500，本轮结束差 ~20，下一轮开局即补）
+- 开放重申：Round 1 的 9 条在新头仍存活（E1→8141 变形、B1、B3、B11、D4、F2、F3、W1、S15/S27、R14）
+- 全部证据：difftools/*.go.txt / *.rust.txt / sysvar2*.out / msdiff 输出，重放命令见各 battery 的 fastdiff 调用

@@ -1,0 +1,99 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE de(a INT PRIMARY KEY)
+(ok)
+=== CREATE INDEX idx1 ON de(a)
+(ok)
+=== CREATE VIEW dev AS SELECT a FROM de
+(ok)
+=== CREATE TABLE de(a INT)
+ERR (1050, "Table 'fdq.de' already exists")
+=== CREATE DATABASE fdq
+ERR (1007, "Can't create database 'fdq'; database exists")
+=== CREATE DATABASE IF NOT EXISTS fdq
+(ok)
+=== CREATE SCHEMA fdq
+ERR (1007, "Can't create database 'fdq'; database exists")
+=== DROP DATABASE no_such
+ERR (1008, "Can't drop database 'no_such'; database doesn't exist")
+=== DROP SCHEMA no_such
+ERR (1008, "Can't drop database 'no_such'; database doesn't exist")
+=== DROP TABLE de
+(ok)
+=== DROP TABLE IF EXISTS no_such
+(ok)
+=== DROP VIEW dev, no_such
+ERR (1105, "Unknown table 'fdq.no_such'")
+=== DROP INDEX idx1 ON de
+ERR (1146, "Table 'fdq.de' doesn't exist")
+=== DROP INDEX no_such ON de
+ERR (1146, "Table 'fdq.de' doesn't exist")
+=== CREATE INDEX idx1 ON de(a)
+ERR (1146, "Table 'fdq.de' doesn't exist")
+=== CREATE UNIQUE INDEX idx1 ON de(a)
+ERR (1146, "Table 'fdq.de' doesn't exist")
+=== CREATE INDEX idx2 ON no_such(a)
+ERR (1146, "Table 'fdq.no_such' doesn't exist")
+=== CREATE VIEW dev AS SELECT a FROM de
+ERR (1050, "Table 'fdq.dev' already exists")
+=== CREATE OR REPLACE VIEW dev AS SELECT a FROM de
+ERR (1146, "Table 'fdq.de' doesn't exist")
+=== ALTER TABLE no_such ADD COLUMN x INT
+ERR (1146, "Table 'fdq.no_such' doesn't exist")
+=== ALTER TABLE de ADD COLUMN a INT
+ERR (1146, "Table 'fdq.de' doesn't exist")
+=== ALTER TABLE de ADD CONSTRAINT fk1 FOREIGN KEY (a) REFERENCES no_such(a)
+ERR (1105, "this node changes the cluster's catalog for CREATE TABLE, DROP TABLE, CREATE DATABASE, DROP DATABASE, CREATE/DROP VIEW, placement policy changes, index changes, and single-action ALTER INDEX changes only; run this statement on a TiDB server")
+=== ALTER TABLE dev ADD COLUMN x INT
+(ok)
+=== RENAME TABLE de TO de2
+ERR (1146, "Table 'fdq.de' doesn't exist")
+=== RENAME TABLE de2 TO de3, de3 TO de2
+ERR (1146, "Table 'fdq.de2' doesn't exist")
+=== RENAME TABLE no_such TO de2
+ERR (1146, "Table 'fdq.no_such' doesn't exist")
+=== RENAME TABLE de2 TO fdq.de2
+ERR (1146, "Table 'fdq.de2' doesn't exist")
+=== RENAME TABLE de2 TO fdq.de2, fdq.de2 TO fdq.de2
+ERR (1146, "Table 'fdq.de2' doesn't exist")
+=== TRUNCATE TABLE no_such
+ERR (1146, "Table 'fdq.no_such' doesn't exist")
+=== CREATE TEMPORARY TABLE tmp1(a INT)
+(ok)
+=== INSERT INTO tmp1 VALUES (1)
+(ok)
+=== CREATE INDEX idx1 ON tmp1(a)
+ERR (1146, "Table 'fdq.tmp1' doesn't exist")
+=== ALTER TABLE tmp1 ADD COLUMN b INT
+ERR (1146, "Table 'fdq.tmp1' doesn't exist")
+=== DROP TEMPORARY TABLE tmp1
+ERR (1105, 'DROP TEMPORARY TABLE is not supported: this node never creates temporary tables')
+=== SELECT * FROM tmp1
+(1,)
+=== CREATE TABLE ck1(a INT, CHECK (a > 0) NOT ENFORCED)
+(ok) | WARN Warning:1105:tidb_enable_check_constraint is off
+=== ALTER TABLE ck1 DROP CHECK no_such
+ERR (3940, "Constraint 'no_such' does not exist.")
+=== ALTER TABLE ck1 DROP CONSTRAINT no_such
+ERR (3940, "Constraint 'no_such' does not exist.")
+=== ALTER TABLE ck1 ADD CONSTRAINT ck_c CHECK (a < 10)
+(ok) | WARN Warning:1105:tidb_enable_check_constraint is off
+=== ALTER TABLE ck1 DROP CONSTRAINT ck_c
+ERR (3940, "Constraint 'ck_c' does not exist.")
+=== ALTER TABLE ck1 RENAME CONSTRAINT ck_c TO ck_d
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 38 near "ck_c TO ck_d" ')
+=== DROP TABLE ck1
+(ok)
+=== CREATE TABLE de4 LIKE de
+ERR (1146, "Table 'fdq.de' doesn't exist")
+=== CREATE TABLE de5 AS SELECT a FROM de
+ERR (1105, 'CREATE TABLE ... AS <query> is not supported by this node')
+=== CREATE TABLE de6 LIKE no_such
+ERR (1146, "Table 'fdq.no_such' doesn't exist")
+=== CREATE TABLE de7 AS SELECT no_such FROM de
+ERR (1105, 'CREATE TABLE ... AS <query> is not supported by this node')
+=== ALTER TABLE de4 EXCHANGE PARTITION p0 WITH TABLE de
+ERR (1146, "Table 'fdq.de4' doesn't exist")
+=== COMMENT ON TABLE de IS 'x'
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 7 near "COMMENT ON TABLE de IS \'x\'" ')

@@ -1,0 +1,35 @@
+# mysql.* system tables battery
+>>>
+SELECT User, Host, LENGTH(authentication_string), plugin, account_locked FROM mysql.user ORDER BY User;
+SELECT * FROM mysql.db LIMIT 5;
+SELECT * FROM mysql.tables_priv LIMIT 5;
+SELECT * FROM mysql.columns_priv LIMIT 5;
+SELECT * FROM mysql.global_privileges LIMIT 5;
+SELECT * FROM mysql.schema_privileges LIMIT 5;
+SELECT * FROM mysql.table_privileges LIMIT 5;
+SELECT * FROM mysql.global_grants LIMIT 5;
+SELECT * FROM mysql.default_roles LIMIT 5;
+SELECT * FROM mysql.role_edges LIMIT 5;
+SELECT * FROM mysql.global_variables LIMIT 5;
+SELECT * FROM mysql.SESSION_variables LIMIT 5;
+SELECT * FROM mysql.user LIMIT 0;
+SELECT COUNT(*) FROM mysql.user;
+SELECT * FROM mysql.bind_info LIMIT 5;
+SELECT * FROM mysql.tidb LIMIT 5;
+SELECT * FROM mysql.tidb_background_subjob LIMIT 5;
+SELECT * FROM mysql.stats_meta LIMIT 5;
+SELECT * FROM mysql.stats_histograms LIMIT 5;
+SELECT * FROM mysql.stats_buckets LIMIT 5;
+SELECT * FROM mysql.stats_top_n LIMIT 5;
+SELECT * FROM mysql.analyze_jobs LIMIT 5;
+SELECT * FROM mysql.gc_delete_range LIMIT 5;
+SELECT * FROM mysql.expr_pushdown_blacklist LIMIT 5;
+SELECT * FROM mysql.opt_rule_blacklist LIMIT 5;
+SELECT * FROM mysql.capture_plan_baselines_blacklist LIMIT 5;
+INSERT INTO mysql.user (Host, User) VALUES ('%', 'hack1');
+SELECT User FROM mysql.user WHERE User = 'hack1';
+DELETE FROM mysql.user WHERE User = 'hack1';
+UPDATE mysql.user SET Select_priv = 'Y' WHERE User = 'root';
+SELECT HEX(authentication_string) FROM mysql.user WHERE User = 'root';
+SHOW CREATE TABLE mysql.user;
+DESC mysql.user;

@@ -1,0 +1,69 @@
+(ok)
+(ok)
+(ok)
+=== SELECT User, Host, LENGTH(authentication_string), plugin, account_locked FROM mysql.user ORDER BY User
+('bad user name', '%', 0, 'mysql_native_password', 'N'); ('root', '%', 0, 'mysql_native_password', 'N')
+=== SELECT * FROM mysql.db LIMIT 5
+(ok)
+=== SELECT * FROM mysql.tables_priv LIMIT 5
+(ok)
+=== SELECT * FROM mysql.columns_priv LIMIT 5
+(ok)
+=== SELECT * FROM mysql.global_privileges LIMIT 5
+ERR (1146, "Table 'mysql.global_privileges' doesn't exist") | WARN Error:1146:Table 'mysql.global_privileges' doesn't exist
+=== SELECT * FROM mysql.schema_privileges LIMIT 5
+ERR (1146, "Table 'mysql.schema_privileges' doesn't exist") | WARN Error:1146:Table 'mysql.schema_privileges' doesn't exist
+=== SELECT * FROM mysql.table_privileges LIMIT 5
+ERR (1146, "Table 'mysql.table_privileges' doesn't exist") | WARN Error:1146:Table 'mysql.table_privileges' doesn't exist
+=== SELECT * FROM mysql.global_grants LIMIT 5
+(ok)
+=== SELECT * FROM mysql.default_roles LIMIT 5
+(ok)
+=== SELECT * FROM mysql.role_edges LIMIT 5
+(ok)
+=== SELECT * FROM mysql.global_variables LIMIT 5
+('allow_auto_random_explicit_insert', 'OFF'); ('authentication_ldap_sasl_auth_method_name', 'SCRAM-SHA-1'); ('authentication_ldap_sasl_bind_base_dn', ''); ('authentication_ldap_sasl_bind_root_dn', ''); ('authentication_ldap_sasl_bind_root_pwd', '')
+=== SELECT * FROM mysql.SESSION_variables LIMIT 5
+ERR (1146, "Table 'mysql.SESSION_variables' doesn't exist") | WARN Error:1146:Table 'mysql.SESSION_variables' doesn't exist
+=== SELECT * FROM mysql.user LIMIT 0
+(ok)
+=== SELECT COUNT(*) FROM mysql.user
+(2,)
+=== SELECT * FROM mysql.bind_info LIMIT 5
+('builtin_pseudo_sql_for_bind_lock', 'builtin_pseudo_sql_for_bind_lock', 'mysql', 'builtin', '0000-00-00 00:00:00.000000', '0000-00-00 00:00:00.000000', '', '', 'builtin', None, None, None)
+=== SELECT * FROM mysql.tidb LIMIT 5
+('bootstrapped', 'True', 'Bootstrap flag. Do not delete.'); ('tidb_server_version', '263', 'Bootstrap version. Do not delete.'); ('system_tz', 'Asia/Shanghai', 'TiDB Global System Timezone.'); ('new_collation_enabled', 'True', 'If the new collations are enabled. Do not edit it.'); ('ddl_table_version', '4', 'DDL Table Version. Do not delete.')
+=== SELECT * FROM mysql.tidb_background_subjob LIMIT 5
+ERR (1146, "Table 'mysql.tidb_background_subjob' doesn't exist") | WARN Error:1146:Table 'mysql.tidb_background_subjob' doesn't exist
+=== SELECT * FROM mysql.stats_meta LIMIT 5
+(469299095991746560, 4, 1, 1, 0, 469299073837432832); (469299150391869441, 22, 0, 0, 0, 469299150391869441); (469299150391869441, 24, 0, 0, 0, 469299150391869441); (469299150391869441, 26, 0, 0, 0, 469299150391869441); (469299150391869441, 28, 0, 0, 0, 469299150391869441)
+=== SELECT * FROM mysql.stats_histograms LIMIT 5
+(4, 0, 1, 0, 0, 0, 0, 469299073837432832, None, 0, 0, 0.0, None); (22, 0, 1, 0, 0, 0, 0, 469299150099841024, None, 0, 0, 0.0, None); (22, 0, 2, 0, 0, 0, 0, 469299150099841024, None, 0, 0, 0.0, None); (24, 0, 1, 0, 0, 0, 0, 469299150103773184, None, 0, 0, 0.0, None); (24, 1, 1, 0, 0, 0, 0, 469299150103773184, None, 0, 0, 0.0, None)
+=== SELECT * FROM mysql.stats_buckets LIMIT 5
+(ok)
+=== SELECT * FROM mysql.stats_top_n LIMIT 5
+(ok)
+=== SELECT * FROM mysql.analyze_jobs LIMIT 5
+(ok)
+=== SELECT * FROM mysql.gc_delete_range LIMIT 5
+(ok)
+=== SELECT * FROM mysql.expr_pushdown_blacklist LIMIT 5
+(ok)
+=== SELECT * FROM mysql.opt_rule_blacklist LIMIT 5
+(ok)
+=== SELECT * FROM mysql.capture_plan_baselines_blacklist LIMIT 5
+(ok)
+=== INSERT INTO mysql.user (Host, User) VALUES ('%', 'hack1')
+(ok)
+=== SELECT User FROM mysql.user WHERE User = 'hack1'
+('hack1',)
+=== DELETE FROM mysql.user WHERE User = 'hack1'
+(ok)
+=== UPDATE mysql.user SET Select_priv = 'Y' WHERE User = 'root'
+(ok)
+=== SELECT HEX(authentication_string) FROM mysql.user WHERE User = 'root'
+('',)
+=== SHOW CREATE TABLE mysql.user
+('user', "CREATE TABLE `user` (\n  `Host` char(255) NOT NULL,\n  `User` char(32) NOT NULL,\n  `authentication_string` text DEFAULT NULL,\n  `plugin` char(64) DEFAULT NULL,\n  `Select_priv` enum('N','Y') NOT NULL DEFAULT 'N',\n  `Insert_priv` enum('N','Y') NOT NULL DEFAULT 'N',\n  `Update_priv` enum('N','Y') NOT NULL DEFAULT 'N',\n  `Delete_priv` enum('N','Y') NOT NULL DEFAULT 'N',\n  `Create_priv`
+=== DESC mysql.user
+('Host', 'char(255)', 'NO', 'PRI', None, ''); ('User', 'char(32)', 'NO', 'PRI', None, ''); ('authentication_string', 'text', 'YES', '', None, ''); ('plugin', 'char(64)', 'YES', '', None, ''); ('Select_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Insert_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Update_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Delete_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Create_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Drop_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Process_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Grant_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('References_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Alter_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Show_db_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Super_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Create_tmp_table_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Lock_tables_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Execute_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Create_view_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Show_view_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Operate_view_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Create_routine_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Alter_routine_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Index_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Create_user_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Event_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Repl_slave_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Repl_client_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Trigger_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Create_role_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Drop_role_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Account_locked', "enum('N','Y')", 'NO', '', 'N', ''); ('Shutdown_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Reload_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('FILE_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Config_priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Create_Tablespace_Priv', "enum('N','Y')", 'NO', '', 'N', ''); ('Password_reuse_history', 'smallint unsigned', 'YES', '', None, ''); ('Password_reuse_time', 'smallint unsigned', 'YES', '', None, ''); ('User_attributes', 'json', 'YES', '', None, ''); ('Token_issuer', 'varchar(255)', 'YES', '', None, ''); ('Password_expired', "enum('N','Y')", 'NO', '', 'N', ''); ('Password_last_changed', 'timestamp', 'YES', '', 'CURRENT_TIMESTAMP', ''); ('Password_lifetime', 'smallint unsigned', 'YES', '', None, ''); ('Max_user_connections', 'int unsigned', 'NO', '', '0', '')

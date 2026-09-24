@@ -1,0 +1,5999 @@
+== authentication_ldap_sasl_bind_root_pwd
+   SELECT@@
+   GO  : ('******',)
+   RUST: ('x',)
+   SELECT@G@
+   GO  : ('******',)
+   RUST: ('x',)
+== authentication_ldap_sasl_ca_path
+   SET G='x'
+   GO  : ERR (1105, 'open x: no such file or directory')
+   RUST: (ok)
+== authentication_ldap_simple_auth_method_name
+   SET G='x'
+   GO  : ERR (1105, 'auth method X is not supported')
+   RUST: (ok)
+   SELECT@@
+   GO  : ('SIMPLE',)
+   RUST: ('x',)
+   SELECT@G@
+   GO  : ('SIMPLE',)
+   RUST: ('x',)
+== authentication_ldap_simple_bind_root_pwd
+   SELECT@@
+   GO  : ('******',)
+   RUST: ('x',)
+   SELECT@G@
+   GO  : ('******',)
+   RUST: ('x',)
+== authentication_ldap_simple_ca_path
+   SET G='x'
+   GO  : ERR (1105, 'open x: no such file or directory')
+   RUST: (ok)
+== binlog_error_action
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('IGNORE_ERROR',)
+== binlog_format
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('STATEMENT',)
+== binlog_row_image
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('FULL',)
+== binlogging_impossible_mode
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('IGNORE_ERROR',)
+== bulk_insert_buffer_size
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('8388608',)
+== character_set_client
+   SET G='x'
+   GO  : ERR (1105, 'Unknown charset x')
+   RUST: ERR (1115, "Unknown character set: 'x'")
+   SET=0
+   GO  : ERR (1105, 'Unknown charset 0')
+   RUST: ERR (1115, "Unknown character set: '0'")
+== character_set_connection
+   SET G='x'
+   GO  : ERR (1105, 'Unknown charset x')
+   RUST: ERR (1115, "Unknown character set: 'x'")
+   SET=0
+   GO  : ERR (1105, 'Unknown charset 0')
+   RUST: ERR (1115, "Unknown character set: '0'")
+== character_set_database
+   SET G='x'
+   GO  : ERR (1105, 'Unknown charset x')
+   RUST: ERR (1115, "Unknown character set: 'x'")
+   SET=0
+   GO  : ERR (1105, 'Unknown charset 0')
+   RUST: ERR (1115, "Unknown character set: '0'")
+== character_set_filesystem
+   SET G='x'
+   GO  : ERR (1105, 'Unknown charset x')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (1105, 'Unknown charset 0')
+   RUST: (ok)
+   SELECT@G@
+   GO  : ('binary',)
+   RUST: ('x',)
+== character_set_server
+   SET G='x'
+   GO  : ERR (1105, 'Unknown charset x')
+   RUST: ERR (1115, "Unknown character set: 'x'")
+   SET=0
+   GO  : ERR (1105, 'Unknown charset 0')
+   RUST: ERR (1115, "Unknown character set: '0'")
+== completion_type
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('NO_CHAIN',)
+== datadir
+   SELECT@@
+   GO  : ('/tmp/gotidb-data3',)
+   RUST: ('/usr/local/mysql/data/',)
+   SELECT@G@
+   GO  : ('/tmp/gotidb-data3',)
+   RUST: ('/usr/local/mysql/data/',)
+== debug
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== default_storage_engine
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('InnoDB',)
+== default_tmp_storage_engine
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('InnoDB',)
+== eq_range_index_dive_limit
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('200',)
+== error_count
+   SELECT@@
+   GO  : ('1',)
+   RUST: (0,)
+== information_schema_stats_expiry
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('86400',)
+== innodb_ft_user_stopword_table
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== join_buffer_size
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('262144',)
+== lc_messages
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('en_US',)
+== lock_wait_timeout
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('31536000',)
+== long_query_time
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('10.000000',)
+== max_allowed_packet
+   SET=DEF
+   GO  : ERR (1621, "SESSION variable 'max_allowed_packet' is read-only. Use SET GLOBAL to assign the value")
+   RUST: (ok)
+== max_delayed_threads
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('20',)
+== max_error_count
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('64',)
+== max_heap_table_size
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('16777216',)
+== max_insert_delayed_threads
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('20',)
+== max_join_size
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('18446744073709551615',)
+== max_length_for_sort_data
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('1024',)
+== max_points_in_geometry
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('65536',)
+== max_seeks_for_key
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('18446744073709551615',)
+== max_statement_time
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== min_examined_row_limit
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('0',)
+== mpp_version
+   SET G='x'
+   GO  : ERR (1105, 'incorrect value: x. mpp_version options: -1 (unspecified), 0, 1, 2, 3')
+   RUST: ERR (1105, 'incorrect value: `x`. mpp_version options: -1 (unspecified), 0, 1, 2, 3')
+== myisam_repair_threads
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('1',)
+== myisam_sort_buffer_size
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('8388608',)
+== myisam_stats_method
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('nulls_unequal',)
+== ndb_blob_write_batch_bytes
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== ndb_deferred_constraints
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== ndb_force_send
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== ndb_index_stat_enable
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== ndb_index_stat_option
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== ndb_join_pushdown
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== ndb_use_transactions
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== ndbinfo_max_rows
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== ndbinfo_show_hidden
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== net_read_timeout
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('30',)
+== net_retry_count
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('10',)
+== net_write_timeout
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('60',)
+== new
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('OFF',)
+== optimizer_prune_level
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('1',)
+== optimizer_search_depth
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('62',)
+== optimizer_trace
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('enabled=off,one_line=off',)
+== optimizer_trace_features
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('greedy_search=on,range_optimizer=on,dynamic_range=on,repeated_subselect=on',)
+== optimizer_trace_limit
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('1',)
+== optimizer_trace_max_mem_size
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('16384',)
+== optimizer_trace_offset
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('-1',)
+== plugin_audit_log_buffer_size
+   SELECT@@
+   GO  : ('0',)
+   RUST: ('30',)
+   SELECT@G@
+   GO  : ('0',)
+   RUST: ('30',)
+== port
+   SELECT@@
+   GO  : (4000,)
+   RUST: (4001,)
+   SELECT@G@
+   GO  : (4000,)
+   RUST: (4001,)
+== preload_buffer_size
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('32768',)
+== profiling_history_size
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('15',)
+== query_alloc_block_size
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('8192',)
+== query_prealloc_size
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('8192',)
+== range_alloc_block_size
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('4096',)
+== read_buffer_size
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('131072',)
+== read_rnd_buffer_size
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('262144',)
+== session_track_schema
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== session_track_state_change
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== session_track_system_variables
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('',)
+== socket
+   SELECT@@
+   GO  : ('/tmp/tidb-4000.sock',)
+   RUST: ('/tmp/tidb-4001.sock',)
+   SELECT@G@
+   GO  : ('/tmp/tidb-4000.sock',)
+   RUST: ('/tmp/tidb-4001.sock',)
+== sort_buffer_size
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('262144',)
+== sql_buffer_result
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('OFF',)
+== sql_log_off
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('0',)
+== sql_notes
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('1',)
+== sql_select_limit
+   SELECT@@
+   GO  : (18446744073709551615,)
+   RUST: ('18446744073709551615',)
+   SELECT@G@
+   GO  : (18446744073709551615,)
+   RUST: ('18446744073709551615',)
+== storage_engine
+   SELECT@@
+   GO  : ('x',)
+   RUST: ('InnoDB',)
+== tidb_auto_analyze_end_time
+   SET G='x'
+   GO  : ERR (1105, 'parsing time "x" as "15:04": cannot parse "x" as "15"')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_auto_analyze_end_time'")
+== tidb_auto_analyze_start_time
+   SET G='x'
+   GO  : ERR (1105, 'parsing time "x" as "15:04": cannot parse "x" as "15"')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_auto_analyze_start_time'")
+== tidb_cloud_storage_uri
+   SET=DEF
+   GO  : ERR (2013, 'Lost connection to MySQL server during query')
+   RUST: ERR (1229, "Variable 'tidb_cloud_storage_uri' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_cloud_storage_uri' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('x',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('x',)
+== tidb_columnar_storage_enabled
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_columnar_storage_enabled' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_columnar_storage_enabled' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_columnar_storage_enabled' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_committer_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_committer_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_committer_concurrency' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_committer_concurrency' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('128',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('128',)
+== tidb_config
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_config' is a read only variable")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_config' is a read only variable")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_config' is a read only variable")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('{\n\t"advertise-address": "",\n\t"alter-primary-key": false,\n\t"autoscaler-addr": "tiflash-autoscale-lb.tiflash-autos
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('{\n\t"advertise-address": "",\n\t"alter-primary-key": false,\n\t"autoscaler-addr": "tiflash-autoscale-lb.tiflash-autos
+== tidb_constraint_check_in_place
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_constraint_check_in_place' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_constraint_check_in_place_pessimistic
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_constraint_check_in_place_pessimistic' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_constraint_check_in_place_pessimistic' is a SESSION variable")
+== tidb_cost_model_version
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_cost_model_version'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('2',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('2',)
+== tidb_current_ts
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_current_ts' is a read only variable")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_current_ts' is a read only variable")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_current_ts' is a read only variable")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_current_ts' is a SESSION variable")
+== tidb_ddl_disk_quota
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_ddl_disk_quota'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_ddl_disk_quota' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_ddl_disk_quota' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('107374182400',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('107374182400',)
+== tidb_ddl_enable_fast_reorg
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_ddl_enable_fast_reorg' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_ddl_enable_fast_reorg' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_ddl_enable_fast_reorg' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_ddl_error_count_limit
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_ddl_error_count_limit'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_ddl_error_count_limit' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_ddl_error_count_limit' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (512,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (512,)
+== tidb_ddl_flashback_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_ddl_flashback_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_ddl_flashback_concurrency' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_ddl_flashback_concurrency' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (64,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (64,)
+== tidb_ddl_reorg_batch_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_ddl_reorg_batch_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (256,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (256,)
+== tidb_ddl_reorg_max_write_speed
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_ddl_reorg_max_write_speed' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_ddl_reorg_max_write_speed' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('x',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('x',)
+== tidb_ddl_reorg_priority
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_ddl_reorg_priority' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('PRIORITY_LOW',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_ddl_reorg_priority' is a SESSION variable")
+== tidb_ddl_reorg_worker_cnt
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_ddl_reorg_worker_cnt'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (4,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (4,)
+== tidb_default_string_match_selectivity
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_default_string_match_selectivity'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_disable_txn_auto_retry
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_disable_txn_auto_retry' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_distsql_scan_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_distsql_scan_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (15,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (15,)
+== tidb_dml_batch_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_dml_batch_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_dml_type
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_dml_type' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1105, 'unsupport DML type: 0')
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('STANDARD',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_dml_type' is a SESSION variable")
+== tidb_enable_1pc
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_1pc' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_analyze_snapshot
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_analyze_snapshot' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_async_commit
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_async_commit' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_async_merge_global_stats
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_async_merge_global_stats' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_auto_analyze
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_auto_analyze' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_auto_analyze' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_auto_analyze' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_auto_analyze_priority_queue
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_auto_analyze_priority_queue' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_auto_analyze_priority_queue' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_auto_analyze_priority_queue' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_auto_increment_in_generated
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_auto_increment_in_generated' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_batch_dml
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_batch_dml' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_batch_dml' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_batch_dml' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_batch_query_region
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_batch_query_region' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_batch_query_region' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_batch_query_region' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_binding_usage
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_binding_usage' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_binding_usage' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_binding_usage' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_cache_prepare_stmt
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_cache_prepare_stmt' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_cascades_planner
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_cascades_planner' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_check_constraint
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_check_constraint' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_check_constraint' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_check_constraint' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_chunk_rpc
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_enable_chunk_rpc' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_enable_chunk_rpc' is a SESSION variable")
+== tidb_enable_clustered_index
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_clustered_index' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('ON',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('ON',)
+== tidb_enable_collect_execution_info
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_collect_execution_info' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_column_tracking
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_column_tracking' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_column_tracking' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_column_tracking' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_connection_event_log
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_connection_event_log' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_connection_event_log' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_connection_event_log' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_ddl
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_ddl' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_dist_task
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_dist_task' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_dist_task' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_dist_task' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_enhanced_security
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_enable_enhanced_security' is a read only variable")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_enable_enhanced_security' is a read only variable")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_enable_enhanced_security' is a read only variable")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('OFF',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('OFF',)
+== tidb_enable_exchange_partition
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_exchange_partition' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_extended_stats
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_extended_stats' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_external_ts_read
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_external_ts_read' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_fast_analyze
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_fast_analyze' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_fast_create_table
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_fast_create_table' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_fast_create_table' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_fast_create_table' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_fast_table_check
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_fast_table_check' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_foreign_key
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_foreign_key' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_foreign_key' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_foreign_key' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_gc_aware_memory_track
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_gc_aware_memory_track' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_gc_aware_memory_track' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_gc_aware_memory_track' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_global_index
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_global_index' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_gogc_tuner
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_gogc_tuner' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_gogc_tuner' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_gogc_tuner' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_historical_stats
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_historical_stats' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_historical_stats' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_historical_stats' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_historical_stats_for_capture
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_historical_stats_for_capture' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_historical_stats_for_capture' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_historical_stats_for_capture' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_index_merge
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_index_merge' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_index_merge_join
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_index_merge_join' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_inl_join_inner_multi_pattern
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_inl_join_inner_multi_pattern' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_instance_plan_cache
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_instance_plan_cache' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_instance_plan_cache' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_instance_plan_cache' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_lazy_cursor_fetch
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_lazy_cursor_fetch' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_legacy_instance_scope
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_legacy_instance_scope' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_list_partition
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_list_partition' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1105, 'tidb_enable_list_partition is now always on, and cannot be turned off')
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_local_txn
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_local_txn' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_local_txn' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_local_txn' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_metadata_lock
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_metadata_lock' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_metadata_lock' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_metadata_lock' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_mutation_checker
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_mutation_checker' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_new_cost_interface
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_new_cost_interface' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_new_only_full_group_by_check
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_new_only_full_group_by_check' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_no_backslash_escapes_in_like
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_no_backslash_escapes_in_like' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_non_prepared_plan_cache
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_non_prepared_plan_cache' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_non_prepared_plan_cache_for_dml
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_non_prepared_plan_cache_for_dml' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_noop_functions
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_noop_functions' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('OFF',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('OFF',)
+== tidb_enable_noop_variables
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_noop_variables' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_noop_variables' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_noop_variables' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('ON',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('ON',)
+== tidb_enable_null_aware_anti_join
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_null_aware_anti_join' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_ordered_result_mode
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_ordered_result_mode' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_outer_join_reorder
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_outer_join_reorder' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_paging
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_paging' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_parallel_apply
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_parallel_apply' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_parallel_hashagg_spill
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_parallel_hashagg_spill' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_pipelined_window_function
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_pipelined_window_function' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_plan_cache_for_param_limit
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_plan_cache_for_param_limit' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_plan_cache_for_subquery
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_plan_cache_for_subquery' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_plan_replayer_capture
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_plan_replayer_capture' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_plan_replayer_continuous_capture
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_plan_replayer_continuous_capture' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_point_get_cache
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_enable_point_get_cache' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_enable_point_get_cache' is a SESSION variable")
+== tidb_enable_prepared_plan_cache
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_prepared_plan_cache' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_prepared_plan_cache_memory_monitor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_prepared_plan_cache_memory_monitor' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_pseudo_for_outdated_stats
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_pseudo_for_outdated_stats' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_rate_limit_action
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_rate_limit_action' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_resource_control
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_resource_control' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_resource_control' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_resource_control' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_reuse_chunk
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_reuse_chunk' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_row_level_checksum
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_row_level_checksum' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_row_level_checksum' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_row_level_checksum' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_shared_lock_promotion
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_shared_lock_promotion' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_slow_log
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_slow_log' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_stats_owner
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_stats_owner' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_stmt_summary
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_stmt_summary' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_stmt_summary' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_stmt_summary' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_strict_double_type_check
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_strict_double_type_check' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_strict_not_null_check
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_strict_not_null_check' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_table_partition
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_table_partition' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('ON',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('ON',)
+== tidb_enable_telemetry
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_telemetry' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_telemetry' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_telemetry' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_tiflash_pipeline_model
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_tiflash_pipeline_model' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_tiflash_pipeline_model' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_tiflash_pipeline_model' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_tiflash_read_for_write_stmt
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_tiflash_read_for_write_stmt' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_tmp_storage_on_oom
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_tmp_storage_on_oom' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_tmp_storage_on_oom' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_tmp_storage_on_oom' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_top_sql
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_top_sql' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_top_sql' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_top_sql' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_ts_validation
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_ts_validation' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_ts_validation' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_ts_validation' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_tso_follower_proxy
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_tso_follower_proxy' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_tso_follower_proxy' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_enable_tso_follower_proxy' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_unsafe_substitute
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_unsafe_substitute' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_enable_vectorized_expression
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_vectorized_expression' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enable_window_function
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_enable_window_function' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_enforce_mpp
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_enforce_mpp' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_enforce_mpp' is a SESSION variable")
+== tidb_evolve_plan_baselines
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_evolve_plan_baselines' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_evolve_plan_task_end_time
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_evolve_plan_task_end_time'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_evolve_plan_task_end_time' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_evolve_plan_task_end_time' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('23:59 +0000',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('23:59 +0000',)
+== tidb_evolve_plan_task_max_time
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_evolve_plan_task_max_time'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_evolve_plan_task_max_time' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_evolve_plan_task_max_time' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('600',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('600',)
+== tidb_evolve_plan_task_start_time
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_evolve_plan_task_start_time'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_evolve_plan_task_start_time' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_evolve_plan_task_start_time' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('00:00 +0000',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('00:00 +0000',)
+== tidb_executor_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_executor_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (5,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (5,)
+== tidb_expensive_query_time_threshold
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_expensive_query_time_threshold'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (60,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (60,)
+== tidb_expensive_txn_time_threshold
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_expensive_txn_time_threshold'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (600,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (600,)
+== tidb_external_ts
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_external_ts' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_external_ts' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('x',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('x',)
+== tidb_force_priority
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_force_priority' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('NO_PRIORITY',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('NO_PRIORITY',)
+== tidb_foreign_key_check_in_shared_lock
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_foreign_key_check_in_shared_lock' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_gc_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_gc_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gc_concurrency' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gc_concurrency' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+== tidb_gc_enable
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_gc_enable' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gc_enable' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gc_enable' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_gc_life_time
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_gc_life_time'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gc_life_time' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gc_life_time' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('10m0s',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('10m0s',)
+== tidb_gc_max_wait_time
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_gc_max_wait_time'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gc_max_wait_time' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gc_max_wait_time' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('86400',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('86400',)
+== tidb_gc_run_interval
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_gc_run_interval'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gc_run_interval' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gc_run_interval' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('10m0s',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('10m0s',)
+== tidb_gc_scan_lock_mode
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_gc_scan_lock_mode' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gc_scan_lock_mode' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gc_scan_lock_mode' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('LEGACY',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('LEGACY',)
+== tidb_general_log
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_general_log' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_generate_binary_plan
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_generate_binary_plan' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_generate_binary_plan' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_generate_binary_plan' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_gogc_tuner_max_value
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_gogc_tuner_max_value'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gogc_tuner_max_value' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gogc_tuner_max_value' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('500',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('500',)
+== tidb_gogc_tuner_min_value
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_gogc_tuner_min_value'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gogc_tuner_min_value' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gogc_tuner_min_value' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('100',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('100',)
+== tidb_gogc_tuner_threshold
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gogc_tuner_threshold' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_gogc_tuner_threshold' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0.6',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0.6',)
+== tidb_guarantee_linearizability
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_guarantee_linearizability' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_hash_exchange_with_new_collation
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_hash_exchange_with_new_collation' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_hash_join_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_hash_join_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+== tidb_hash_join_version
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1105, 'incorrect value: `x`. tidb_hash_join_version options: legacy, optimized')
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1105, 'incorrect value: `0`. tidb_hash_join_version options: legacy, optimized')
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('optimized',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('optimized',)
+== tidb_hashagg_final_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_hashagg_final_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+== tidb_hashagg_partial_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_hashagg_partial_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+== tidb_historical_stats_duration
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_historical_stats_duration'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_historical_stats_duration' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_historical_stats_duration' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('168h0m0s',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('168h0m0s',)
+== tidb_idle_transaction_timeout
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_idle_transaction_timeout'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_ignore_inlist_plan_digest
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_ignore_inlist_plan_digest' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_ignore_inlist_plan_digest' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_ignore_inlist_plan_digest' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_ignore_prepared_cache_close_stmt
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_ignore_prepared_cache_close_stmt' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_index_join_batch_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_index_join_batch_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (25000,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (25000,)
+== tidb_index_join_double_read_penalty_cost_rate
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_index_join_double_read_penalty_cost_rate'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_index_lookup_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_index_lookup_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+== tidb_index_lookup_join_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_index_lookup_join_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+== tidb_index_lookup_pushdown_policy
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_index_lookup_pushdown_policy' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('hint-only',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('hint-only',)
+== tidb_index_lookup_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_index_lookup_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (20000,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (20000,)
+== tidb_index_merge_intersection_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_index_merge_intersection_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+== tidb_index_serial_scan_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_index_serial_scan_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_init_chunk_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_init_chunk_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (32,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (32,)
+== tidb_instance_plan_cache_max_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_instance_plan_cache_max_size' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_instance_plan_cache_max_size' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('x',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('x',)
+== tidb_instance_plan_cache_reserved_percentage
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_instance_plan_cache_reserved_percentage'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_instance_plan_cache_reserved_percentage' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_instance_plan_cache_reserved_percentage' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0.1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0.1',)
+== tidb_isolation_read_engines
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_isolation_read_engines' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_isolation_read_engines' can't be set to the value of '0'")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('tikv,tiflash,tidb',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_isolation_read_engines' is a SESSION variable")
+== tidb_last_ddl_info
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_ddl_info' is a read only variable")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_ddl_info' is a read only variable")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_ddl_info' is a read only variable")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('{"query":"","seq_num":0}',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_ddl_info' is a SESSION variable")
+== tidb_last_plan_replayer_token
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_plan_replayer_token' is a read only variable")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_plan_replayer_token' is a read only variable")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_plan_replayer_token' is a read only variable")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_plan_replayer_token' is a SESSION variable")
+== tidb_last_query_info
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_query_info' is a read only variable")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_query_info' is a read only variable")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_query_info' is a read only variable")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('{"txn_scope":"","start_ts":0,"for_update_ts":0,"ru_consumption":0}',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_query_info' is a SESSION variable")
+== tidb_last_txn_info
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_txn_info' is a read only variable")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_txn_info' is a read only variable")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_txn_info' is a read only variable")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_last_txn_info' is a SESSION variable")
+== tidb_load_based_replica_read_threshold
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_load_based_replica_read_threshold'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1s',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1s',)
+== tidb_load_binding_timeout
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_load_binding_timeout'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_load_binding_timeout' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_load_binding_timeout' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (200,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (200,)
+== tidb_lock_unchanged_keys
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_lock_unchanged_keys' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_log_file_max_days
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_log_file_max_days'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_low_resolution_tso
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_low_resolution_tso' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_low_resolution_tso_update_interval
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_low_resolution_tso_update_interval'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_low_resolution_tso_update_interval' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_low_resolution_tso_update_interval' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('2000',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('2000',)
+== tidb_max_auto_analyze_time
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_max_auto_analyze_time'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_max_auto_analyze_time' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_max_auto_analyze_time' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('43200',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('43200',)
+== tidb_max_bytes_before_tiflash_external_group_by
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_max_bytes_before_tiflash_external_group_by'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+== tidb_max_bytes_before_tiflash_external_join
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_max_bytes_before_tiflash_external_join'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+== tidb_max_bytes_before_tiflash_external_sort
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_max_bytes_before_tiflash_external_sort'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+== tidb_max_chunk_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_max_chunk_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1024,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1024,)
+== tidb_max_delta_schema_count
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_max_delta_schema_count'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_max_delta_schema_count' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_max_delta_schema_count' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1024,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1024,)
+== tidb_max_dist_task_nodes
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_max_dist_task_nodes'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1105, 'max_dist_task_nodes should be -1 or [1, 128]')
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+== tidb_max_keys_read
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_max_keys_read'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_max_paging_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_max_paging_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (50000,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (50000,)
+== tidb_max_tiflash_threads
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_max_tiflash_threads'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+== tidb_mem_arbitrator_mode
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1105, 'incorrect value: x. tidb_mem_arbitrator_mode options: disable, standard, priority')
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_mem_arbitrator_mode' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_mem_arbitrator_mode' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('disable',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('disable',)
+== tidb_mem_arbitrator_query_reserved
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_mem_arbitrator_query_reserved' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_mem_arbitrator_query_reserved' is a SESSION variable")
+== tidb_mem_arbitrator_soft_limit
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1105, 'tidb_mem_arbitrator_soft_limit: 0 (default); (0, 1.0] float-rate * server-limit; (1, server-limit] integer bytes; auto;')
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_mem_arbitrator_soft_limit' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_mem_arbitrator_soft_limit' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_mem_arbitrator_wait_averse
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_mem_arbitrator_wait_averse' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_mem_arbitrator_wait_averse' is a SESSION variable")
+== tidb_mem_oom_action
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_mem_oom_action' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_mem_oom_action' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_mem_oom_action' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('CANCEL',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('CANCEL',)
+== tidb_mem_quota_analyze
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_mem_quota_analyze'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_mem_quota_analyze' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_mem_quota_analyze' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+== tidb_mem_quota_apply_cache
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_mem_quota_apply_cache'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (33554432,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (33554432,)
+== tidb_mem_quota_binding_cache
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_mem_quota_binding_cache'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (67108864,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (67108864,)
+== tidb_mem_quota_query
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_mem_quota_query'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1073741824',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1073741824',)
+== tidb_memory_debug_mode_alarm_ratio
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_memory_debug_mode_alarm_ratio' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_memory_debug_mode_alarm_ratio' is a SESSION variable")
+== tidb_memory_debug_mode_min_heap_inuse
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_memory_debug_mode_min_heap_inuse' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_memory_debug_mode_min_heap_inuse' is a SESSION variable")
+== tidb_memory_usage_alarm_keep_record_num
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_memory_usage_alarm_keep_record_num'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_memory_usage_alarm_keep_record_num' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_memory_usage_alarm_keep_record_num' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('5',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('5',)
+== tidb_memory_usage_alarm_ratio
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_memory_usage_alarm_ratio'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_memory_usage_alarm_ratio' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_memory_usage_alarm_ratio' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0.7',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0.7',)
+== tidb_merge_join_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_merge_join_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_merge_partition_stats_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_merge_partition_stats_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_metric_query_range_duration
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_metric_query_range_duration' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (60,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_metric_query_range_duration' is a SESSION variable")
+== tidb_metric_query_step
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_metric_query_step' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (60,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_metric_query_step' is a SESSION variable")
+== tidb_min_paging_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_min_paging_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (128,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (128,)
+== tidb_mpp_store_fail_ttl
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0s',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0s',)
+== tidb_multi_statement_mode
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_multi_statement_mode' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('OFF',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('OFF',)
+== tidb_non_prepared_plan_cache_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_non_prepared_plan_cache_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (100,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (100,)
+== tidb_nontransactional_ignore_error
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_nontransactional_ignore_error' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_advanced_join_hint
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_advanced_join_hint' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_opt_agg_push_down
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_agg_push_down' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_always_keep_join_key
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_always_keep_join_key' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_opt_broadcast_cartesian_join
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_broadcast_cartesian_join'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_cartesian_join_order_threshold
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_cartesian_join_order_threshold'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_opt_concurrency_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_concurrency_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('3',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('3',)
+== tidb_opt_copcpu_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_copcpu_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('3',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('3',)
+== tidb_opt_correlation_exp_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_correlation_exp_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_opt_correlation_threshold
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_correlation_threshold'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0.9',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0.9',)
+== tidb_opt_cpu_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_cpu_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('3',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('3',)
+== tidb_opt_derive_topn
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_derive_topn' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_desc_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_desc_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('3',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('3',)
+== tidb_opt_disk_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_disk_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1.5',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1.5',)
+== tidb_opt_distinct_agg_push_down
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_opt_distinct_agg_push_down' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_opt_distinct_agg_push_down' is a SESSION variable")
+== tidb_opt_enable_advanced_join_reorder
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_enable_advanced_join_reorder' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_opt_enable_alternative_logical_plans
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_enable_alternative_logical_plans' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_enable_correlation_adjustment
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_enable_correlation_adjustment' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_opt_enable_fuzzy_binding
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_enable_fuzzy_binding' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_enable_hash_join
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_enable_hash_join' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_opt_enable_late_materialization
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_enable_late_materialization' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_opt_enable_mpp_shared_cte_execution
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_enable_mpp_shared_cte_execution' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_enable_no_decorrelate_in_select
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_enable_no_decorrelate_in_select' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_enable_non_eval_scalar_subquery
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_enable_non_eval_scalar_subquery' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_enable_semi_join_rewrite
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_enable_semi_join_rewrite' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_enable_three_stage_multi_distinct_agg
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_enable_three_stage_multi_distinct_agg' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_fix_control
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1105, 'invalid fix control: expected colon not found')
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1105, 'invalid fix control: expected colon not found')
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('',)
+== tidb_opt_force_inline_cte
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_force_inline_cte' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_group_ndv_skew_ratio
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_group_ndv_skew_ratio'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_opt_hash_agg_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_hash_agg_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_hash_join_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_hash_join_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_index_join_build_v2
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_index_join_build_v2' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1105, 'tidb_opt_index_join_build_v2 is now always enabled and cannot be turned off')
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_opt_index_join_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_index_join_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_index_join_max_scan_rows_ratio
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_index_join_max_scan_rows_ratio'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_opt_index_lookup_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_index_lookup_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_index_merge_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_index_merge_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_index_prune_threshold
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_index_prune_threshold'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('20',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('20',)
+== tidb_opt_index_reader_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_index_reader_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_index_scan_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_index_scan_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_insubq_to_join_and_agg
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_insubq_to_join_and_agg' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_opt_join_reorder_threshold
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_join_reorder_threshold'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_join_reorder_through_proj
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_join_reorder_through_proj' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_join_reorder_through_sel
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_join_reorder_through_sel' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_limit_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_limit_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_limit_push_down_threshold
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_limit_push_down_threshold'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (5000,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (5000,)
+== tidb_opt_memory_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_memory_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0.001',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0.001',)
+== tidb_opt_merge_join_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_merge_join_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_mpp_outer_join_fixed_build_side
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_mpp_outer_join_fixed_build_side' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_network_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_network_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_objective
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_objective' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('moderate',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('moderate',)
+== tidb_opt_ordering_index_selectivity_ratio
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_ordering_index_selectivity_ratio'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0.01',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0.01',)
+== tidb_opt_ordering_index_selectivity_threshold
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_ordering_index_selectivity_threshold'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_opt_partial_ordered_index_for_topn
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_partial_ordered_index_for_topn' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_partial_ordered_index_for_topn' can't be set to the value of '0'")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('DISABLE',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('DISABLE',)
+== tidb_opt_prefer_range_scan
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_prefer_range_scan' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_opt_prefix_index_single_scan
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_prefix_index_single_scan' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_opt_projection_push_down
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_projection_push_down' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_opt_range_max_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_range_max_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('67108864',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('67108864',)
+== tidb_opt_risk_eq_skew_ratio
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_risk_eq_skew_ratio'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_opt_risk_range_skew_ratio
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_risk_range_skew_ratio'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_opt_scale_ndv_skew_ratio
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_scale_ndv_skew_ratio'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_scan_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_scan_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1.5',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1.5',)
+== tidb_opt_seek_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_seek_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('20',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('20',)
+== tidb_opt_selectivity_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_selectivity_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0.8',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0.8',)
+== tidb_opt_skew_distinct_agg
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_skew_distinct_agg' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_opt_sort_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_sort_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_stream_agg_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_stream_agg_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_table_full_scan_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_table_full_scan_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_table_range_scan_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_table_range_scan_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_table_reader_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_table_reader_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_table_rowid_scan_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_table_rowid_scan_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_table_tiflash_scan_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_table_tiflash_scan_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_three_stage_distinct_agg
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_opt_three_stage_distinct_agg' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_opt_tiflash_concurrency_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_tiflash_concurrency_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('24',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('24',)
+== tidb_opt_topn_cost_factor
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_opt_topn_cost_factor'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_opt_use_invisible_indexes
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_opt_use_invisible_indexes' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_opt_use_invisible_indexes' is a SESSION variable")
+== tidb_opt_write_row_id
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_opt_write_row_id' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_opt_write_row_id' is a SESSION variable")
+== tidb_optimizer_selectivity_level
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_optimizer_selectivity_level' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_optimizer_selectivity_level' is a SESSION variable")
+== tidb_paging_size_bytes
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_paging_size_bytes'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_partition_prune_mode
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_partition_prune_mode' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('dynamic',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('dynamic',)
+== tidb_persist_analyze_options
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_persist_analyze_options' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_persist_analyze_options' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_persist_analyze_options' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_pessimistic_txn_fair_locking
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_pessimistic_txn_fair_locking' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_pipelined_dml_resource_policy
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('standard',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('x',)
+== tidb_placement_mode
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_placement_mode' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('STRICT',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('STRICT',)
+== tidb_plan_cache_invalidation_on_fresh_stats
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_plan_cache_invalidation_on_fresh_stats' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_plan_cache_max_plan_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_plan_cache_max_plan_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (2097152,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (2097152,)
+== tidb_plan_cache_skip_stats_on_binding
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_plan_cache_skip_stats_on_binding' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_plan_cache_strategy
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_plan_cache_strategy' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('all',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('all',)
+== tidb_pprof_sql_cpu
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_pprof_sql_cpu'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_pre_split_regions
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_pre_split_regions'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_prefer_broadcast_join_by_exchange_data_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_prefer_broadcast_join_by_exchange_data_size' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_prepared_plan_cache_memory_guard_ratio
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_prepared_plan_cache_memory_guard_ratio'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_prepared_plan_cache_memory_guard_ratio' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_prepared_plan_cache_memory_guard_ratio' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0.1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0.1',)
+== tidb_prepared_plan_cache_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_prepared_plan_cache_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (100,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (100,)
+== tidb_projection_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_projection_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('-1',)
+== tidb_query_cop_store_limit
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_query_cop_store_limit'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (15,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (15,)
+== tidb_query_log_max_len
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_query_log_max_len'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_query_log_max_len' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_query_log_max_len' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('4096',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('4096',)
+== tidb_rc_read_check_ts
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_rc_read_check_ts' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_rc_write_check_ts
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_rc_write_check_ts' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_read_consistency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_read_consistency' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_read_consistency'")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('strict',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_read_consistency' is a SESSION variable")
+== tidb_read_staleness
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_read_staleness' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_read_staleness' is a SESSION variable")
+== tidb_record_plan_in_slow_log
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_record_plan_in_slow_log' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_regard_null_as_point
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_regard_null_as_point' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_remove_orderby_in_subquery
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_remove_orderby_in_subquery' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_replica_read
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_replica_read' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('leader',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('leader',)
+== tidb_request_source_type
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_request_source_type' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_request_source_type' is a SESSION variable")
+== tidb_resource_control_strict_mode
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_resource_control_strict_mode' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_resource_control_strict_mode' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_resource_control_strict_mode' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_restricted_read_only
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_restricted_read_only' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_restricted_read_only' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_restricted_read_only' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_retry_limit
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_retry_limit'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('10',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('10',)
+== tidb_row_format_version
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_row_format_version'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (2,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (2,)
+== tidb_runtime_filter_mode
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1105, 'incorrect value: x. tidb_runtime_filter_mode options: OFF ')
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1105, 'incorrect value: 0. tidb_runtime_filter_mode options: OFF ')
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('OFF',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('OFF',)
+== tidb_runtime_filter_type
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1105, 'incorrect value: x. tidb_runtime_filter_type should be sepreated by , such as IN, also we only support IN and MIN_MAX now. ')
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1105, 'incorrect value: 0. tidb_runtime_filter_type should be sepreated by , such as IN, also we only support IN and MIN_MAX now. ')
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('IN',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('IN',)
+== tidb_scatter_region
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1105, "invalid value for 'x', it should be either '', 'table' or 'global'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1105, "invalid value for '0', it should be either '', 'table' or 'global'")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('',)
+== tidb_schema_cache_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1292, "Truncated incorrect tidb_schema_cache_size value: 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('536870912',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('536870912',)
+== tidb_schema_version_cache_limit
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_schema_version_cache_limit'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_schema_version_cache_limit' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_schema_version_cache_limit' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('16',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('16',)
+== tidb_server_memory_limit
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1292, "Truncated incorrect tidb_server_memory_limit value: 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('80%',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('80%',)
+== tidb_server_memory_limit_gc_trigger
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_server_memory_limit_gc_trigger' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_server_memory_limit_gc_trigger' can't be set to the value of '0'")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0.7',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0.7',)
+== tidb_server_memory_limit_sess_min_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_server_memory_limit_sess_min_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_server_memory_limit_sess_min_size' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_server_memory_limit_sess_min_size' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('134217728',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('134217728',)
+== tidb_service_scope
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('',)
+== tidb_session_alias
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_session_alias' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_session_alias' is a SESSION variable")
+== tidb_session_plan_cache_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_session_plan_cache_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (100,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (100,)
+== tidb_shard_allocate_step
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_shard_allocate_step'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('9223372036854775807',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('9223372036854775807',)
+== tidb_shard_row_id_bits
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_shard_row_id_bits'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_simplified_metrics
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_simplified_metrics' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_simplified_metrics' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_simplified_metrics' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_skip_ascii_check
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_skip_ascii_check' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_skip_isolation_level_check
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_skip_isolation_level_check' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_skip_missing_partition_stats
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_skip_missing_partition_stats' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_skip_utf8_check
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_skip_utf8_check' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_slow_log_max_per_sec
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_slow_log_max_per_sec'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_slow_log_max_per_sec' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_slow_log_max_per_sec' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_slow_log_rules
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('x',)
+== tidb_slow_log_threshold
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_slow_log_threshold'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('300',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('300',)
+== tidb_slow_query_file
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_slow_query_file' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('tidb-slow.log',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_slow_query_file' is a SESSION variable")
+== tidb_slow_txn_log_threshold
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_slow_txn_log_threshold' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_slow_txn_log_threshold' is a SESSION variable")
+== tidb_snapshot
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1228, "Variable 'tidb_snapshot' is a SESSION variable and can't be used with SET GLOBAL")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_snapshot' is a SESSION variable")
+== tidb_source_id
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_source_id'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_source_id' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_source_id' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_stats_cache_mem_quota
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_stats_cache_mem_quota'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_stats_load_pseudo_timeout
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_stats_load_pseudo_timeout' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_stats_load_pseudo_timeout' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_stats_load_pseudo_timeout' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (1,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (1,)
+== tidb_stats_load_sync_wait
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_stats_load_sync_wait'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('100',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('100',)
+== tidb_stats_update_during_ddl
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_stats_update_during_ddl' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_stmt_summary_enable_persistent
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_enable_persistent' is a read only variable")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_enable_persistent' is a read only variable")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_enable_persistent' is a read only variable")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('',)
+== tidb_stmt_summary_file_max_backups
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_file_max_backups' is a read only variable")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_file_max_backups' is a read only variable")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_file_max_backups' is a read only variable")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('',)
+== tidb_stmt_summary_file_max_days
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_file_max_days' is a read only variable")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_file_max_days' is a read only variable")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_file_max_days' is a read only variable")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('',)
+== tidb_stmt_summary_file_max_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_file_max_size' is a read only variable")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_file_max_size' is a read only variable")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_file_max_size' is a read only variable")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('',)
+== tidb_stmt_summary_filename
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_filename' is a read only variable")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_filename' is a read only variable")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1238, "Variable 'tidb_stmt_summary_filename' is a read only variable")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('',)
+== tidb_stmt_summary_group_by_user
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_stmt_summary_group_by_user' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_stmt_summary_group_by_user' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_stmt_summary_group_by_user' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_stmt_summary_history_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_stmt_summary_history_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_stmt_summary_history_size' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_stmt_summary_history_size' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('24',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('24',)
+== tidb_stmt_summary_internal_query
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_stmt_summary_internal_query' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_stmt_summary_internal_query' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_stmt_summary_internal_query' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_stmt_summary_max_sql_length
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_stmt_summary_max_sql_length'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_stmt_summary_max_sql_length' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_stmt_summary_max_sql_length' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('32768',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('32768',)
+== tidb_stmt_summary_max_stmt_count
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_stmt_summary_max_stmt_count'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('3000',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('3000',)
+== tidb_stmt_summary_persist_evicted
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_stmt_summary_persist_evicted' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_stmt_summary_persist_evicted' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_stmt_summary_persist_evicted' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_stmt_summary_refresh_interval
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_stmt_summary_refresh_interval'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_stmt_summary_refresh_interval' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_stmt_summary_refresh_interval' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1800',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1800',)
+== tidb_store_batch_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_store_batch_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('4',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('4',)
+== tidb_store_limit
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_store_limit'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_store_limit' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_store_limit' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('0',)
+== tidb_streamagg_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_streamagg_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('1',)
+== tidb_super_read_only
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_super_read_only' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_super_read_only' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_super_read_only' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_sysdate_is_now
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1231, "Variable 'tidb_sysdate_is_now' can't be set to the value of 'x'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (0,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (0,)
+== tidb_sysproc_scan_concurrency
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_sysproc_scan_concurrency'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_sysproc_scan_concurrency' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_sysproc_scan_concurrency' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('4',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('4',)
+== tidb_table_cache_lease
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_table_cache_lease'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_table_cache_lease' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_table_cache_lease' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (3,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (3,)
+== tidb_tmp_table_max_size
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_tmp_table_max_size'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SET=0
+   GO  : ERR (0, '')
+   RUST: (ok)
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: (67108864,)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: (67108864,)
+== tidb_top_sql_max_meta_count
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_top_sql_max_meta_count'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_top_sql_max_meta_count' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_top_sql_max_meta_count' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('5000',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('5000',)
+== tidb_top_sql_max_time_series_count
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (1232, "Incorrect argument type to variable 'tidb_top_sql_max_time_series_count'")
+   SET=DEF
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_top_sql_max_time_series_count' is a GLOBAL variable and should be set with SET GLOBAL")
+   SET=0
+   GO  : ERR (0, '')
+   RUST: ERR (1229, "Variable 'tidb_top_sql_max_time_series_count' is a GLOBAL variable and should be set with SET GLOBAL")
+   SELECT@@
+   GO  : ERR (0, '')
+   RUST: ('100',)
+   SELECT@G@
+   GO  : ERR (0, '')
+   RUST: ('100',)
+== tidb_trace_event
+   SET G='x'
+   GO  : ERR (0, '')
+   RUST: ERR (2013, 'Lost connection to MySQL server during query')
+DIVERGENT VARS: 436

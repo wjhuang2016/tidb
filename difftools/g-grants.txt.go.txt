@@ -1,0 +1,81 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE gp(a INT)
+(ok)
+=== GRANT SELECT ON fdq.gp TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE SELECT ON fdq.gp FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT INSERT ON fdq.gp TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE INSERT ON fdq.gp FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT UPDATE ON fdq.gp TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE UPDATE ON fdq.gp FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT DELETE ON fdq.gp TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE DELETE ON fdq.gp FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT CREATE ON fdq.gp TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE CREATE ON fdq.gp FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT DROP ON fdq.gp TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE DROP ON fdq.gp FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT ALTER ON fdq.gp TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE ALTER ON fdq.gp FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT INDEX ON fdq.gp TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE INDEX ON fdq.gp FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT CREATE VIEW ON fdq.gp TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE CREATE VIEW ON fdq.gp FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT SHOW VIEW ON fdq.gp TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE SHOW VIEW ON fdq.gp FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT EXECUTE ON fdq.gp TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE EXECUTE ON fdq.gp FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT REFERENCES ON fdq.gp TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE REFERENCES ON fdq.gp FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT LOCK TABLES ON fdq.gp TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE LOCK TABLES ON fdq.gp FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT CREATE TEMPORARY TABLES ON fdq.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE CREATE TEMPORARY TABLES ON fdq.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT EVENT ON fdq.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE EVENT ON fdq.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT TRIGGER ON fdq.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE TRIGGER ON fdq.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT CREATE ROUTINE ON fdq.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE CREATE ROUTINE ON fdq.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT ALTER ROUTINE ON fdq.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE ALTER ROUTINE ON fdq.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT GRANT OPTION ON fdq.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE GRANT OPTION ON fdq.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT SUPER ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE SUPER ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT PROCESS ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE PROCESS ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT RELOAD ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE RELOAD ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT SHUTDOWN ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE SHUTDOWN ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT FILE ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE FILE ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT REPLICATION CLIENT ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE REPLICATION CLIENT ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT REPLICATION SLAVE ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE REPLICATION SLAVE ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT CONFIG ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE CONFIG ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT CREATE USER ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE CREATE USER ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT RESTRICTED_TABLES_ADMIN ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE RESTRICTED_TABLES_ADMIN ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT RESTRICTED_REPLICA_WRITER_ADMIN ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE RESTRICTED_REPLICA_WRITER_ADMIN ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT SYSTEM_VARIABLES_ADMIN ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE SYSTEM_VARIABLES_ADMIN ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT ROLE_ADMIN ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE ROLE_ADMIN ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT BACKUP_ADMIN ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE BACKUP_ADMIN ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT RESTORE_ADMIN ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE RESTORE_ADMIN ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT PLACEMENT_ADMIN ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE PLACEMENT_ADMIN ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT DASHBOARD_CLIENT ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE DASHBOARD_CLIENT ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT METRICS_READER ON *.* TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE METRICS_READER ON *.* FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")
+=== GRANT ALL ON fdq.gp TO 'u1'@'%'; SHOW GRANTS FOR 'u1'@'%'; REVOKE ALL ON fdq.gp FROM 'u1'@'%'
+ERR (8130, "client has multi-statement capability disabled. Run SET GLOBAL tidb_multi_statement_mode='ON' after you understand the security risk")

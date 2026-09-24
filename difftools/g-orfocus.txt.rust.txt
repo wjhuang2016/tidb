@@ -1,0 +1,75 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE o1(a INT PRIMARY KEY, b INT, c INT, d VARCHAR(5), KEY ib(b), KEY ic(c))
+(ok)
+=== INSERT INTO o1 VALUES (1,1,1,'x'),(2,2,2,'y'),(3,3,3,'z'),(4,4,4,'w'),(5,5,5,'v')
+(ok)
+=== SELECT * FROM o1 WHERE b = 1 OR a = 2
+(1, 1, 1, 'x'); (2, 2, 2, 'y')
+=== SELECT * FROM o1 WHERE a = 2 OR b = 1
+(1, 1, 1, 'x'); (2, 2, 2, 'y')
+=== SELECT * FROM o1 WHERE b = 1 OR b = 3
+(1, 1, 1, 'x'); (3, 3, 3, 'z')
+=== SELECT * FROM o1 WHERE a = 1 OR a = 3
+(1, 1, 1, 'x'); (3, 3, 3, 'z')
+=== SELECT * FROM o1 WHERE b = 1 OR c = 3
+(1, 1, 1, 'x'); (3, 3, 3, 'z')
+=== SELECT * FROM o1 WHERE c = 1 OR b = 3
+(1, 1, 1, 'x'); (3, 3, 3, 'z')
+=== SELECT * FROM o1 WHERE b = 1 OR d = 'z'
+(1, 1, 1, 'x'); (3, 3, 3, 'z')
+=== SELECT * FROM o1 WHERE d = 'x' OR a = 3
+(1, 1, 1, 'x'); (3, 3, 3, 'z')
+=== SELECT * FROM o1 WHERE b = 1 AND a = 1
+(1, 1, 1, 'x')
+=== SELECT * FROM o1 WHERE b = 1 OR (a = 2 AND c = 2)
+(1, 1, 1, 'x'); (2, 2, 2, 'y')
+=== SELECT * FROM o1 WHERE (b = 1 OR a = 2) AND c > 0
+(1, 1, 1, 'x'); (2, 2, 2, 'y')
+=== SELECT * FROM o1 WHERE b IN (1, 3) OR a = 2
+(1, 1, 1, 'x'); (2, 2, 2, 'y'); (3, 3, 3, 'z')
+=== SELECT * FROM o1 WHERE NOT (b = 1 OR a = 2)
+(3, 3, 3, 'z'); (4, 4, 4, 'w'); (5, 5, 5, 'v')
+=== SELECT * FROM o1 WHERE b = 1 OR a = 2 OR b = 5
+(1, 1, 1, 'x'); (2, 2, 2, 'y'); (5, 5, 5, 'v')
+=== SELECT * FROM o1 WHERE b > 3 OR a = 1
+(1, 1, 1, 'x'); (4, 4, 4, 'w'); (5, 5, 5, 'v')
+=== SELECT * FROM o1 WHERE b < 3 OR a = 5
+(1, 1, 1, 'x'); (2, 2, 2, 'y'); (5, 5, 5, 'v')
+=== SELECT * FROM o1 WHERE b = 1 OR a > 3
+(1, 1, 1, 'x'); (4, 4, 4, 'w'); (5, 5, 5, 'v')
+=== SELECT * FROM o1 WHERE a > 3 OR b = 1
+(4, 4, 4, 'w'); (5, 5, 5, 'v'); (1, 1, 1, 'x')
+=== SELECT * FROM o1 WHERE b = 1 OR a IN (2, 3)
+(1, 1, 1, 'x'); (2, 2, 2, 'y'); (3, 3, 3, 'z')
+=== SELECT * FROM o1 WHERE a IN (2, 3) OR b = 1
+(1, 1, 1, 'x'); (2, 2, 2, 'y'); (3, 3, 3, 'z')
+=== SELECT * FROM o1 WHERE b = 1 OR c = 3 OR a = 5
+(1, 1, 1, 'x'); (3, 3, 3, 'z'); (5, 5, 5, 'v')
+=== SELECT b, COUNT(*) FROM o1 WHERE b = 1 OR a = 2 GROUP BY b
+(1, 1); (2, 1); (3, 1); (4, 1); (5, 1)
+=== SELECT COUNT(*) FROM o1 WHERE b = 1 OR a = 2
+(2,)
+=== SELECT o1.a FROM o1 WHERE b = 1 OR a = 2
+(1,); (2,); (3,); (4,); (5,)
+=== SELECT * FROM o1 WHERE b = 1 OR a = 2 ORDER BY a
+(1, 1, 1, 'x'); (2, 2, 2, 'y')
+=== SELECT * FROM (SELECT * FROM o1) t WHERE b = 1 OR a = 2
+(1, 1, 1, 'x'); (2, 2, 2, 'y')
+=== WITH cte AS (SELECT * FROM o1) SELECT * FROM cte WHERE b = 1 OR a = 2
+(1, 1, 1, 'x'); (2, 2, 2, 'y')
+=== SELECT * FROM o1 WHERE b = 1 OR a = 2 LIMIT 2
+(1, 1, 1, 'x'); (2, 2, 2, 'y')
+=== UPDATE o1 SET d = 'M' WHERE b = 1 OR a = 2
+(ok)
+=== SELECT d FROM o1 WHERE b = 1 OR a = 2
+('M',); ('M',)
+=== SELECT * FROM o1 o_1 WHERE b = 1 OR EXISTS (SELECT 1 FROM o1 o_2 WHERE o_2.a = o_1.a AND o_1.a = 2)
+(1, 1, 1, 'M'); (2, 2, 2, 'M')
+=== DELETE FROM o1 WHERE b = 4 OR a = 5
+(ok)
+=== INSERT INTO o1 VALUES (6,6,6,'u')
+(ok)
+=== SELECT * FROM o1 WHERE b = 6 OR a = 6
+(6, 6, 6, 'u')

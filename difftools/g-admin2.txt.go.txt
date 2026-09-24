@@ -1,0 +1,65 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE ol(a INT, b VARCHAR(10))
+(ok)
+=== INSERT INTO ol VALUES (1,'x'),(2,'y')
+(ok)
+=== SELECT * INTO OUTFILE '/tmp/ol1.csv' FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' FROM ol
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 91 near "FROM ol" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 91 near "FROM ol" 
+=== SELECT * INTO DUMPFILE '/tmp/ol1.bin' FROM ol
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 22 near "DUMPFILE \'/tmp/ol1.bin\' FROM ol" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 22 near "DUMPFILE '/tmp/ol1.bin' FROM ol" 
+=== LOAD DATA INFILE '/tmp/ol1.csv' INTO TABLE ol
+ERR (8154, "Don't support load data from tidb-server's disk. Or if you want to load local data via client, the path of INFILE '/tmp/ol1.csv' needs to specify the clause of LOCAL first") | WARN Error:8154:Don't support load data from tidb-server's disk. Or if you want to load local data via client, the path of INFILE '/tmp/ol1.csv' needs to specify the clause of LOCAL first
+=== LOAD DATA LOCAL INFILE '/tmp/ol1.csv' INTO TABLE ol
+ERR (1148, 'The used command is not allowed with this MySQL version') | WARN Error:8154:Don't support load data from tidb-server's disk. Or if you want to load local data via client, the path of INFILE '/tmp/ol1.csv' needs to specify the clause of LOCAL first
+=== ANALYZE TABLE ol
+(ok) | WARN Note:1105:Analyze use auto adjusted sample rate 1.000000 for table fdq.ol, reason to use this rate is "use min(1, 110000/10000) as the sample-rate=1"
+=== ANALYZE TABLE no_such
+ERR (1146, "Table 'fdq.no_such' doesn't exist") | WARN Error:1146:Table 'fdq.no_such' doesn't exist
+=== ANALYZE TABLE ol INDEX ib
+ERR (8109, "Index 'ib' in field list does not exist in table 'ol'") | WARN Error:8109:Index 'ib' in field list does not exist in table 'ol'
+=== ANALYZE INCREMENTAL TABLE ol INDEX ib
+ERR (1105, 'the incremental analyze feature has already been removed in TiDB v7.5.0, so this will have no effect') | WARN Error:1105:the incremental analyze feature has already been removed in TiDB v7.5.0, so this will have no effect
+=== OPTIMIZE TABLE ol
+ERR (8200, 'OPTIMIZE TABLE is not supported') | WARN Error:8200:OPTIMIZE TABLE is not supported
+=== OPTIMIZE TABLE no_such
+ERR (8200, 'OPTIMIZE TABLE is not supported') | WARN Error:8200:OPTIMIZE TABLE is not supported
+=== FLUSH TABLES
+(ok)
+=== FLUSH TABLE ol
+(ok)
+=== FLUSH PRIVILEGES
+(ok)
+=== FLUSH STATUS
+(ok)
+=== FLUSH NO_WRITE_TO_BINLOG TABLES
+(ok)
+=== CHECKSUM TABLE ol
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 8 near "CHECKSUM TABLE ol" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 8 near "CHECKSUM TABLE ol" 
+=== CHECK TABLE ol
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "CHECK TABLE ol" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "CHECK TABLE ol" 
+=== CHECK TABLE ol FAST QUICK
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "CHECK TABLE ol FAST QUICK" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "CHECK TABLE ol FAST QUICK" 
+=== REPAIR TABLE ol
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 6 near "REPAIR TABLE ol" ') | WARN Error:1064:You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 6 near "REPAIR TABLE ol" 
+=== ADMIN CHECKSUM TABLE ol
+('fdq', 'ol', 1, 1, 1)
+=== KILL 999999999
+(ok) | WARN Warning:1105:Kill failed: Received a 32bits truncated ConnectionID, expect 64bits. Please execute 'KILL [CONNECTION | QUERY] ConnectionID' to send a Kill without truncating ConnectionID.
+=== KILL QUERY 999999999
+(ok) | WARN Warning:1105:Kill failed: Received a 32bits truncated ConnectionID, expect 64bits. Please execute 'KILL [CONNECTION | QUERY] ConnectionID' to send a Kill without truncating ConnectionID.
+=== KILL CONNECTION 999999999
+(ok) | WARN Warning:1105:Kill failed: Received a 32bits truncated ConnectionID, expect 64bits. Please execute 'KILL [CONNECTION | QUERY] ConnectionID' to send a Kill without truncating ConnectionID.
+=== KILL TIDB 999999999
+(ok) | WARN Warning:1105:Kill failed: Received a 32bits truncated ConnectionID, expect 64bits. Please execute 'KILL [CONNECTION | QUERY] ConnectionID' to send a Kill without truncating ConnectionID.
+=== SHUTDOWN
+(ok)
+=== SET GLOBAL max_connections = 100
+(ok)
+=== SET GLOBAL innodb_lock_wait_timeout = 5
+(ok)
+=== SET GLOBAL validate_password.enable = 1
+(ok)
+=== SET GLOBAL validate_password.enable = 0
+(ok)

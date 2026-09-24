@@ -1,0 +1,65 @@
+(ok)
+(ok)
+(ok)
+=== CREATE TABLE ol(a INT, b VARCHAR(10))
+(ok)
+=== INSERT INTO ol VALUES (1,'x'),(2,'y')
+(ok)
+=== SELECT * INTO OUTFILE '/tmp/ol1.csv' FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' FROM ol
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 91 near "FROM ol" ')
+=== SELECT * INTO DUMPFILE '/tmp/ol1.bin' FROM ol
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 22 near "DUMPFILE \'/tmp/ol1.bin\' FROM ol" ')
+=== LOAD DATA INFILE '/tmp/ol1.csv' INTO TABLE ol
+ERR (1105, 'this DML statement kind (LoadData) is not supported yet') | WARN Error:1105:this DML statement kind (LoadData) is not supported yet
+=== LOAD DATA LOCAL INFILE '/tmp/ol1.csv' INTO TABLE ol
+ERR (1105, 'this DML statement kind (LoadData) is not supported yet') | WARN Error:1105:this DML statement kind (LoadData) is not supported yet
+=== ANALYZE TABLE ol
+(ok)
+=== ANALYZE TABLE no_such
+ERR (1105, 'the cluster catalog has no table `fdq.no_such`')
+=== ANALYZE TABLE ol INDEX ib
+ERR (1105, "Index 'ib' in field list does not exist in table 'ol'")
+=== ANALYZE INCREMENTAL TABLE ol INDEX ib
+ERR (1105, 'this node does not run ANALYZE INCREMENTAL TABLE: it extends the previous histogram from its last bound rather than rebuilding one')
+=== OPTIMIZE TABLE ol
+ERR (1105, "this node changes the cluster's catalog for CREATE TABLE, DROP TABLE, CREATE DATABASE, DROP DATABASE, CREATE/DROP VIEW, placement policy changes, index changes, and single-action ALTER INDEX changes only; run this statement on a TiDB server")
+=== OPTIMIZE TABLE no_such
+ERR (1105, "this node changes the cluster's catalog for CREATE TABLE, DROP TABLE, CREATE DATABASE, DROP DATABASE, CREATE/DROP VIEW, placement policy changes, index changes, and single-action ALTER INDEX changes only; run this statement on a TiDB server")
+=== FLUSH TABLES
+(ok)
+=== FLUSH TABLE ol
+(ok)
+=== FLUSH PRIVILEGES
+(ok)
+=== FLUSH STATUS
+(ok)
+=== FLUSH NO_WRITE_TO_BINLOG TABLES
+(ok)
+=== CHECKSUM TABLE ol
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 8 near "CHECKSUM TABLE ol" ')
+=== CHECK TABLE ol
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "CHECK TABLE ol" ')
+=== CHECK TABLE ol FAST QUICK
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 5 near "CHECK TABLE ol FAST QUICK" ')
+=== REPAIR TABLE ol
+ERR (1064, 'You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 1 column 6 near "REPAIR TABLE ol" ')
+=== ADMIN CHECKSUM TABLE ol
+ERR (1105, 'this statement kind (ADMIN AdminChecksum) is not supported yet') | WARN Error:1105:this statement kind (ADMIN AdminChecksum) is not supported yet
+=== KILL 999999999
+(ok)
+=== KILL QUERY 999999999
+(ok)
+=== KILL CONNECTION 999999999
+(ok)
+=== KILL TIDB 999999999
+(ok)
+=== SHUTDOWN
+ERR (1105, 'this statement kind (ADMIN ServerControl) is not supported yet') | WARN Error:1105:this statement kind (ADMIN ServerControl) is not supported yet
+=== SET GLOBAL max_connections = 100
+(ok) | WARN Error:1105:this statement kind (ADMIN ServerControl) is not supported yet
+=== SET GLOBAL innodb_lock_wait_timeout = 5
+(ok) | WARN Error:1105:this statement kind (ADMIN ServerControl) is not supported yet
+=== SET GLOBAL validate_password.enable = 1
+(ok) | WARN Error:1105:this statement kind (ADMIN ServerControl) is not supported yet
+=== SET GLOBAL validate_password.enable = 0
+(ok) | WARN Error:1105:this statement kind (ADMIN ServerControl) is not supported yet
