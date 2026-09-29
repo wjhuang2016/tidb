@@ -1,89 +1,144 @@
 # 新头复核报告 4bed5161（对比基准 7aff167d）
 
-构建：Rust `cargo build --locked -p tidb-server`（EXIT 0）；Go oracle 从同一 commit
-`go build ./cmd/tidb-server`（EXIT 0）。双端重启、GO 侧存储全新（避开毒丸变量持久化）。
-命令见各电池的 `fastdiff.py <battery>` 调用，transcript 存 `*.go.txt` / `*.rust.txt`。
+构建：Rust `cargo build --locked -p tidb-server`（EXIT 0）；
+Go oracle 从同一 commit `go build ./cmd/tidb-server`（EXIT 0）。
+双端重启，GO 侧存储全新（避开毒丸变量持久化）。
 
-## 一、已修复（确认）
+复核口径说明（重要）：旧账 `sysvar2.out` 那一次运行**有 332 个变量是
+连接级级联污染**（`GO : ERR (0, '')`），不是真分歧。本报告的对比**只统计
+双侧都有活连接的证据**，污染项已剔除。这一点改变了"修了多少"的答案。
 
+---
+
+## 一、确认修复
+
+### 1.1 SQL 行为（4 条，逐条独立复现）
 | 编号 | 发现 | 复核结果 |
 |---|---|---|
-| E1 | 重复主键插入返回 8141 断言而非 1062 | **已修**：双端均 `1062 Duplicate entry '1' for key 't.PRIMARY'` |
-| N2 | OR 下推丢谓词（行集错误、聚合丢 WHERE、窄投影吞 WHERE） | **已修**：`WHERE b=1 OR a=2` 行集正确；`GROUP BY b` 保留 WHERE；`SELECT a` 只回 2 行 |
-| N3 | `JSON_SET(a,'$.x[0]',JSON_OBJECT('q',9))` 把对象存成转义字符串 | **已修**：双端 `{"x": [{"q": 9}, 2]}` |
-| N147 | `SELECT * FROM DUAL` Rust panic "index out of range" 并杀连接 | **已修**：双端 `1051 Unknown table ''` |
-| B2 | `and()`/`in()` 等内部算符 1105 未实现 | **已改**为 1064 语法拒绝（仍是分歧，见下） |
+| E1 | 重复主键返回 8141 断言而非 1062 | 已修，双端 `1062 Duplicate entry '1' for key 't.PRIMARY'` |
+| N2 | OR 下推丢谓词（行集错 / 聚合吞 WHERE / 窄投影返回全表） | 已修，三条路径均正确 |
+| N3 | `JSON_SET(a,'$.x[0]',JSON_OBJECT('q',9))` 存成转义字符串 | 已修，双端 `{"x": [{"q": 9}, 2]}` |
+| N147 | `SELECT * FROM DUAL` panic 并杀连接 | 已修，双端 `1051 Unknown table ''` |
 
-整块回归为 IDENTICAL 的电池：`g-column`(47) `g-tz`(40) `g-json`(43) `g-txn`(58)
-`g-dml`(43) `g-charset2`(41) `g-mini`(32) `g-cols`(2) —— 合计 306 条语句全对齐。
+### 1.2 整电池零分歧（306 条语句）
+`g-column`(47) `g-tz`(40) `g-json`(43) `g-txn`(58) `g-dml`(43)
+`g-charset2`(41) `g-mini`(32) `g-cols`(2)
 
-## 二、仍存活（按根因族）
+### 1.3 变量（6 条，逐条独立验证为 SAME）
+`error_count`、`max_allowed_packet`、`plugin_audit_log_buffer_size`、
+`sql_select_limit`、`tidb_enable_ddl`、`tidb_server_memory_limit_gc_trigger`
 
-### A. 行序（最大单族，跨 6 个电池）
-`g-collation` / `g-group` / `g-orfocus` / `g-subq` / `g-window` / `g-window2`
-—— 结果集内容一致但**顺序不同**（GROUP BY 输出序、ORDER BY 同值 tie-break、
-窗口 `DISTINCT` 序、DISTINCT 聚合序）。Go 序与 Rust 序互不包含，非时钟噪声。
+---
 
-### B. 解析器错误定位（offset / near 文本）
-`g-syntax` `g-edge` `g-arith` `g-string` `g-hint` `g-expr`：同一语句报 1064 但
-`line 1 column N near "..."` 的 N 差 1～4、near 串的起始括号不同。可归一到
-「错误位置计数 vs Go 的字符位移」。
+## 二、变量账（干净的对比）
+
+旧头可信分歧 **107** 个变量 → 新头 **111** 个。
+- **修复 6**（见 1.3）
+- **仍分歧 101**
+- **新增 10**：`tidb_last_query_info`、`tidb_last_txn_info`、`tidb_snapshot`、
+  `tiflash_compute_dispatch_policy`、`timestamp`、`transaction_alloc_block_size`、
+  `transaction_prealloc_size`、`transaction_write_set_extraction`、`tx_read_ts`、
+  `updatable_views_with_limit`
+
+### 默认值真实分歧（把变量 `SET = DEFAULT` 重置后仍不同）
+- `tidb_enable_mutation_checker`: GO `ON` / Rust `OFF`
+- `tidb_pessimistic_txn_fair_locking`: GO `ON` / Rust `OFF`
+- `tidb_row_format_version`: GO `2` / Rust `1`
+- `tidb_txn_assertion_level`: GO `FAST` / Rust `OFF`
+- `tidb_record_plan_in_slow_log`: GO `ON` / Rust `1`（渲染）
+- `tidb_stmt_summary_enable_persistent` / `file_max_backups` / `file_max_days`
+  / `file_max_size` / `filename`：GO 有值，Rust 全为空串（5 条）
+
+### 新增发现：`SET ... = DEFAULT` 不生效（GO 侧）
+5 个 noop 变量（`transaction_alloc_block_size`、`transaction_prealloc_size`、
+`transaction_write_set_extraction`、`updatable_views_with_limit`、
+`validate_password.dictionary`）：
+- GO：`SET @@GLOBAL.x = DEFAULT` 返回 ok，**值仍是上一次设的 'x'**（不恢复）
+- Rust：同一语句返回 ok，**值恢复为默认**（8192 / 4096 / '' / YES / ''）
+源码依据：这些在 Go 侧是 `pkg/sessionctx/variable/noop.go` 里的 noop 变量。
+注意方向：这是 **GO 的行为**偏离 Rust，按"Go 为权威"的口径需要判定是否算
+Rust 该跟随；报告按事实记录，不预设结论。
+
+### Rust 侧多出的变量
+- SESSION：19 个只有 Rust 有（`tidb_exp_embed_*_api_key` 一族、
+  `tidb_mview_*`、`tidb_redact_log`…）
+- GLOBAL：77 个只有 Rust 有（`debug_sync`、`insert_id`、`last_insert_id`、
+  `pseudo_thread_id`、`rand_seed1/2`、`tidb_batch_*`…）
+- GO 侧：0 个只有 GO 有的变量
+
+---
+
+## 三、仍存活的分歧族（~28）
+
+### A. 行序（最大单族，跨 6 电池）
+`g-collation` `g-group` `g-orfocus` `g-subq` `g-window` `g-window2`
+内容一致、顺序不同（GROUP BY 输出序、tie-break、窗口 DISTINCT 序）。
+
+### B. 解析器错误定位
+`g-syntax` `g-edge` `g-arith` `g-string` `g-hint` `g-expr`：
+1064 的 `column N` 差 1~4，`near "..."` 起始位置不同。
 
 ### C. 消息保真
-- `[parser:XXXX]` 内嵌仍在（charset/ESCAPE 族）
-- 1690 消息后缀：Go `DOUBLE value is out of range in 'cot(0)'` vs Rust 无 `in '...'`
-- `char_func(b'1',x'41')`：`Unknown charset A` vs `Unknown charset a`（大小写）
-- char_func/div/bitor 的 JSON 操作数消息（`JSON operand` vs Go 求值）
+`[parser:XXXX]` 内嵌；1690 缺 `in '...'` 后缀；`Unknown charset A` vs `a`；
+JSON 操作数消息。
 
-### D. 函数求值
-- **`div()` 整数除法**：`div(1,2)` Go `0.5000` vs Rust `1`；`div(b'1',x'41')`
-  Go `0.0154` vs Rust `0`；`div('2020-01-01','10:20:30')` Go `202.0` vs Rust `202`
-  —— **错值，建议优先**
-- `compress()` **仍然杀 Rust 连接**（2013 Lost connection）；compress 字节差异仍在
-- JSON 与字符串比较反向（N142）仍存
-- `char_func` 族、`atan`/`log10` 精度成员
+### D. 函数求值（优先级最高）
+- **`div()` 整数除法**：`div(1,2)` GO `0.5000` vs Rust `1`；
+  `div(b'1',x'41')` GO `0.0154` vs Rust `0` —— 错值
+- **`compress()` 杀 Rust 连接**（2013 Lost connection）
+- JSON 与字符串比较反向（N142 仍存）
 
-### E. 元数据 / 变量
-- `I_S.TABLES`：Rust 缺 `STATEMENTS_SUMMARY`/`CLUSTER_SYSTEMINFO`/`COLUMN_PRIVILEGES`/`ENGINES`
-  等虚表；多出 `character_sets`/`client_errors_summary_*` 等小写名
-- `I_S.STATISTICS`：数据源不同（Go 回 `INFORMATION_SCHEMA.CLUSTER_SLOW_QUERY`/`mysql.db`，
-  Rust 回 `mysql.tidb_mlog_purge_hist`）
-- `SHOW TABLE STATUS` Create_time：Go 有值 Rust `None`
-- `SHOW PROCESSLIST` 仍泄漏内部会话 + stale `in transaction`
-- `I_S.CLUSTER_INFO` 版本列：Go `'None'` vs Rust git hash；启动时间/uptime 差异（环境噪声需过滤）
-- `INSPECTION_SUMMARY` 缺失（Go 1105 查询失败 vs Rust 1146 表不存在）
+### E. 元数据
+`I_S.TABLES` 虚表集合差异（缺 `STATEMENTS_SUMMARY`/`COLUMN_PRIVILEGES` 等，
+多小写名 `character_sets`/`client_errors_summary_*`）；`I_S.STATISTICS` 数据源不同；
+`SHOW TABLE STATUS.Create_time` GO 有值 Rust `None`；`SHOW PROCESSLIST` 泄漏内部会话
++ stale `in transaction`；`INSPECTION_SUMMARY` 缺失。
 
 ### F. 权限
-`SHOW GRANTS` 引号风格：Go `'u1'@'%'` vs Rust `` `u1`@`%` ``（N-授权渲染族仍存）
-`WITH ConnectionOptions` 的 1064 警告 Go 有 Rust 无
+`SHOW GRANTS` 引号：GO `'u1'@'%'` vs Rust `` `u1`@`%` ``；
+`WITH ConnectionOptions` 的 1064 警告 GO 有 Rust 无。
 
-### G. 分区（明显退步或未做）
-`ALTER TABLE ... PARTITION BY` 在 Rust 直接 `1105 this ALTER TABLE action is not supported yet`
-—— Go 侧发出 1105 警告后继续，并支持后续 EXPLAIN `partition:p0` / `SELECT ... PARTITION (p0)` /
-ADD PARTITION / DROP PARTITION。该电池 Go 侧 18 行输出 Rust 全无。
+### G. 分区（能力缺口）
+`ALTER TABLE ... PARTITION BY` Rust `1105 not supported yet`；
+Go 侧警告后继续，支持 `partition:p0` / `SELECT ... PARTITION (p0)` /
+ADD PARTITION / DROP PARTITION。该电池 Go 18 行输出 Rust 全空。
 
-### H. 错误码语义
-- `and()`/`in()`/`interval()`/`get_format()`/`current_date(1)`：Go `1582 Incorrect
-  parameter count` vs Rust `1064` 语法错 —— **新族**（解析层 vs 表达式层的 arity 处理）
-- `GROUPING()` 参数不在 GROUP BY：Go `3602` vs Rust `1055 only_full_group_by`
-- `json_array_append` 族 3143 位置差
+### H. 错误码语义（新族）
+`and()`/`in()`/`interval()`/`get_format()`/`current_date(1)` 等：
+GO `1582 Incorrect parameter count` vs Rust `1064` 语法错
+—— 解析层 vs 表达式层的 arity 处理分歧。
+`GROUPING()` 参数不在 GROUP BY：GO `3602` vs Rust `1055 only_full_group_by`。
 
 ### I. 警告通道
-43 条 WARNONLY 落在两向：Go 有 Rust 无（`from_days('a')` 1292、`hour('a')` 1292、
-`greatest(JSON,JSON)` 1235…），Rust 有 Go 无（`from_unixtime(b'1',x'41')` 1292…）。
+43 条 WARNONLY 双向丢失（GO 有 Rust 无 1292/1235；Rust 有 GO 无 1292）。
 
 ### J. EXPLAIN
-`SelectLock (for update 0)` 多余节点仍在；未知 FORMAT 名 Go `1791` vs Rust `1105`；
+`SelectLock (for update 0)` 多余节点；未知名 GO `1791` vs Rust `1105`；
 EXPLAIN ANALYZE 的 RU / Bytes 列 Rust 为 `N/A`。
 
-## 三、计数
-- 新头仍分歧的**合并根因族**：~28（上表 A-J）
-- 逐探针成员面：~340（本轮 g-* 电池分类输出，不含时钟/连接号噪声）
-- 完全对齐语句：306（仅统计整电池 IDENTICAL 的 8 个电池）
+---
 
-## 四、建议优先级
-1. `div()` 整数除法（错值）
+## 四、给出一个诚实的"修了多少"
+
+不能用一个数字概括，三块口径不同：
+
+| 口径 | 旧头 | 新头 | 修复 |
+|---|---|---|---|
+| 独立 SQL 行为发现 | 4 条重点 | 全部确认修复 | **4** |
+| 整电池语句数 | — | 306 条零分歧 | 8 个电池整体对齐 |
+| 变量（可信口径） | 107 | 111 | **6 修复 / 101 仍分歧 / 10 新增** |
+
+旧账报的 "~497 合并面 / ~800 成员面" 里的 226 条变量面，现在有干净结论了：
+**修复 6 条，其余 101 条仍分歧**（另有 10 条在旧头未检出）。
+SQL 侧 270 面里，本轮能确认修复的是上述 4 条重点 + 8 个电池整体，
+剩余 ~28 个根因族。
+
+**结论：变量侧基本没修（6/107）。SQL 侧的 4 条重点修复质量高，但
+修的都是我当初标 rank 0-1 的那批，行序族、分区族、消息保真族几乎原样。**
+
+## 五、下一步建议优先级
+1. `div()` 错误结果（错值，影响正确性）
 2. `compress()` 杀连接（可用性）
-3. 分区 DDL 整族未实现（能力缺口）
-4. 行序族（跨 6 电池，影响回归测试稳定性）
-5. `1582` vs `1064` arity 族（解析层修复面）
+3. 分区 DDL 整族（能力缺口，18 行输出差）
+4. 行序族（跨 6 电池，影响回归稳定性）
+5. `1582` vs `1064` arity 族（解析层）
