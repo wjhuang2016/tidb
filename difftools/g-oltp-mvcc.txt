@@ -1,0 +1,99 @@
+-- OLTP deep probe: MVCC snapshot isolation edge cases
+DROP DATABASE IF EXISTS mvcc1;
+CREATE DATABASE mvcc1;
+USE mvcc1;
+
+CREATE TABLE accounts (
+  id INT PRIMARY KEY,
+  balance DECIMAL(10,2),
+  version INT DEFAULT 0
+);
+
+INSERT INTO accounts VALUES (1, 1000.00, 0), (2, 2000.00, 0), (3, 3000.00, 0);
+
+-- Test 1: Phantom read (should be prevented by REPEATABLE READ)
+START TRANSACTION;
+SELECT COUNT(*) FROM accounts WHERE balance > 1500;
+INSERT INTO accounts VALUES (4, 2500.00, 0);
+SELECT COUNT(*) FROM accounts WHERE balance > 1500;
+COMMIT;
+
+-- Test 2: Write skew scenario
+DROP TABLE accounts;
+CREATE TABLE accounts (id INT PRIMARY KEY, balance DECIMAL(10,2));
+INSERT INTO accounts VALUES (1, 100), (2, 100);
+
+START TRANSACTION;
+SELECT SUM(balance) FROM accounts;
+UPDATE accounts SET balance = balance - 150 WHERE id = 1;
+SELECT SUM(balance) FROM accounts;
+ROLLBACK;
+
+-- Test 3: Lost update with explicit locking
+START TRANSACTION;
+SELECT balance FROM accounts WHERE id = 1 FOR UPDATE;
+UPDATE accounts SET balance = 200 WHERE id = 1;
+COMMIT;
+
+-- Test 4: Read your own writes
+START TRANSACTION;
+INSERT INTO accounts VALUES (5, 500);
+SELECT * FROM accounts WHERE id = 5;
+DELETE FROM accounts WHERE id = 5;
+SELECT * FROM accounts WHERE id = 5;
+COMMIT;
+
+-- Test 5: Savepoint interaction with MVCC
+START TRANSACTION;
+INSERT INTO accounts VALUES (6, 600);
+SAVEPOINT sp1;
+UPDATE accounts SET balance = 700 WHERE id = 6;
+SELECT balance FROM accounts WHERE id = 6;
+ROLLBACK TO sp1;
+SELECT balance FROM accounts WHERE id = 6;
+COMMIT;
+
+-- Test 6: SELECT ... FOR UPDATE with nonexistent row
+START TRANSACTION;
+SELECT * FROM accounts WHERE id = 999 FOR UPDATE;
+INSERT INTO accounts VALUES (999, 9999);
+SELECT * FROM accounts WHERE id = 999;
+COMMIT;
+
+-- Test 7: UPDATE ... WHERE with no matches
+START TRANSACTION;
+UPDATE accounts SET balance = 0 WHERE id = 888;
+SELECT ROW_COUNT();
+ROLLBACK;
+
+-- Test 8: Optimistic locking pattern (version check)
+DROP TABLE accounts;
+CREATE TABLE accounts (id INT PRIMARY KEY, balance DECIMAL(10,2), version INT);
+INSERT INTO accounts VALUES (1, 1000, 1);
+
+START TRANSACTION;
+SELECT balance, version FROM accounts WHERE id = 1;
+UPDATE accounts SET balance = 900, version = version + 1 WHERE id = 1 AND version = 1;
+SELECT ROW_COUNT();
+COMMIT;
+
+-- Test 9: Gap lock behavior (insert into range)
+DROP TABLE accounts;
+CREATE TABLE accounts (id INT PRIMARY KEY, balance DECIMAL(10,2));
+INSERT INTO accounts VALUES (1, 100), (3, 300), (5, 500);
+
+START TRANSACTION;
+SELECT * FROM accounts WHERE id BETWEEN 2 AND 4 FOR UPDATE;
+INSERT INTO accounts VALUES (4, 400);
+SELECT * FROM accounts WHERE id BETWEEN 2 AND 4;
+COMMIT;
+
+-- Test 10: Read committed vs repeatable read
+SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
+START TRANSACTION;
+SELECT balance FROM accounts WHERE id = 1;
+UPDATE accounts SET balance = 150 WHERE id = 1;
+SELECT balance FROM accounts WHERE id = 1;
+COMMIT;
+
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;

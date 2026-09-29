@@ -1,0 +1,101 @@
+(ok)
+(ok)
+(ok)
+=== DROP DATABASE IF EXISTS conflict2
+(ok)
+=== CREATE DATABASE conflict2
+(ok)
+=== USE conflict2
+(ok)
+=== CREATE TABLE users ( id INT PRIMARY KEY AUTO_INCREMENT, email VARCHAR(100) UNIQUE, login_count INT DEFAULT 0, last_login TIMESTAMP )
+(ok)
+=== INSERT INTO users (email, login_count) VALUES ('alice@example.com', 1)
+(ok)
+=== INSERT INTO users (email, login_count) VALUES ('alice@example.com', 1) ON DUPLICATE KEY UPDATE login_count = login_count + 1
+(ok)
+=== SELECT * FROM users WHERE email = 'alice@example.com'
+(1, 'alice@example.com', 2, None)
+=== INSERT INTO users (email, login_count) VALUES ('bob@example.com', 5) ON DUPLICATE KEY UPDATE login_count = VALUES(login_count)
+(ok)
+=== INSERT INTO users (email, login_count) VALUES ('bob@example.com', 10) ON DUPLICATE KEY UPDATE login_count = VALUES(login_count)
+(ok)
+=== SELECT * FROM users WHERE email = 'bob@example.com'
+(3, 'bob@example.com', 10, None)
+=== CREATE TABLE cache ( key_name VARCHAR(50) PRIMARY KEY, value VARCHAR(200), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP )
+(ok)
+=== INSERT INTO cache (key_name, value) VALUES ('config1', 'v1')
+(ok)
+=== SELECT SLEEP(1)
+(0,)
+=== REPLACE INTO cache (key_name, value) VALUES ('config1', 'v2')
+(ok)
+=== SELECT key_name, value FROM cache WHERE key_name = 'config1'
+('config1', 'v2')
+=== DELETE FROM users
+(ok)
+=== INSERT INTO users (email, login_count) VALUES ('charlie@example.com', 1)
+(ok)
+=== INSERT INTO users (email, login_count) VALUES ('dave@example.com', 2), ('charlie@example.com', 3), ('eve@example.com', 4)
+ERR (1062, "Duplicate entry 'charlie@example.com' for key 'users.email'") | WARN Error:1062:Duplicate entry 'charlie@example.com' for key 'users.email'
+=== SELECT email, login_count FROM users ORDER BY email
+('charlie@example.com', 1)
+=== DELETE FROM users
+(ok)
+=== INSERT INTO users (email, login_count) VALUES ('frank@example.com', 10)
+(ok)
+=== INSERT IGNORE INTO users (email, login_count) VALUES ('frank@example.com', 20)
+(ok) | WARN Warning:1062:Duplicate entry 'frank@example.com' for key 'users.email'
+=== SELECT * FROM users WHERE email = 'frank@example.com'
+(9, 'frank@example.com', 10, None)
+=== DELETE FROM users
+(ok)
+=== ALTER TABLE users AUTO_INCREMENT = 100
+(ok) | WARN Warning:1105:Can't reset AUTO_INCREMENT to 100 without FORCE option, using 30001 instead
+=== INSERT INTO users (email, login_count) VALUES ('user1@example.com', 1)
+(ok)
+=== INSERT INTO users (email, login_count) VALUES ('user1@example.com', 2)
+ERR (1062, "Duplicate entry 'user1@example.com' for key 'users.email'") | WARN Error:1062:Duplicate entry 'user1@example.com' for key 'users.email'
+=== INSERT INTO users (email, login_count) VALUES ('user2@example.com', 3)
+(ok)
+=== SELECT id, email FROM users ORDER BY id
+(30001, 'user1@example.com'); (30003, 'user2@example.com')
+=== DELETE FROM users
+(ok)
+=== ALTER TABLE users AUTO_INCREMENT = 1
+(ok) | WARN Warning:1105:Can't reset AUTO_INCREMENT to 1 without FORCE option, using 60001 instead
+=== INSERT INTO users (id, email, login_count) VALUES (10, 'explicit@example.com', 1)
+(ok)
+=== INSERT INTO users (email, login_count) VALUES ('auto@example.com', 2)
+(ok)
+=== SELECT id, email FROM users ORDER BY id
+(10, 'explicit@example.com'); (60001, 'auto@example.com')
+=== DELETE FROM users
+(ok)
+=== ALTER TABLE users AUTO_INCREMENT = 1
+(ok) | WARN Warning:1105:Can't reset AUTO_INCREMENT to 1 without FORCE option, using 90001 instead
+=== INSERT INTO users (email, login_count) VALUES ('batch1@example.com', 1), ('batch2@example.com', 2), ('batch3@example.com', 3)
+(ok)
+=== SELECT id, email FROM users ORDER BY id
+(90001, 'batch1@example.com'); (90002, 'batch2@example.com'); (90003, 'batch3@example.com')
+=== DELETE FROM users
+(ok)
+=== ALTER TABLE users AUTO_INCREMENT = 1
+(ok) | WARN Warning:1105:Can't reset AUTO_INCREMENT to 1 without FORCE option, using 120001 instead
+=== INSERT INTO users (email, login_count) VALUES ('lastid1@example.com', 1), ('lastid2@example.com', 2)
+(ok)
+=== SELECT LAST_INSERT_ID()
+(120001,)
+=== UPDATE users SET login_count = 999 WHERE email = 'nonexistent@example.com'
+(ok)
+=== SELECT ROW_COUNT()
+(0,)
+=== DELETE FROM users WHERE email = 'ghost@example.com'
+(ok)
+=== SELECT ROW_COUNT()
+(0,)
+=== CREATE TABLE strict_unique ( id INT PRIMARY KEY, code VARCHAR(10) UNIQUE )
+(ok)
+=== INSERT INTO strict_unique VALUES (1, 'ABC')
+(ok)
+=== INSERT INTO strict_unique VALUES (2, 'ABC')
+ERR (1062, "Duplicate entry 'ABC' for key 'strict_unique.code'") | WARN Error:1062:Duplicate entry 'ABC' for key 'strict_unique.code'

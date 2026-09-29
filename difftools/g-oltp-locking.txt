@@ -1,0 +1,63 @@
+-- OLTP battery 7: SELECT FOR UPDATE and locking behavior
+-- Focus: pessimistic locking, lock wait timeout, nowait
+
+DROP DATABASE IF EXISTS oltp7;
+CREATE DATABASE oltp7;
+USE oltp7;
+
+CREATE TABLE t1 (
+  id INT PRIMARY KEY,
+  val INT,
+  name VARCHAR(50)
+);
+
+INSERT INTO t1 VALUES (1, 100, 'alice'), (2, 200, 'bob'), (3, 300, 'charlie');
+
+-- basic FOR UPDATE
+BEGIN;
+SELECT * FROM t1 WHERE id = 1 FOR UPDATE;
+COMMIT;
+
+-- FOR UPDATE with ORDER BY and LIMIT
+BEGIN;
+SELECT * FROM t1 WHERE val > 50 ORDER BY id LIMIT 2 FOR UPDATE;
+COMMIT;
+
+-- LOCK IN SHARE MODE
+BEGIN;
+SELECT * FROM t1 WHERE id = 2 LOCK IN SHARE MODE;
+COMMIT;
+
+-- FOR UPDATE NOWAIT (should work if row not locked)
+SELECT * FROM t1 WHERE id = 3 FOR UPDATE NOWAIT;
+
+-- FOR UPDATE SKIP LOCKED
+BEGIN;
+SELECT * FROM t1 WHERE id > 0 ORDER BY id FOR UPDATE SKIP LOCKED;
+COMMIT;
+
+-- UPDATE without explicit transaction (auto-commit)
+UPDATE t1 SET val = val + 1 WHERE id = 1;
+SELECT * FROM t1 WHERE id = 1;
+
+-- DELETE with FOR UPDATE (redundant but valid)
+BEGIN;
+SELECT * FROM t1 WHERE id = 3 FOR UPDATE;
+DELETE FROM t1 WHERE id = 3;
+COMMIT;
+
+SELECT * FROM t1 WHERE id = 3;
+
+-- range FOR UPDATE
+BEGIN;
+SELECT * FROM t1 WHERE id BETWEEN 1 AND 10 FOR UPDATE;
+COMMIT;
+
+-- FOR UPDATE with subquery
+BEGIN;
+SELECT * FROM t1 WHERE id IN (SELECT id FROM t1 WHERE val > 100) FOR UPDATE;
+COMMIT;
+
+-- check lock wait timeout variable
+SELECT @@innodb_lock_wait_timeout;
+SELECT @@tidb_txn_mode;

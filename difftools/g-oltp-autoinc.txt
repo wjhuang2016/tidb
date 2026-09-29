@@ -1,0 +1,93 @@
+-- OLTP battery 4: AUTO_INCREMENT and LAST_INSERT_ID
+-- Focus: auto-increment allocation, explicit insert, batch insert, LAST_INSERT_ID()
+
+DROP DATABASE IF EXISTS oltp4;
+CREATE DATABASE oltp4;
+USE oltp4;
+
+CREATE TABLE t1 (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  val VARCHAR(50)
+);
+
+-- basic auto-increment
+INSERT INTO t1 (val) VALUES ('a');
+SELECT LAST_INSERT_ID();
+SELECT * FROM t1;
+
+-- multiple rows
+INSERT INTO t1 (val) VALUES ('b'), ('c');
+SELECT LAST_INSERT_ID();
+SELECT * FROM t1 ORDER BY id;
+
+-- explicit id insert
+INSERT INTO t1 (id, val) VALUES (10, 'd');
+SELECT LAST_INSERT_ID();
+SELECT * FROM t1 ORDER BY id;
+
+-- next auto value after explicit insert
+INSERT INTO t1 (val) VALUES ('e');
+SELECT LAST_INSERT_ID();
+SELECT * FROM t1 ORDER BY id;
+
+-- explicit insert lower than current auto_increment
+INSERT INTO t1 (id, val) VALUES (5, 'f');
+SELECT * FROM t1 ORDER BY id;
+
+INSERT INTO t1 (val) VALUES ('g');
+SELECT * FROM t1 ORDER BY id;
+
+-- batch insert with mixed explicit and auto
+DELETE FROM t1;
+INSERT INTO t1 (val) VALUES ('x');
+INSERT INTO t1 (id, val) VALUES (100, 'y'), (200, 'z');
+INSERT INTO t1 (val) VALUES ('w');
+SELECT * FROM t1 ORDER BY id;
+
+-- AUTO_INCREMENT table option
+CREATE TABLE t2 (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  val INT
+) AUTO_INCREMENT = 1000;
+
+INSERT INTO t2 (val) VALUES (1);
+SELECT * FROM t2;
+
+-- ALTER TABLE AUTO_INCREMENT
+ALTER TABLE t2 AUTO_INCREMENT = 2000;
+INSERT INTO t2 (val) VALUES (2);
+SELECT * FROM t2 ORDER BY id;
+
+-- SHOW CREATE TABLE to see AUTO_INCREMENT value
+SHOW CREATE TABLE t2;
+
+-- AUTO_INCREMENT with REPLACE
+DELETE FROM t2;
+INSERT INTO t2 (id, val) VALUES (3000, 10);
+REPLACE INTO t2 (id, val) VALUES (3000, 20);
+SELECT * FROM t2;
+
+-- AUTO_INCREMENT with ON DUPLICATE KEY UPDATE
+INSERT INTO t2 (id, val) VALUES (3000, 30) ON DUPLICATE KEY UPDATE val = 40;
+SELECT * FROM t2 WHERE id = 3000;
+
+-- check auto_increment does not advance on duplicate
+INSERT INTO t2 (val) VALUES (50);
+SELECT * FROM t2 ORDER BY id;
+
+-- LAST_INSERT_ID() persistence within session
+SELECT LAST_INSERT_ID();
+INSERT INTO t2 (val) VALUES (60);
+SELECT LAST_INSERT_ID();
+
+-- LAST_INSERT_ID(expr) to manually set
+SELECT LAST_INSERT_ID(9999);
+SELECT LAST_INSERT_ID();
+
+-- unsigned AUTO_INCREMENT
+CREATE TABLE t3 (
+  id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  val INT
+);
+INSERT INTO t3 (val) VALUES (1), (2);
+SELECT * FROM t3 ORDER BY id;

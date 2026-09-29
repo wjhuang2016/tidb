@@ -1,0 +1,99 @@
+-- OLTP deep probe: Conflict resolution, lock timeout, duplicate key handling
+DROP DATABASE IF EXISTS conflict2;
+CREATE DATABASE conflict2;
+USE conflict2;
+
+-- Test 1: INSERT ... ON DUPLICATE KEY UPDATE
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  email VARCHAR(100) UNIQUE,
+  login_count INT DEFAULT 0,
+  last_login TIMESTAMP
+);
+
+INSERT INTO users (email, login_count) VALUES ('alice@example.com', 1);
+INSERT INTO users (email, login_count) VALUES ('alice@example.com', 1) 
+  ON DUPLICATE KEY UPDATE login_count = login_count + 1;
+SELECT * FROM users WHERE email = 'alice@example.com';
+
+-- Test 2: INSERT ... ON DUPLICATE KEY UPDATE with VALUES() reference
+INSERT INTO users (email, login_count) VALUES ('bob@example.com', 5)
+  ON DUPLICATE KEY UPDATE login_count = VALUES(login_count);
+INSERT INTO users (email, login_count) VALUES ('bob@example.com', 10)
+  ON DUPLICATE KEY UPDATE login_count = VALUES(login_count);
+SELECT * FROM users WHERE email = 'bob@example.com';
+
+-- Test 3: REPLACE INTO behavior
+CREATE TABLE cache (
+  key_name VARCHAR(50) PRIMARY KEY,
+  value VARCHAR(200),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO cache (key_name, value) VALUES ('config1', 'v1');
+SELECT SLEEP(1);
+REPLACE INTO cache (key_name, value) VALUES ('config1', 'v2');
+SELECT key_name, value FROM cache WHERE key_name = 'config1';
+
+-- Test 4: Multi-value INSERT with partial duplicate
+DELETE FROM users;
+INSERT INTO users (email, login_count) VALUES ('charlie@example.com', 1);
+INSERT INTO users (email, login_count) VALUES 
+  ('dave@example.com', 2),
+  ('charlie@example.com', 3),
+  ('eve@example.com', 4);
+SELECT email, login_count FROM users ORDER BY email;
+
+-- Test 5: INSERT IGNORE duplicate
+DELETE FROM users;
+INSERT INTO users (email, login_count) VALUES ('frank@example.com', 10);
+INSERT IGNORE INTO users (email, login_count) VALUES ('frank@example.com', 20);
+SELECT * FROM users WHERE email = 'frank@example.com';
+
+-- Test 6: AUTO_INCREMENT after failed insert
+DELETE FROM users;
+ALTER TABLE users AUTO_INCREMENT = 100;
+INSERT INTO users (email, login_count) VALUES ('user1@example.com', 1);
+INSERT INTO users (email, login_count) VALUES ('user1@example.com', 2);
+INSERT INTO users (email, login_count) VALUES ('user2@example.com', 3);
+SELECT id, email FROM users ORDER BY id;
+
+-- Test 7: AUTO_INCREMENT with explicit ID
+DELETE FROM users;
+ALTER TABLE users AUTO_INCREMENT = 1;
+INSERT INTO users (id, email, login_count) VALUES (10, 'explicit@example.com', 1);
+INSERT INTO users (email, login_count) VALUES ('auto@example.com', 2);
+SELECT id, email FROM users ORDER BY id;
+
+-- Test 8: Batch insert AUTO_INCREMENT sequence
+DELETE FROM users;
+ALTER TABLE users AUTO_INCREMENT = 1;
+INSERT INTO users (email, login_count) VALUES 
+  ('batch1@example.com', 1),
+  ('batch2@example.com', 2),
+  ('batch3@example.com', 3);
+SELECT id, email FROM users ORDER BY id;
+
+-- Test 9: LAST_INSERT_ID() after batch insert
+DELETE FROM users;
+ALTER TABLE users AUTO_INCREMENT = 1;
+INSERT INTO users (email, login_count) VALUES 
+  ('lastid1@example.com', 1),
+  ('lastid2@example.com', 2);
+SELECT LAST_INSERT_ID();
+
+-- Test 10: UPDATE with no rows affected
+UPDATE users SET login_count = 999 WHERE email = 'nonexistent@example.com';
+SELECT ROW_COUNT();
+
+-- Test 11: DELETE with no rows affected
+DELETE FROM users WHERE email = 'ghost@example.com';
+SELECT ROW_COUNT();
+
+-- Test 12: Duplicate key error code consistency
+CREATE TABLE strict_unique (
+  id INT PRIMARY KEY,
+  code VARCHAR(10) UNIQUE
+);
+INSERT INTO strict_unique VALUES (1, 'ABC');
+INSERT INTO strict_unique VALUES (2, 'ABC');

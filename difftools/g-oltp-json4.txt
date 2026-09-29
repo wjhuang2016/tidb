@@ -1,0 +1,85 @@
+-- OLTP deep probe: JSON operations and generated columns
+DROP DATABASE IF EXISTS oltp_json3;
+CREATE DATABASE oltp_json3;
+USE oltp_json3;
+
+CREATE TABLE orders (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  customer_id INT,
+  order_data JSON,
+  total AS (JSON_EXTRACT(order_data, '$.total')) STORED,
+  item_count AS (JSON_LENGTH(order_data, '$.items')) VIRTUAL
+);
+
+-- Test 1: Insert with JSON
+INSERT INTO orders (customer_id, order_data) VALUES
+  (1, '{"total": 100.50, "items": ["apple", "banana"]}'),
+  (2, '{"total": 250.00, "items": ["orange", "grape", "melon"]}'),
+  (3, '{"total": 75.25, "items": ["pear"]}');
+
+-- Test 2: Select with generated columns
+SELECT id, customer_id, total, item_count FROM orders ORDER BY id;
+
+-- Test 3: Filter by generated column
+SELECT id, order_data FROM orders WHERE total > 100 ORDER BY id;
+
+-- Test 4: JSON_EXTRACT variations
+SELECT id,
+  JSON_EXTRACT(order_data, '$.total') as total_extracted,
+  order_data->>'$.total' as total_unquoted,
+  order_data->'$.items[0]' as first_item
+FROM orders
+ORDER BY id;
+
+-- Test 5: JSON_SET modification
+UPDATE orders SET order_data = JSON_SET(order_data, '$.status', 'shipped') WHERE id = 1;
+SELECT id, order_data FROM orders WHERE id = 1;
+
+-- Test 6: JSON_ARRAY_APPEND
+UPDATE orders SET order_data = JSON_ARRAY_APPEND(order_data, '$.items', 'kiwi') WHERE id = 2;
+SELECT JSON_EXTRACT(order_data, '$.items') FROM orders WHERE id = 2;
+
+-- Test 7: JSON_REMOVE
+UPDATE orders SET order_data = JSON_REMOVE(order_data, '$.status') WHERE id = 1;
+SELECT JSON_KEYS(order_data) FROM orders WHERE id = 1;
+
+-- Test 8: JSON_CONTAINS
+SELECT id, order_data FROM orders WHERE JSON_CONTAINS(order_data, '"apple"', '$.items') ORDER BY id;
+
+-- Test 9: JSON_SEARCH
+SELECT id, JSON_SEARCH(order_data, 'one', 'orange', NULL, '$.items') as orange_path FROM orders WHERE id = 2;
+
+-- Test 10: JSON_TABLE
+SELECT jt.*
+FROM orders,
+JSON_TABLE(
+  order_data,
+  '$.items[*]' COLUMNS(
+    item_index FOR ORDINALITY,
+    item_name VARCHAR(50) PATH '$'
+  )
+) AS jt
+WHERE id = 2
+ORDER BY item_index;
+
+-- Test 11: Generated column index
+CREATE INDEX idx_total ON orders((CAST(total AS DECIMAL(10,2))));
+EXPLAIN SELECT id FROM orders WHERE CAST(total AS DECIMAL(10,2)) > 100;
+
+-- Test 12: Virtual vs stored generated column update behavior
+INSERT INTO orders (customer_id, order_data) VALUES (4, '{"total": 300, "items": []}');
+SELECT id, total, item_count FROM orders WHERE id = 4;
+UPDATE orders SET order_data = JSON_SET(order_data, '$.total', 350) WHERE id = 4;
+SELECT id, total, item_count FROM orders WHERE id = 4;
+
+-- Test 13: JSON_ARRAYAGG
+SELECT customer_id, JSON_ARRAYAGG(order_data) as all_orders
+FROM orders
+GROUP BY customer_id
+ORDER BY customer_id;
+
+-- Test 14: JSON_OBJECTAGG
+SELECT JSON_OBJECTAGG(id, CAST(total AS CHAR)) as id_to_total FROM orders;
+
+-- Test 15: Invalid JSON handling
+INSERT INTO orders (customer_id, order_data) VALUES (5, 'not valid json');

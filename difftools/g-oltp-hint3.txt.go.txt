@@ -1,0 +1,59 @@
+(ok)
+(ok)
+(ok)
+=== DROP DATABASE IF EXISTS oltp_hint2
+(ok)
+=== CREATE DATABASE oltp_hint2
+(ok)
+=== USE oltp_hint2
+(ok)
+=== CREATE TABLE products ( id INT PRIMARY KEY, category VARCHAR(50), name VARCHAR(100), price DECIMAL(10,2), stock INT, INDEX idx_category (category), INDEX idx_price (price), INDEX idx_stock (stock) )
+(ok)
+=== INSERT INTO products VALUES (1, 'Electronics', 'Laptop', 1200.00, 50), (2, 'Electronics', 'Mouse', 25.00, 200), (3, 'Books', 'SQL Guide', 45.00, 100), (4, 'Books', 'Python Basics', 35.00, 150), (5, 'Electronics', 'Keyboard', 75.00, 120)
+(ok)
+=== EXPLAIN SELECT * FROM products USE INDEX (idx_category) WHERE category = 'Electronics' AND price > 50
+('IndexLookUp_8', '3.33', 'root', '', ''); ('├─IndexRangeScan_5(Build)', '10.00', 'cop[tikv]', 'table:products, index:idx_category(category)', 'range:["Electronics","Electronics"], keep order:false, stats:pseudo'); ('└─Selection_7(Probe)', '3.33', 'cop[tikv]', '', 'gt(oltp_hint2.products.price, 50)'); ('  └─TableRowIDScan_6', '10.00', 'cop[tikv]', 'table:products', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM products FORCE INDEX (idx_price) WHERE category = 'Electronics' AND price > 50
+('IndexLookUp_8', '3.33', 'root', '', ''); ('├─IndexRangeScan_5(Build)', '3333.33', 'cop[tikv]', 'table:products, index:idx_price(price)', 'range:(50.00,+inf], keep order:false, stats:pseudo'); ('└─Selection_7(Probe)', '3.33', 'cop[tikv]', '', 'eq(oltp_hint2.products.category, "Electronics")'); ('  └─TableRowIDScan_6', '3333.33', 'cop[tikv]', 'table:products', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM products IGNORE INDEX (idx_category) WHERE category = 'Electronics'
+('TableReader_7', '10.00', 'root', '', 'data:Selection_6'); ('└─Selection_6', '10.00', 'cop[tikv]', '', 'eq(oltp_hint2.products.category, "Electronics")'); ('  └─TableFullScan_5', '10000.00', 'cop[tikv]', 'table:products', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM products USE INDEX (idx_category, idx_price) WHERE category = 'Electronics' OR price < 50
+('IndexMerge_16', '3330.01', 'root', '', 'type: union'); ('├─IndexRangeScan_13(Build)', '10.00', 'cop[tikv]', 'table:products, index:idx_category(category)', 'range:["Electronics","Electronics"], keep order:false, stats:pseudo'); ('├─IndexRangeScan_14(Build)', '3323.33', 'cop[tikv]', 'table:products, index:idx_price(price)', 'range:[-inf,50.00), keep order:false, stats:pseudo'); ('└─TableRowIDScan_15(Probe)', '3330.01', 'cop[tikv]', 'table:products', 'keep order:false, stats:pseudo')
+=== CREATE TABLE orders ( order_id INT PRIMARY KEY, product_id INT, quantity INT, INDEX idx_product (product_id) )
+(ok)
+=== INSERT INTO orders VALUES (1, 1, 2), (2, 2, 5), (3, 1, 1), (4, 3, 3)
+(ok)
+=== EXPLAIN SELECT p.name, o.quantity FROM products p USE INDEX (PRIMARY) JOIN orders o FORCE INDEX (idx_product) ON p.id = o.product_id WHERE p.price > 100
+('IndexJoin_14', '4166.67', 'root', '', 'inner join, inner:IndexLookUp_38, outer key:oltp_hint2.products.id, inner key:oltp_hint2.orders.product_id, equal cond:eq(oltp_hint2.products.id, oltp_hint2.orders.product_id)'); ('├─TableReader_34(Build)', '3333.33', 'root', '', 'data:Selection_33'); ('│ └─Selection_33', '3333.33', 'cop[tikv]', '', 'gt(oltp_hint2.products.price, 100)'); ('│   └─TableFullScan_32', '10000.00', 'cop[tikv]', 'table:p', 'keep order:false, stats:pseudo'); ('└─IndexLookUp_38(Probe)', '4166.67', 'root', '', ''); ('  ├─Selection_37(Build)', '4166.67', 'cop[tikv]', '', 'not(isnull(oltp_hint2.orders.product_id))'); ('  │ └─IndexRangeScan_35', '4170.84', 'cop[tikv]', 'table:o, index:idx_product(product_id)', 'range: decided by [eq(oltp_hint2.orders.product_id, oltp_hint2.products.id)], keep order:false, stats:pseudo'); ('  └─TableRowIDScan_36(Probe)', '4166.67', 'cop[tikv]', 'table:o', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT STRAIGHT_JOIN p.name, o.quantity FROM orders o JOIN products p ON o.product_id = p.id WHERE p.category = 'Electronics'
+('Projection_7', '12.50', 'root', '', 'oltp_hint2.products.name, oltp_hint2.orders.quantity'); ('└─IndexJoin_18', '12.50', 'root', '', 'inner join, inner:IndexLookUp_45, outer key:oltp_hint2.products.id, inner key:oltp_hint2.orders.product_id, equal cond:eq(oltp_hint2.products.id, oltp_hint2.orders.product_id)'); ('  ├─IndexLookUp_48(Build)', '10.00', 'root', '', ''); ('  │ ├─IndexRangeScan_46(Build)', '10.00', 'cop[tikv]', 'table:p, index:idx_category(category)', 'range:["Electronics","Electronics"], keep order:false, stats:pseudo'); ('  │ └─TableRowIDScan_47(Probe)', '10.00', 'cop[tikv]', 'table:p', 'keep order:false, stats:pseudo'); ('  └─IndexLookUp_45(Probe)', '12.50', 'root', '', ''); ('    ├─Selection_44(Build)', '12.50', 'cop[tikv]', '', 'not(isnull(oltp_hint2.orders.product_id))'); ('    │ └─IndexRangeScan_42', '12.51', 'cop[tikv]', 'table:o, index:idx_product(product_id)', 'range: decided by [eq(oltp_hint2.orders.product_id, oltp_hint2.products.id)], keep order:false, stats:pseudo'); ('    └─TableRowIDScan_43(Probe)', '12.50', 'cop[tikv]', 'table:o', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM products WHERE price > (SELECT AVG(price) FROM products)
+('TableReader_35', '3333.33', 'root', '', 'data:Selection_34'); ('└─Selection_34', '3333.33', 'cop[tikv]', '', 'gt(oltp_hint2.products.price, ScalarQueryCol#18(276.000000))'); ('  └─TableFullScan_33', '10000.00', 'cop[tikv]', 'table:products', 'keep order:false, stats:pseudo'); ('ScalarSubQuery_30', 'N/A', 'root', '', 'Output: ScalarQueryCol#18'); ('└─MaxOneRow_7', '1.00', 'root', '', ''); ('  └─HashAgg_16', '1.00', 'root', '', 'funcs:avg(Column#14, Column#15)->Column#13'); ('    └─IndexReader_17', '1.00', 'root', '', 'index:HashAgg_9'); ('      └─HashAgg_9', '1.00', 'cop[tikv]', '', 'funcs:count(oltp_hint2.products.price)->Column#14, funcs:sum(oltp_hint2.products.price)->Column#15'); ('        └─IndexFullScan_15', '10000.00', 'cop[tikv]', 'table:products, index:idx_price(price)', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT * FROM (SELECT * FROM products WHERE category = 'Electronics') t WHERE t.price > 50
+('IndexLookUp_10', '3.33', 'root', '', ''); ('├─IndexRangeScan_7(Build)', '10.00', 'cop[tikv]', 'table:products, index:idx_category(category)', 'range:["Electronics","Electronics"], keep order:false, stats:pseudo'); ('└─Selection_9(Probe)', '3.33', 'cop[tikv]', '', 'gt(oltp_hint2.products.price, 50)'); ('  └─TableRowIDScan_8', '10.00', 'cop[tikv]', 'table:products', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT /*+ TIDB_INLJ(p, o) */ p.name, o.quantity FROM products p JOIN orders o ON p.id = o.product_id
+('Projection_10', '12487.50', 'root', '', 'oltp_hint2.products.name, oltp_hint2.orders.quantity'); ('└─IndexJoin_14', '12487.50', 'root', '', 'inner join, inner:TableReader_39, outer key:oltp_hint2.orders.product_id, inner key:oltp_hint2.products.id, equal cond:eq(oltp_hint2.orders.product_id, oltp_hint2.products.id)'); ('  ├─TableReader_34(Build)', '9990.00', 'root', '', 'data:Selection_33'); ('  │ └─Selection_33', '9990.00', 'cop[tikv]', '', 'not(isnull(oltp_hint2.orders.product_id))'); ('  │   └─TableFullScan_32', '10000.00', 'cop[tikv]', 'table:o', 'keep order:false, stats:pseudo'); ('  └─TableReader_39(Probe)', '9990.00', 'root', '', 'data:TableRangeScan_38'); ('    └─TableRangeScan_38', '9990.00', 'cop[tikv]', 'table:p', 'range: decided by [oltp_hint2.orders.product_id], keep order:false, stats:pseudo')
+=== EXPLAIN SELECT /*+ TIDB_SMJ(p, o) */ p.name, o.quantity FROM products p JOIN orders o ON p.id = o.product_id
+('Projection_10', '12487.50', 'root', '', 'oltp_hint2.products.name, oltp_hint2.orders.quantity'); ('└─MergeJoin_14', '12487.50', 'root', '', 'inner join, left key:oltp_hint2.orders.product_id, right key:oltp_hint2.products.id'); ('  ├─TableReader_33(Build)', '10000.00', 'root', '', 'data:TableFullScan_32'); ('  │ └─TableFullScan_32', '10000.00', 'cop[tikv]', 'table:p', 'keep order:true, stats:pseudo'); ('  └─Sort_31(Probe)', '9990.00', 'root', '', 'oltp_hint2.orders.product_id'); ('    └─TableReader_27', '9990.00', 'root', '', 'data:Selection_26'); ('      └─Selection_26', '9990.00', 'cop[tikv]', '', 'not(isnull(oltp_hint2.orders.product_id))'); ('        └─TableFullScan_25', '10000.00', 'cop[tikv]', 'table:o', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT /*+ TIDB_HJ(p, o) */ p.name, o.quantity FROM products p JOIN orders o ON p.id = o.product_id
+('Projection_10', '12487.50', 'root', '', 'oltp_hint2.products.name, oltp_hint2.orders.quantity'); ('└─HashJoin_12', '12487.50', 'root', '', 'inner join, equal:[eq(oltp_hint2.orders.product_id, oltp_hint2.products.id)]'); ('  ├─TableReader_15(Build)', '9990.00', 'root', '', 'data:Selection_14'); ('  │ └─Selection_14', '9990.00', 'cop[tikv]', '', 'not(isnull(oltp_hint2.orders.product_id))'); ('  │   └─TableFullScan_13', '10000.00', 'cop[tikv]', 'table:o', 'keep order:false, stats:pseudo'); ('  └─TableReader_20(Probe)', '10000.00', 'root', '', 'data:TableFullScan_19'); ('    └─TableFullScan_19', '10000.00', 'cop[tikv]', 'table:p', 'keep order:false, stats:pseudo')
+=== SELECT /*+ MAX_EXECUTION_TIME(5000) */ * FROM products WHERE price > 30 ORDER BY price
+(4, 'Books', 'Python Basics', Decimal('35.00'), 150); (3, 'Books', 'SQL Guide', Decimal('45.00'), 100); (5, 'Electronics', 'Keyboard', Decimal('75.00'), 120); (1, 'Electronics', 'Laptop', Decimal('1200.00'), 50)
+=== EXPLAIN SELECT /*+ USE_INDEX_MERGE(products, idx_category, idx_price) */ * FROM products WHERE category = 'Electronics' OR price < 40
+('IndexMerge_8', '3330.01', 'root', '', 'type: union'); ('├─IndexRangeScan_5(Build)', '10.00', 'cop[tikv]', 'table:products, index:idx_category(category)', 'range:["Electronics","Electronics"], keep order:false, stats:pseudo'); ('├─IndexRangeScan_6(Build)', '3323.33', 'cop[tikv]', 'table:products, index:idx_price(price)', 'range:[-inf,40.00), keep order:false, stats:pseudo'); ('└─TableRowIDScan_7(Probe)', '3330.01', 'cop[tikv]', 'table:products', 'keep order:false, stats:pseudo')
+=== EXPLAIN SELECT /*+ NO_INDEX_MERGE() */ * FROM products WHERE category = 'Electronics' OR price < 40
+('TableReader_7', '3330.01', 'root', '', 'data:Selection_6'); ('└─Selection_6', '3330.01', 'cop[tikv]', '', 'or(eq(oltp_hint2.products.category, "Electronics"), lt(oltp_hint2.products.price, 40))'); ('  └─TableFullScan_5', '10000.00', 'cop[tikv]', 'table:products', 'keep order:false, stats:pseudo')
+=== SELECT /*+ MEMORY_QUOTA(1 GB) */ category, COUNT(*) FROM products GROUP BY category
+('Books', 2); ('Electronics', 3)
+=== ALTER TABLE products CACHE
+(ok)
+=== SELECT * FROM products WHERE id = 1
+(1, 'Electronics', 'Laptop', Decimal('1200.00'), 50)
+=== ALTER TABLE products NOCACHE
+(ok)
+=== ANALYZE TABLE products
+(ok) | WARN Note:1105:Analyze use auto adjusted sample rate 1.000000 for table oltp_hint2.products, reason to use this rate is "use min(1, 110000/10000) as the sample-rate=1"
+=== SHOW STATS_META WHERE table_name = 'products'
+('oltp_hint2', 'products', '', datetime.datetime(2026, 9, 29, 16, 38, 19), 0, 5, datetime.datetime(2026, 9, 29, 16, 38, 19)); ('lock2', 'products', '', datetime.datetime(2026, 9, 29, 16, 35, 19), 4, 3, None)
+=== CREATE GLOBAL BINDING FOR SELECT * FROM products WHERE category = ? USING SELECT * FROM products USE INDEX(idx_category) WHERE category = ?
+(ok)

@@ -1,0 +1,101 @@
+(ok)
+(ok)
+(ok)
+=== DROP DATABASE IF EXISTS lock2
+(ok)
+=== CREATE DATABASE lock2
+(ok)
+=== USE lock2
+(ok)
+=== CREATE TABLE inventory ( product_id INT PRIMARY KEY, stock INT, reserved INT DEFAULT 0 )
+(ok)
+=== INSERT INTO inventory VALUES (1, 100, 0), (2, 50, 0), (3, 200, 0)
+(ok)
+=== SHOW VARIABLES LIKE 'innodb_lock_wait_timeout'
+('innodb_lock_wait_timeout', '50')
+=== SET SESSION innodb_lock_wait_timeout = 2
+(ok)
+=== SHOW VARIABLES LIKE 'innodb_lock_wait_timeout'
+('innodb_lock_wait_timeout', '2')
+=== START TRANSACTION
+(ok)
+=== SELECT stock FROM inventory WHERE product_id = 1 FOR UPDATE
+(100,)
+=== COMMIT
+(ok)
+=== START TRANSACTION
+(ok)
+=== SELECT product_id, stock FROM inventory WHERE product_id BETWEEN 1 AND 2 FOR UPDATE
+(1, 100); (2, 50)
+=== COMMIT
+(ok)
+=== START TRANSACTION
+(ok)
+=== SELECT stock FROM inventory WHERE product_id = 1 FOR UPDATE NOWAIT
+(100,)
+=== COMMIT
+(ok)
+=== START TRANSACTION
+(ok)
+=== SELECT stock FROM inventory WHERE product_id = 1 FOR UPDATE SKIP LOCKED
+(100,)
+=== COMMIT
+(ok)
+=== START TRANSACTION
+(ok)
+=== UPDATE inventory SET reserved = reserved + 10 WHERE product_id = 1
+(ok)
+=== SELECT reserved FROM inventory WHERE product_id = 1
+(10,)
+=== ROLLBACK
+(ok)
+=== SET SESSION tidb_constraint_check_in_place = ON
+(ok)
+=== START TRANSACTION
+(ok)
+=== UPDATE inventory SET stock = stock - 10 WHERE product_id = 1
+(ok)
+=== COMMIT
+(ok)
+=== SET SESSION tidb_constraint_check_in_place = OFF
+(ok)
+=== CREATE TABLE products ( id INT PRIMARY KEY, price DECIMAL(10,2), CHECK (price > 0) )
+(ok) | WARN Warning:1105:tidb_enable_check_constraint is off
+=== INSERT INTO products VALUES (1, 100.00)
+(ok)
+=== INSERT INTO products VALUES (2, -50.00)
+(ok)
+=== START TRANSACTION
+(ok)
+=== INSERT INTO products VALUES (3, 0.01)
+(ok)
+=== UPDATE products SET price = -1 WHERE id = 3
+(ok)
+=== COMMIT
+(ok)
+=== CREATE TABLE orders ( id INT PRIMARY KEY AUTO_INCREMENT, order_no VARCHAR(50) UNIQUE, amount DECIMAL(10,2) )
+(ok)
+=== START TRANSACTION
+(ok)
+=== INSERT INTO orders (order_no, amount) VALUES ('ORD001', 100)
+(ok)
+=== INSERT INTO orders (order_no, amount) VALUES ('ORD002', 200)
+(ok)
+=== INSERT INTO orders (order_no, amount) VALUES ('ORD001', 300)
+ERR (1062, "Duplicate entry 'ORD001' for key 'orders.order_no'") | WARN Error:1062:Duplicate entry 'ORD001' for key 'orders.order_no'
+=== ROLLBACK
+(ok)
+=== CREATE TABLE customers ( id INT PRIMARY KEY, name VARCHAR(100) )
+(ok)
+=== CREATE TABLE orders_fk ( id INT PRIMARY KEY, customer_id INT, FOREIGN KEY (customer_id) REFERENCES customers(id) )
+(ok)
+=== INSERT INTO customers VALUES (1, 'Alice')
+(ok)
+=== INSERT INTO orders_fk VALUES (1, 1)
+(ok)
+=== INSERT INTO orders_fk VALUES (2, 999)
+ERR (1452, 'Cannot add or update a child row: a foreign key constraint fails (`lock2`.`orders_fk`, CONSTRAINT `fk_1` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`))') | WARN Error:1452:Cannot add or update a child row: a foreign key constraint fails (`lock2`.`orders_fk`, CONSTRAINT `fk_1` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`))
+=== DELETE FROM customers WHERE id = 1
+ERR (1451, 'Cannot delete or update a parent row: a foreign key constraint fails (`lock2`.`orders_fk`, CONSTRAINT `fk_1` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`))') | WARN Error:1451:Cannot delete or update a parent row: a foreign key constraint fails (`lock2`.`orders_fk`, CONSTRAINT `fk_1` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`))
+=== SELECT COUNT(*) FROM orders_fk WHERE customer_id = 1
+(1,)

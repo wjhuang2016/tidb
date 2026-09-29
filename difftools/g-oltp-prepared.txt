@@ -1,0 +1,115 @@
+-- OLTP battery 5: Prepared Statement
+-- Focus: PREPARE/EXECUTE, parameter binding, plan cache, type coercion
+
+DROP DATABASE IF EXISTS oltp5;
+CREATE DATABASE oltp5;
+USE oltp5;
+
+CREATE TABLE t1 (
+  id INT PRIMARY KEY,
+  a INT,
+  b VARCHAR(50),
+  c DECIMAL(10,2)
+);
+
+INSERT INTO t1 VALUES (1, 10, 'alice', 100.50), (2, 20, 'bob', 200.75), (3, 30, 'charlie', 300.00);
+
+-- basic PREPARE and EXECUTE
+PREPARE stmt1 FROM 'SELECT * FROM t1 WHERE id = ?';
+SET @id = 1;
+EXECUTE stmt1 USING @id;
+SET @id = 2;
+EXECUTE stmt1 USING @id;
+DEALLOCATE PREPARE stmt1;
+
+-- prepare with multiple parameters
+PREPARE stmt2 FROM 'SELECT * FROM t1 WHERE a > ? AND id < ?';
+SET @a = 10, @b = 3;
+EXECUTE stmt2 USING @a, @b;
+DEALLOCATE PREPARE stmt2;
+
+-- prepare INSERT
+PREPARE stmt3 FROM 'INSERT INTO t1 VALUES (?, ?, ?, ?)';
+SET @id = 4, @a = 40, @b = 'dave', @c = 400.25;
+EXECUTE stmt3 USING @id, @a, @b, @c;
+SELECT * FROM t1 WHERE id = 4;
+DEALLOCATE PREPARE stmt3;
+
+-- prepare UPDATE
+PREPARE stmt4 FROM 'UPDATE t1 SET a = a + ? WHERE id = ?';
+SET @delta = 5, @id = 1;
+EXECUTE stmt4 USING @delta, @id;
+SELECT * FROM t1 WHERE id = 1;
+DEALLOCATE PREPARE stmt4;
+
+-- prepare DELETE
+PREPARE stmt5 FROM 'DELETE FROM t1 WHERE id = ?';
+SET @id = 4;
+EXECUTE stmt5 USING @id;
+SELECT COUNT(*) FROM t1;
+DEALLOCATE PREPARE stmt5;
+
+-- type coercion: string to int
+PREPARE stmt6 FROM 'SELECT * FROM t1 WHERE id = ?';
+SET @id_str = '2';
+EXECUTE stmt6 USING @id_str;
+DEALLOCATE PREPARE stmt6;
+
+-- type coercion: int to string
+PREPARE stmt7 FROM 'SELECT * FROM t1 WHERE b = ?';
+SET @b_int = 'alice';
+EXECUTE stmt7 USING @b_int;
+DEALLOCATE PREPARE stmt7;
+
+-- NULL parameter
+PREPARE stmt8 FROM 'SELECT * FROM t1 WHERE a = ? OR a IS NULL';
+SET @a_null = NULL;
+EXECUTE stmt8 USING @a_null;
+DEALLOCATE PREPARE stmt8;
+
+-- prepare with IN clause (single param - requires special handling)
+PREPARE stmt9 FROM 'SELECT * FROM t1 WHERE id IN (?, ?)';
+SET @id1 = 1, @id2 = 3;
+EXECUTE stmt9 USING @id1, @id2;
+DEALLOCATE PREPARE stmt9;
+
+-- prepare with LIKE
+PREPARE stmt10 FROM 'SELECT * FROM t1 WHERE b LIKE ?';
+SET @pattern = '%li%';
+EXECUTE stmt10 USING @pattern;
+DEALLOCATE PREPARE stmt10;
+
+-- prepare with ORDER BY and LIMIT (cannot use ? for LIMIT in standard SQL)
+PREPARE stmt11 FROM 'SELECT * FROM t1 ORDER BY a DESC LIMIT 2';
+EXECUTE stmt11;
+DEALLOCATE PREPARE stmt11;
+
+-- reuse prepared statement multiple times
+PREPARE stmt12 FROM 'SELECT a FROM t1 WHERE id = ?';
+SET @id = 1;
+EXECUTE stmt12 USING @id;
+SET @id = 2;
+EXECUTE stmt12 USING @id;
+SET @id = 3;
+EXECUTE stmt12 USING @id;
+DEALLOCATE PREPARE stmt12;
+
+-- prepare with JOIN
+CREATE TABLE t2 (id INT PRIMARY KEY, t1_id INT, info VARCHAR(50));
+INSERT INTO t2 VALUES (1, 1, 'extra1'), (2, 2, 'extra2');
+
+PREPARE stmt13 FROM 'SELECT t1.*, t2.info FROM t1 JOIN t2 ON t1.id = t2.t1_id WHERE t1.id = ?';
+SET @id = 1;
+EXECUTE stmt13 USING @id;
+DEALLOCATE PREPARE stmt13;
+
+-- prepare with subquery
+PREPARE stmt14 FROM 'SELECT * FROM t1 WHERE a > (SELECT AVG(a) FROM t1)';
+EXECUTE stmt14;
+DEALLOCATE PREPARE stmt14;
+
+-- prepare with aggregate
+PREPARE stmt15 FROM 'SELECT COUNT(*), SUM(a) FROM t1 WHERE id > ?';
+SET @id = 0;
+EXECUTE stmt15 USING @id;
+DEALLOCATE PREPARE stmt15;

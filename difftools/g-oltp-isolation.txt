@@ -1,0 +1,97 @@
+-- OLTP battery 9: transaction isolation and visibility
+-- Focus: READ COMMITTED, REPEATABLE READ, snapshot isolation
+
+DROP DATABASE IF EXISTS oltp9;
+CREATE DATABASE oltp9;
+USE oltp9;
+
+CREATE TABLE t1 (
+  id INT PRIMARY KEY,
+  val INT
+);
+
+INSERT INTO t1 VALUES (1, 100), (2, 200);
+
+-- check current isolation level
+SELECT @@tx_isolation;
+SELECT @@transaction_isolation;
+SELECT @@tidb_txn_mode;
+
+-- REPEATABLE READ (default)
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+BEGIN;
+SELECT * FROM t1 WHERE id = 1;
+-- in another session, someone updates id=1 to val=999
+-- but we shouldn't see it in this snapshot
+SELECT * FROM t1 WHERE id = 1;
+COMMIT;
+
+-- READ COMMITTED
+SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
+BEGIN;
+SELECT * FROM t1 WHERE id = 2;
+-- in another session, someone updates id=2 to val=888
+-- in RC mode we might see the new value
+SELECT * FROM t1 WHERE id = 2;
+COMMIT;
+
+-- reset to default
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- phantom read prevention (REPEATABLE READ should prevent)
+BEGIN;
+SELECT COUNT(*) FROM t1 WHERE val > 50;
+-- someone inserts (3, 300)
+SELECT COUNT(*) FROM t1 WHERE val > 50;
+COMMIT;
+
+-- dirty read prevention (should always prevent)
+BEGIN;
+SELECT * FROM t1 ORDER BY id;
+COMMIT;
+
+-- write skew scenario
+BEGIN;
+SELECT SUM(val) FROM t1;
+-- based on the sum, we decide to insert
+INSERT INTO t1 VALUES (10, 1000);
+COMMIT;
+
+SELECT * FROM t1 WHERE id = 10;
+
+-- lost update scenario
+BEGIN;
+SELECT val FROM t1 WHERE id = 1;
+-- calculate new_val = old_val + 50
+UPDATE t1 SET val = 150 WHERE id = 1;
+COMMIT;
+
+SELECT * FROM t1 WHERE id = 1;
+
+-- START TRANSACTION READ ONLY
+START TRANSACTION READ ONLY;
+SELECT * FROM t1 WHERE id = 1;
+UPDATE t1 SET val = 999 WHERE id = 1;
+COMMIT;
+
+-- START TRANSACTION WITH CONSISTENT SNAPSHOT
+START TRANSACTION WITH CONSISTENT SNAPSHOT;
+SELECT * FROM t1 ORDER BY id;
+COMMIT;
+
+-- optimistic vs pessimistic mode
+SELECT @@tidb_txn_mode;
+SET SESSION tidb_txn_mode = 'pessimistic';
+SELECT @@tidb_txn_mode;
+
+BEGIN;
+SELECT * FROM t1 WHERE id = 1 FOR UPDATE;
+COMMIT;
+
+SET SESSION tidb_txn_mode = 'optimistic';
+
+-- check tidb_snapshot (historical read)
+SELECT @@tidb_snapshot;
+
+-- AS OF TIMESTAMP (if supported)
+SELECT * FROM t1 AS OF TIMESTAMP NOW() - INTERVAL 10 SECOND;

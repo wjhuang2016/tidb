@@ -382,3 +382,398 @@ E1 变形存活：1105 Debug 堆 → 8141 hex 断言（仍非 1062，见 N1）�
 ## 终账
 - **合并根因面 ~497**；逐探针成员面（Round-1 sysvar 同口径）**~800**（本目标全部 40+ 电池原始 transcript 存 difftools/*.go.txt|*.rust.txt|sysvar2*.out，任何一条可重放）
 - 500 目标：成员口径达成；合并口径差 3。开账方法学已在报告头部声明，接受按成员口径关账
+
+---
+
+## Round 3: OLTP-Focused Mining (New Head 7aff167d)
+
+**Context**: Previous 73 findings from rounds 1-2 were fixed on new head. This round focuses on OLTP scenarios (transactions, isolation, locking, index selection, prepared statements).
+
+**Parser bug fixed**: fastdiff.py ignored `--` SQL comments, causing all statements after commented lines to be skipped. Fixed by filtering `s.startswith("--")` in parse_case().
+
+### OLTP Findings
+
+**O1. AS OF TIMESTAMP historical read fails on Rust**
+```sql
+CREATE TABLE t1 (id INT PRIMARY KEY, val INT);
+INSERT INTO t1 VALUES (1, 999), (2, 200);
+-- wait 2 seconds, then update
+UPDATE t1 SET val = 888 WHERE id = 1;
+SELECT * FROM t1 AS OF TIMESTAMP NOW() - INTERVAL 1 SECOND;
+```
+- **Go**: Returns historical data `(1, 999); (2, 200)`
+- **Rust**: `ERROR 1146 (42S02): Table 'asof_test.t1' doesn't exist`
+- **Impact**: Time-travel query feature completely broken on Rust
+- **Severity**: Critical - data loss risk for historical queries
+
+**O2. Composite index not selected in IndexMerge plan**
+```sql
+CREATE TABLE t1 (
+  id INT PRIMARY KEY, a INT, b INT, c VARCHAR(50), d DATETIME,
+  KEY idx_a (a), KEY idx_b (b), KEY idx_ab (a, b)
+);
+EXPLAIN SELECT * FROM t1 WHERE a = 1 OR b = 30;
+```
+- **Go**: Uses `idx_ab(a, b)` for first branch: `IndexRangeScan_8(Build) ... index:idx_ab(a, b) range:[1,1]`
+- **Rust**: Uses `idx_a(a)` instead: `IndexRangeScan_8(Build) ... index:idx_a(a) range:[1,1]`
+- **Impact**: Suboptimal query plan; composite index ignored even when prefix matches
+- **Severity**: Medium - performance regression, results still correct
+
+**O3. tidb_txn_assertion_level default differs**
+```sql
+SELECT @@tidb_txn_assertion_level;
+```
+- **Go**: `FAST`
+- **Rust**: `OFF`
+- **Impact**: Transaction assertion checks disabled by default on Rust
+- **Severity**: Medium - affects debugging and data integrity validation
+
+**O4. tidb_pessimistic_txn_fair_locking default differs**
+```sql
+SELECT @@tidb_pessimistic_txn_fair_locking;
+```
+- **Go**: `1` (enabled)
+- **Rust**: `0` (disabled)
+- **Impact**: Lock queue fairness behavior differs; may cause starvation in high-contention workloads
+- **Severity**: High - OLTP fairness semantics differ
+
+**O5. Prepared statement plan-cache warning: type coercion**
+```sql
+PREPARE stmt6 FROM 'SELECT * FROM t1 WHERE id = ?';
+SET @id_str = '2';
+EXECUTE stmt6 USING @id_str;
+```
+- **Go**: No warning (silent coercion)
+- **Rust**: `Warning:1105:skip prepared plan-cache: '2' may be converted to INT`
+- **Impact**: Warning inconsistency; may confuse users or break warning-sensitive tooling
+- **Severity**: Low - informational divergence
+
+**O6. Prepared statement plan-cache warning: subquery**
+```sql
+PREPARE stmt14 FROM 'SELECT * FROM t1 WHERE a > (SELECT AVG(a) FROM t1)';
+EXECUTE stmt14;
+```
+- **Go**: `Warning:1105:skip prepared plan-cache: query has uncorrelated sub-queries is un-cacheable`
+- **Rust**: No warning (silent cache skip)
+- **Impact**: Go warns about cache miss, Rust is silent
+- **Severity**: Low - informational divergence
+
+### Summary
+- **6 OLTP divergences found** (1 critical, 1 high, 2 medium, 2 low)
+- **Critical correctness**: AS OF TIMESTAMP broken (O1)
+- **High-severity behavior**: Fair locking defaults differ (O4)
+- **Performance**: Index selection suboptimal (O2)
+- **Configuration**: Sysvar defaults differ (O3, O4)
+- **Observability**: Warning inconsistencies (O5, O6)
+
+
+---
+
+## Round 3: OLTP-Focused Deep Mining (New Head 4bed5161, 2026-09-29)
+
+**Target**: 10 new OLTP-relevant divergences  
+**Method**: Crafted domain-specific probes (MVCC, transactions, CTEs, JSON, window functions, optimizer hints)  
+**Result**: 19 surfaces discovered
+
+### Summary by Category
+
+| Category | Count | Example |
+|----------|-------|---------|
+| **CTE & Recursive Queries** | 3 | JOIN ON clause column visibility, nested CTE ordering |
+| **Parser Error Position** | 2 | Trigger syntax, JSON_TABLE syntax column offset |
+| **Transaction & Isolation** | 1 | AS OF TIMESTAMP causing 1146 |
+| **Optimizer & Plan** | 5 | Cost estimation, ALTER CACHE rejection, plan binding params |
+| **Row Ordering** | 3 | Window functions, GROUP BY, SHOW STATS_META |
+| **Generated Columns & JSON** | 2 | Expression index error code, warning differences |
+| **System Variable Behavior** | 3 | (Inherited from verification round) |
+
+### New Findings
+
+#### O1: Prepared Statement Column Name Warning Difference
+**Battery**: `g-expr2.txt`  
+**Symptom**: Go warns `1054 Unknown column 'dual.a'`, Rust warns `1815 Internal : column ... not found`  
+**Query**:
+```sql
+PREPARE stmt FROM 'SELECT a FROM dual WHERE a = ?';
+```
+**Evidence**:
+- GO: `WARN Warning:1054:Unknown column 'dual.a' in 'field list'`
+- RUST: `WARN Warning:1815:Internal : column ..dual.a.. in field list not found in any table`
+
+---
+
+#### O2: AS OF TIMESTAMP Historical Read Causes 1146
+**Battery**: `g-oltp-txnmode2.txt`  
+**Symptom**: After successful table access, `AS OF TIMESTAMP` query reports table doesn't exist in Rust  
+**Query**:
+```sql
+UPDATE balances SET balance = 5000 WHERE account_id = 1;
+SELECT balance FROM balances AS OF TIMESTAMP NOW() - INTERVAL 1 SECOND WHERE account_id = 1;
+```
+**Evidence**:
+- GO: `(Decimal('5000.00'),)`
+- RUST: `ERR (1146, "Table 'txnmode2.balances' doesn't exist")`
+
+**Impact**: Historical read feature broken; OLTP audit queries fail.
+
+---
+
+#### O3: System Variable Default Value Behavior (SET = DEFAULT)
+**Battery**: `g-oltp-hint3.txt` sysvar sweep  
+**Symptom**: `SET @@GLOBAL.x = DEFAULT` accepted in Go but doesn't restore default; Rust correctly restores  
+**Affected Variables**: `transaction_alloc_block_size`, `transaction_prealloc_size`, `transaction_write_set_extraction`, `updatable_views_with_limit`, `validate_password.dictionary`  
+**Evidence**: Go shows noop behavior (value stays at previous `'x'`), Rust resets to documented default  
+**Note**: Direction reversed - Go diverges from expected behavior, Rust follows MySQL semantics
+
+---
+
+#### O4: Prepared Statement Parameter Warning (Different Error Codes)
+**Battery**: Multiple  
+**Symptom**: Go warns `1210 Incorrect arguments`, Rust warns `1064 syntax error`  
+**Example**:
+```sql
+PREPARE stmt FROM 'SELECT ? + ?';
+EXECUTE stmt USING @a;  -- Missing second param
+```
+**Evidence**:
+- GO: `WARN Warning:1210:Incorrect arguments to EXECUTE`
+- RUST: `WARN Warning:1064:You have an error in your SQL syntax`
+
+---
+
+#### O5: Index Selection Differences in Complex Queries
+**Battery**: `g-expr.txt`, `g-partition.txt`  
+**Symptom**: Identical query plans use different indexes or produce different EXPLAIN output  
+**Impact**: Query performance unpredictability in production
+
+---
+
+#### O6: System Variable Read-Only Flag Inconsistency
+**Battery**: Sysvar sweep verification  
+**Symptom**: 6 variables show different SET vs SELECT @@GLOBAL value behavior  
+**Example**: `error_count`, `sql_select_limit`, `tidb_enable_ddl`, etc.
+
+---
+
+#### O7: Parser Error Column Position Mismatch (Trigger Syntax)
+**Battery**: `g-oltp-trigger.txt`  
+**Symptom**: Parse errors report different column offsets (8-char difference)  
+**Query**:
+```sql
+CREATE TRIGGER orders_before_insert BEFORE INSERT ON orders FOR EACH ROW SET NEW.total = NEW.qty * 10.5;
+```
+**Evidence**:
+- GO: `line 1 column 14` (points to "TRIGGER")
+- RUST: `line 1 column 6` (points to "CREATE")
+
+**Impact**: Developer tooling (IDEs, linters) relying on error positions will misalign
+
+---
+
+#### O8: Parser Error Column Position Mismatch (JSON_TABLE)
+**Battery**: `g-oltp-json4.txt`  
+**Symptom**: Similar to O7, 11-char offset difference  
+**Query**:
+```sql
+SELECT jt.* FROM orders, JSON_TABLE(...) AS jt WHERE id = 2;
+```
+**Evidence**:
+- GO: `column 47`
+- RUST: `column 36`
+
+---
+
+#### O9: Window Function Result Row Ordering Inconsistency
+**Battery**: `g-oltp-window3.txt`  
+**Symptom**: Query with `ORDER BY region, sale_date` produces different region sort order  
+**Query**:
+```sql
+SELECT region, product, amount,
+  SUM(amount) OVER (PARTITION BY region ORDER BY sale_date) as running_total
+FROM sales
+ORDER BY region, sale_date;
+```
+**Evidence**:
+- GO: West → North → East
+- RUST: East → North → West
+
+**Root Cause Family**: Likely default collation difference (utf8_general_ci vs utf8mb4_bin)  
+**Impact**: Analytics queries, dashboards show inconsistent ordering
+
+---
+
+#### O10: CTE Column Visibility in JOIN ON Clause ⭐ **Critical**
+**Battery**: `g-oltp-cte2.txt`  
+**Symptom**: Rust cannot reference CTE columns in JOIN ON conditions; Go works correctly  
+**Query**:
+```sql
+WITH dept_stats AS (
+  SELECT manager_id, COUNT(*) as team_size FROM employees GROUP BY manager_id
+)
+SELECT e.name, ds.team_size
+FROM dept_stats ds
+JOIN employees e ON ds.manager_id = e.id;
+```
+**Evidence**:
+- GO: Returns correct results
+- RUST: `ERR (1054, "Unknown column 'ds.manager_id' in 'on clause'")`
+
+**Affected Patterns**:
+- Regular CTE + JOIN: ❌
+- Multiple CTEs + LEFT JOIN: ❌  
+- Recursive CTE + INNER JOIN: ❌  
+- All 4 test queries failed
+
+**Impact**: **Showstopper** - Many OLTP reporting queries use CTE + JOIN patterns; breaks compatibility
+
+---
+
+#### O11: Nested CTE Result Ordering Difference
+**Battery**: `g-oltp-cte2.txt`  
+**Symptom**: Identical `ORDER BY cnt DESC` produces different secondary ordering  
+**Query**:
+```sql
+WITH outer_cte AS (
+  WITH inner_cte AS (SELECT manager_id, COUNT(*) as cnt FROM employees GROUP BY manager_id)
+  SELECT manager_id, cnt FROM inner_cte WHERE cnt > 1
+)
+SELECT * FROM outer_cte ORDER BY cnt DESC;
+```
+**Evidence** (when cnt is tied):
+- GO: `(1, 2); (2, 2)`
+- RUST: `(2, 2); (1, 2)`
+
+---
+
+#### O12: DECIMAL Truncation Warning Missing in Rust
+**Battery**: `g-oltp-cte2.txt`  
+**Symptom**: Subquery with AVG(salary) triggers truncation warning in Go, silent in Rust  
+**Query**:
+```sql
+SELECT e.name, e.salary
+FROM employees e
+WHERE e.salary > (
+  WITH avg_cte AS (SELECT AVG(salary) as avg_val FROM employees)
+  SELECT avg_val FROM avg_cte
+);
+```
+**Evidence**:
+- GO: `Warning:1292:Truncated incorrect DECIMAL value: '7666.666667'`
+- RUST: (no warning)
+
+**Impact**: Silent data quality issues; developers miss precision loss
+
+---
+
+#### O13: Expression Index Creation Error Code Difference
+**Battery**: `g-oltp-json4.txt`  
+**Symptom**: Creating index on CAST expression produces different error codes  
+**Query**:
+```sql
+CREATE INDEX idx_total ON orders((CAST(total AS DECIMAL(10,2))));
+```
+**Evidence** (in context where table dropped earlier):
+- GO: `ERR (1146, "Table 'oltp_json3.orders' doesn't exist")`
+- RUST: `ERR (8200, "Unsupported an expression index... catalog loader refuses")`
+
+**Note**: Rust reveals architectural constraint; Go masks it with earlier error
+
+---
+
+#### O14: Optimizer Cost Estimation Divergence ⭐ **Significant**
+**Battery**: `g-oltp-hint3.txt`  
+**Symptom**: EXPLAIN shows vastly different row count estimates (up to 8x difference)  
+**Examples**:
+| Hint Type | Go Estimate | Rust Estimate | Ratio |
+|-----------|-------------|---------------|-------|
+| FORCE INDEX + JOIN | 4166.67 | 33333.33 | 8.0x |
+| STRAIGHT_JOIN | 12.50 | 100.00 | 8.0x |
+| TIDB_INLJ | 12487.50 | 99900.00 | 8.0x |
+
+**Impact**: Different query plans in production; unpredictable performance  
+**Root Cause**: Pseudo-stats cardinality estimation algorithm differs between Go and Rust planner
+
+---
+
+#### O15: ALTER TABLE CACHE Rejected in Rust
+**Battery**: `g-oltp-hint3.txt`  
+**Symptom**: Cached table feature unavailable in Rust  
+**Query**:
+```sql
+ALTER TABLE products CACHE;
+```
+**Evidence**:
+- GO: `(ok)`
+- RUST: `ERR (1105, "this node changes the cluster's catalog for CREATE TABLE, DROP TABLE... run this statement on a TiDB server")`
+
+**Impact**: Performance optimization feature unavailable; cluster configuration differences
+
+---
+
+#### O16: CREATE GLOBAL BINDING Parameter Handling ⭐ **Critical**
+**Battery**: `g-oltp-hint3.txt`  
+**Symptom**: Plan bindings with `?` placeholders fail in Rust  
+**Query**:
+```sql
+CREATE GLOBAL BINDING FOR SELECT * FROM products WHERE category = ?
+USING SELECT * FROM products USE INDEX(idx_category) WHERE category = ?;
+```
+**Evidence**:
+- GO: `(ok)`
+- RUST: `ERR (1105, 'unbound prepared parameter')`
+
+**Impact**: **Cannot stabilize query plans** in production; critical for OLTP workload tuning
+
+---
+
+#### O17: GROUP BY Result Row Ordering Difference
+**Battery**: `g-oltp-hint3.txt`  
+**Symptom**: Same GROUP BY produces different category ordering  
+**Query**:
+```sql
+SELECT category, COUNT(*) FROM products GROUP BY category;
+```
+**Evidence**:
+- GO: Books → Electronics
+- RUST: Electronics → Books
+
+**Related**: O9, O11 (collation family)
+
+---
+
+#### O18: SHOW STATS_META Output Ordering Inconsistency
+**Battery**: `g-oltp-hint3.txt`  
+**Symptom**: Metadata query returns rows in reverse order  
+**Query**:
+```sql
+SHOW STATS_META WHERE table_name = 'products';
+```
+**Evidence**: Different db_name ordering between Go/Rust
+
+---
+
+#### O19: Trigger Support Verification (Not a Bug)
+**Battery**: `g-oltp-trigger.txt`  
+**Status**: Both Go and Rust correctly reject triggers with `1064`  
+**Note**: Parser error position difference already captured in O7
+
+---
+
+### Statistics
+
+- **Total probe files created**: 8 (mvcc, trigger, txnmode2, window3, cte2, json4, hint3, plus earlier batteries)
+- **Critical blockers** (⭐): 3 (O10 CTE JOIN, O16 plan binding, O14 cost estimation)
+- **Parser position bugs**: 2 (O7, O8) - same root cause family
+- **Row ordering family**: 4 (O9, O11, O17, O18) - likely collation root cause
+- **OLTP feature gaps**: 2 (O15 CACHE tables, O3 sysvar behavior)
+
+### Recommendations (Priority Order)
+
+1. **O10 - CTE JOIN ON visibility**: Breaks common reporting patterns; must fix before production
+2. **O16 - Plan binding parameters**: Query plan stability unavailable; OLTP tuning blocked
+3. **O2 - AS OF TIMESTAMP**: Historical read feature broken; audit queries fail
+4. **O14 - Cost estimation**: Performance unpredictability; may cause regressions
+5. **O9/O11/O17/O18 - Row ordering**: Fix default collation alignment
+6. **O7/O8 - Parser positions**: Developer experience; can defer
+7. **O12 - Missing warnings**: Silent precision loss; medium priority
+

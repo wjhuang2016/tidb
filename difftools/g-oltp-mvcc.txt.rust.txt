@@ -1,0 +1,139 @@
+(ok)
+(ok)
+(ok)
+=== DROP DATABASE IF EXISTS mvcc1
+(ok)
+=== CREATE DATABASE mvcc1
+(ok)
+=== USE mvcc1
+(ok)
+=== CREATE TABLE accounts ( id INT PRIMARY KEY, balance DECIMAL(10,2), version INT DEFAULT 0 )
+(ok)
+=== INSERT INTO accounts VALUES (1, 1000.00, 0), (2, 2000.00, 0), (3, 3000.00, 0)
+(ok)
+=== START TRANSACTION
+(ok)
+=== SELECT COUNT(*) FROM accounts WHERE balance > 1500
+(2,)
+=== INSERT INTO accounts VALUES (4, 2500.00, 0)
+(ok)
+=== SELECT COUNT(*) FROM accounts WHERE balance > 1500
+(3,)
+=== COMMIT
+(ok)
+=== DROP TABLE accounts
+(ok)
+=== CREATE TABLE accounts (id INT PRIMARY KEY, balance DECIMAL(10,2))
+(ok)
+=== INSERT INTO accounts VALUES (1, 100), (2, 100)
+(ok)
+=== START TRANSACTION
+(ok)
+=== SELECT SUM(balance) FROM accounts
+(Decimal('200.00'),)
+=== UPDATE accounts SET balance = balance - 150 WHERE id = 1
+(ok)
+=== SELECT SUM(balance) FROM accounts
+(Decimal('50.00'),)
+=== ROLLBACK
+(ok)
+=== START TRANSACTION
+(ok)
+=== SELECT balance FROM accounts WHERE id = 1 FOR UPDATE
+(Decimal('100.00'),)
+=== UPDATE accounts SET balance = 200 WHERE id = 1
+(ok)
+=== COMMIT
+(ok)
+=== START TRANSACTION
+(ok)
+=== INSERT INTO accounts VALUES (5, 500)
+(ok)
+=== SELECT * FROM accounts WHERE id = 5
+(5, Decimal('500.00'))
+=== DELETE FROM accounts WHERE id = 5
+(ok)
+=== SELECT * FROM accounts WHERE id = 5
+(ok)
+=== COMMIT
+(ok)
+=== START TRANSACTION
+(ok)
+=== INSERT INTO accounts VALUES (6, 600)
+(ok)
+=== SAVEPOINT sp1
+(ok)
+=== UPDATE accounts SET balance = 700 WHERE id = 6
+(ok)
+=== SELECT balance FROM accounts WHERE id = 6
+(Decimal('700.00'),)
+=== ROLLBACK TO sp1
+(ok)
+=== SELECT balance FROM accounts WHERE id = 6
+(Decimal('600.00'),)
+=== COMMIT
+(ok)
+=== START TRANSACTION
+(ok)
+=== SELECT * FROM accounts WHERE id = 999 FOR UPDATE
+(ok)
+=== INSERT INTO accounts VALUES (999, 9999)
+(ok)
+=== SELECT * FROM accounts WHERE id = 999
+(999, Decimal('9999.00'))
+=== COMMIT
+(ok)
+=== START TRANSACTION
+(ok)
+=== UPDATE accounts SET balance = 0 WHERE id = 888
+(ok)
+=== SELECT ROW_COUNT()
+(0,)
+=== ROLLBACK
+(ok)
+=== DROP TABLE accounts
+(ok)
+=== CREATE TABLE accounts (id INT PRIMARY KEY, balance DECIMAL(10,2), version INT)
+(ok)
+=== INSERT INTO accounts VALUES (1, 1000, 1)
+(ok)
+=== START TRANSACTION
+(ok)
+=== SELECT balance, version FROM accounts WHERE id = 1
+(Decimal('1000.00'), 1)
+=== UPDATE accounts SET balance = 900, version = version + 1 WHERE id = 1 AND version = 1
+(ok)
+=== SELECT ROW_COUNT()
+(0,)
+=== COMMIT
+(ok)
+=== DROP TABLE accounts
+(ok)
+=== CREATE TABLE accounts (id INT PRIMARY KEY, balance DECIMAL(10,2))
+(ok)
+=== INSERT INTO accounts VALUES (1, 100), (3, 300), (5, 500)
+(ok)
+=== START TRANSACTION
+(ok)
+=== SELECT * FROM accounts WHERE id BETWEEN 2 AND 4 FOR UPDATE
+(3, Decimal('300.00'))
+=== INSERT INTO accounts VALUES (4, 400)
+(ok)
+=== SELECT * FROM accounts WHERE id BETWEEN 2 AND 4
+(3, Decimal('300.00')); (4, Decimal('400.00'))
+=== COMMIT
+(ok)
+=== SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED
+(ok)
+=== START TRANSACTION
+(ok)
+=== SELECT balance FROM accounts WHERE id = 1
+(Decimal('100.00'),)
+=== UPDATE accounts SET balance = 150 WHERE id = 1
+(ok)
+=== SELECT balance FROM accounts WHERE id = 1
+(Decimal('150.00'),)
+=== COMMIT
+(ok)
+=== SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ
+(ok)

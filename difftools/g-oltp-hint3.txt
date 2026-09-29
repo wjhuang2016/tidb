@@ -1,0 +1,104 @@
+-- OLTP deep probe: Index hints, query plan stability, and optimizer behavior
+DROP DATABASE IF EXISTS oltp_hint2;
+CREATE DATABASE oltp_hint2;
+USE oltp_hint2;
+
+CREATE TABLE products (
+  id INT PRIMARY KEY,
+  category VARCHAR(50),
+  name VARCHAR(100),
+  price DECIMAL(10,2),
+  stock INT,
+  INDEX idx_category (category),
+  INDEX idx_price (price),
+  INDEX idx_stock (stock)
+);
+
+INSERT INTO products VALUES
+  (1, 'Electronics', 'Laptop', 1200.00, 50),
+  (2, 'Electronics', 'Mouse', 25.00, 200),
+  (3, 'Books', 'SQL Guide', 45.00, 100),
+  (4, 'Books', 'Python Basics', 35.00, 150),
+  (5, 'Electronics', 'Keyboard', 75.00, 120);
+
+-- Test 1: USE INDEX hint
+EXPLAIN SELECT * FROM products USE INDEX (idx_category) WHERE category = 'Electronics' AND price > 50;
+
+-- Test 2: FORCE INDEX hint
+EXPLAIN SELECT * FROM products FORCE INDEX (idx_price) WHERE category = 'Electronics' AND price > 50;
+
+-- Test 3: IGNORE INDEX hint
+EXPLAIN SELECT * FROM products IGNORE INDEX (idx_category) WHERE category = 'Electronics';
+
+-- Test 4: Multiple index hints
+EXPLAIN SELECT * FROM products USE INDEX (idx_category, idx_price) WHERE category = 'Electronics' OR price < 50;
+
+-- Test 5: Index hint with JOIN
+CREATE TABLE orders (
+  order_id INT PRIMARY KEY,
+  product_id INT,
+  quantity INT,
+  INDEX idx_product (product_id)
+);
+
+INSERT INTO orders VALUES (1, 1, 2), (2, 2, 5), (3, 1, 1), (4, 3, 3);
+
+EXPLAIN SELECT p.name, o.quantity
+FROM products p USE INDEX (PRIMARY)
+JOIN orders o FORCE INDEX (idx_product) ON p.id = o.product_id
+WHERE p.price > 100;
+
+-- Test 6: Straight join hint
+EXPLAIN SELECT STRAIGHT_JOIN p.name, o.quantity
+FROM orders o
+JOIN products p ON o.product_id = p.id
+WHERE p.category = 'Electronics';
+
+-- Test 7: Query plan with subquery
+EXPLAIN SELECT * FROM products WHERE price > (SELECT AVG(price) FROM products);
+
+-- Test 8: Derived table with index
+EXPLAIN SELECT * FROM (SELECT * FROM products WHERE category = 'Electronics') t WHERE t.price > 50;
+
+-- Test 9: TIDB_INLJ hint (TiDB-specific)
+EXPLAIN SELECT /*+ TIDB_INLJ(p, o) */ p.name, o.quantity
+FROM products p
+JOIN orders o ON p.id = o.product_id;
+
+-- Test 10: TIDB_SMJ hint (sort-merge join)
+EXPLAIN SELECT /*+ TIDB_SMJ(p, o) */ p.name, o.quantity
+FROM products p
+JOIN orders o ON p.id = o.product_id;
+
+-- Test 11: TIDB_HJ hint (hash join)
+EXPLAIN SELECT /*+ TIDB_HJ(p, o) */ p.name, o.quantity
+FROM products p
+JOIN orders o ON p.id = o.product_id;
+
+-- Test 12: MAX_EXECUTION_TIME hint
+SELECT /*+ MAX_EXECUTION_TIME(5000) */ * FROM products WHERE price > 30 ORDER BY price;
+
+-- Test 13: USE_INDEX_MERGE hint
+EXPLAIN SELECT /*+ USE_INDEX_MERGE(products, idx_category, idx_price) */ *
+FROM products
+WHERE category = 'Electronics' OR price < 40;
+
+-- Test 14: NO_INDEX_MERGE hint
+EXPLAIN SELECT /*+ NO_INDEX_MERGE() */ *
+FROM products
+WHERE category = 'Electronics' OR price < 40;
+
+-- Test 15: MEMORY_QUOTA hint
+SELECT /*+ MEMORY_QUOTA(1 GB) */ category, COUNT(*) FROM products GROUP BY category;
+
+-- Test 16: Read from cache (TIDB-specific cache table)
+ALTER TABLE products CACHE;
+SELECT * FROM products WHERE id = 1;
+ALTER TABLE products NOCACHE;
+
+-- Test 17: Analyze table to update statistics
+ANALYZE TABLE products;
+SHOW STATS_META WHERE table_name = 'products';
+
+-- Test 18: Plan binding (if supported)
+CREATE GLOBAL BINDING FOR SELECT * FROM products WHERE category = ? USING SELECT * FROM products USE INDEX(idx_category) WHERE category = ?;

@@ -1,0 +1,98 @@
+-- OLTP battery 8: write-write conflict detection
+-- Focus: duplicate key, constraint violation, optimistic txn conflict
+
+DROP DATABASE IF EXISTS oltp8;
+CREATE DATABASE oltp8;
+USE oltp8;
+
+CREATE TABLE t1 (
+  id INT PRIMARY KEY,
+  uk INT UNIQUE KEY,
+  val INT
+);
+
+INSERT INTO t1 VALUES (1, 101, 1000);
+
+-- duplicate primary key
+INSERT INTO t1 VALUES (1, 102, 2000);
+
+-- duplicate unique key
+INSERT INTO t1 VALUES (2, 101, 3000);
+
+-- INSERT IGNORE with duplicate
+INSERT IGNORE INTO t1 VALUES (1, 103, 4000);
+SELECT * FROM t1 WHERE id = 1;
+
+-- INSERT ON DUPLICATE KEY UPDATE
+INSERT INTO t1 VALUES (1, 104, 5000) ON DUPLICATE KEY UPDATE val = val + 1;
+SELECT * FROM t1 WHERE id = 1;
+
+-- REPLACE INTO (delete + insert)
+REPLACE INTO t1 VALUES (1, 105, 6000);
+SELECT * FROM t1 WHERE id = 1;
+
+-- multi-row insert with partial conflict
+INSERT INTO t1 VALUES (3, 301, 7000), (1, 106, 8000), (4, 401, 9000);
+SELECT * FROM t1 ORDER BY id;
+
+-- UPDATE causing unique key conflict
+INSERT INTO t1 VALUES (5, 501, 10000);
+UPDATE t1 SET uk = 101 WHERE id = 5;
+
+-- check current state
+SELECT * FROM t1 ORDER BY id;
+
+-- foreign key violation (if FK supported)
+CREATE TABLE t2 (
+  id INT PRIMARY KEY,
+  t1_id INT,
+  FOREIGN KEY (t1_id) REFERENCES t1(id)
+);
+
+INSERT INTO t2 VALUES (1, 1);
+INSERT INTO t2 VALUES (2, 999);
+
+-- delete parent row with FK
+DELETE FROM t1 WHERE id = 1;
+
+DROP TABLE t2;
+
+-- NOT NULL constraint
+CREATE TABLE t3 (
+  id INT PRIMARY KEY,
+  required_val INT NOT NULL
+);
+
+INSERT INTO t3 VALUES (1, NULL);
+INSERT INTO t3 (id) VALUES (2);
+
+-- CHECK constraint (if supported)
+CREATE TABLE t4 (
+  id INT PRIMARY KEY,
+  age INT CHECK (age >= 0 AND age <= 150)
+);
+
+INSERT INTO t4 VALUES (1, 25);
+INSERT INTO t4 VALUES (2, -5);
+INSERT INTO t4 VALUES (3, 200);
+
+-- DEFAULT value
+CREATE TABLE t5 (
+  id INT PRIMARY KEY,
+  status VARCHAR(20) DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO t5 (id) VALUES (1);
+SELECT id, status FROM t5;
+
+-- AUTO_INCREMENT conflict
+CREATE TABLE t6 (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  val INT
+);
+
+INSERT INTO t6 (val) VALUES (100);
+INSERT INTO t6 (val) VALUES (200);
+INSERT INTO t6 (id, val) VALUES (1, 300);
+SELECT * FROM t6 ORDER BY id;

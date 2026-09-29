@@ -1,0 +1,107 @@
+(ok)
+(ok)
+(ok)
+=== DROP DATABASE IF EXISTS oltp12
+(ok)
+=== CREATE DATABASE oltp12
+(ok)
+=== USE oltp12
+(ok)
+=== CREATE TABLE t1 ( id INT PRIMARY KEY, data VARCHAR(1000) )
+(ok)
+=== SELECT @@tidb_txn_entry_size_limit
+(0,)
+=== SELECT @@tidb_txn_total_size_limit
+ERR (1193, "Unknown system variable 'tidb_txn_total_size_limit'") | WARN Error:1193:Unknown system variable 'tidb_txn_total_size_limit'
+=== BEGIN
+(ok)
+=== INSERT INTO t1 VALUES (1, REPEAT('a', 100))
+(ok)
+=== INSERT INTO t1 VALUES (2, REPEAT('b', 100))
+(ok)
+=== INSERT INTO t1 VALUES (3, REPEAT('c', 100))
+(ok)
+=== COMMIT
+(ok)
+=== SELECT id, LENGTH(data) FROM t1 ORDER BY id
+(1, 100); (2, 100); (3, 100)
+=== BEGIN
+(ok)
+=== INSERT INTO t1 SELECT 1000 + n, REPEAT('x', 50) FROM ( SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 ) t1 CROSS JOIN ( SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 ) t2 CROSS JOIN ( SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 ) t3 CROSS JOIN ( SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 ) t4 CROSS JOIN ( SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 ) t5
+ERR (1052, "Column 'n' in field list is ambiguous") | WARN Error:1052:Column 'n' in field list is ambiguous
+=== COMMIT
+(ok)
+=== SELECT COUNT(*) FROM t1
+(3,)
+=== SELECT @@tidb_mem_quota_query
+('1073741824',)
+=== SELECT @@tidb_mem_oom_action
+('CANCEL',)
+=== BEGIN
+(ok)
+=== INSERT INTO t1 VALUES (5000, REPEAT('z', 500))
+(ok)
+=== COMMIT
+(ok)
+=== SELECT id, LENGTH(data) FROM t1 WHERE id = 5000
+(5000, 500)
+=== BEGIN
+(ok)
+=== UPDATE t1 SET data = REPEAT('y', 60) WHERE id >= 1000 AND id < 1100
+(ok)
+=== COMMIT
+(ok)
+=== SELECT COUNT(*) FROM t1 WHERE LENGTH(data) = 60
+(0,)
+=== BEGIN
+(ok)
+=== DELETE FROM t1 WHERE id >= 1100 AND id < 1200
+(ok)
+=== COMMIT
+(ok)
+=== SELECT COUNT(*) FROM t1
+(4,)
+=== SELECT @@autocommit
+(1,)
+=== SELECT @@tidb_disable_txn_auto_retry
+(1,)
+=== BEGIN
+(ok)
+=== INSERT INTO t1 VALUES (6000, 'test')
+(ok)
+=== CREATE TABLE t2 (id INT)
+(ok)
+=== SELECT * FROM t1 WHERE id = 6000
+(6000, 'test')
+=== SELECT COUNT(*) FROM t2
+(0,)
+=== BEGIN
+(ok)
+=== INSERT INTO t1 VALUES (7000, 'a')
+(ok)
+=== INSERT INTO t1 VALUES (7001, 'b')
+(ok)
+=== INSERT INTO t1 VALUES (7002, 'c')
+(ok)
+=== SELECT COUNT(*) FROM t1 WHERE id >= 7000
+(3,)
+=== UPDATE t1 SET data = CONCAT(data, '_modified') WHERE id >= 7000 AND id <= 7002
+(ok)
+=== SELECT data FROM t1 WHERE id = 7000
+('a_modified',)
+=== COMMIT
+(ok)
+=== SELECT data FROM t1 WHERE id IN (7000, 7001, 7002) ORDER BY id
+('a_modified',); ('b_modified',); ('c_modified',)
+=== BEGIN
+(ok)
+=== INSERT INTO t1 SELECT 8000 + n, REPEAT('r', 40) FROM ( SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 ) t1 CROSS JOIN ( SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 ) t2
+ERR (1052, "Column 'n' in field list is ambiguous") | WARN Error:1052:Column 'n' in field list is ambiguous
+=== SELECT COUNT(*) FROM t1 WHERE id >= 8000
+(0,)
+=== ROLLBACK
+(ok)
+=== SELECT COUNT(*) FROM t1 WHERE id >= 8000
+(0,)
+=== SELECT COUNT(*) FROM t1
+(8,)

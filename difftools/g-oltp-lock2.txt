@@ -1,0 +1,99 @@
+-- OLTP deep probe: Lock behavior, timeout, and row-level contention
+DROP DATABASE IF EXISTS lock2;
+CREATE DATABASE lock2;
+USE lock2;
+
+CREATE TABLE inventory (
+  product_id INT PRIMARY KEY,
+  stock INT,
+  reserved INT DEFAULT 0
+);
+
+INSERT INTO inventory VALUES (1, 100, 0), (2, 50, 0), (3, 200, 0);
+
+-- Test 1: Lock wait timeout setting
+SHOW VARIABLES LIKE 'innodb_lock_wait_timeout';
+SET SESSION innodb_lock_wait_timeout = 2;
+SHOW VARIABLES LIKE 'innodb_lock_wait_timeout';
+
+-- Test 2: SELECT ... FOR UPDATE on single row
+START TRANSACTION;
+SELECT stock FROM inventory WHERE product_id = 1 FOR UPDATE;
+COMMIT;
+
+-- Test 3: SELECT ... FOR UPDATE on range
+START TRANSACTION;
+SELECT product_id, stock FROM inventory WHERE product_id BETWEEN 1 AND 2 FOR UPDATE;
+COMMIT;
+
+-- Test 4: SELECT ... FOR UPDATE NOWAIT (if supported)
+START TRANSACTION;
+SELECT stock FROM inventory WHERE product_id = 1 FOR UPDATE NOWAIT;
+COMMIT;
+
+-- Test 5: SELECT ... FOR UPDATE SKIP LOCKED (if supported)
+START TRANSACTION;
+SELECT stock FROM inventory WHERE product_id = 1 FOR UPDATE SKIP LOCKED;
+COMMIT;
+
+-- Test 6: Pessimistic lock with UPDATE
+START TRANSACTION;
+UPDATE inventory SET reserved = reserved + 10 WHERE product_id = 1;
+SELECT reserved FROM inventory WHERE product_id = 1;
+ROLLBACK;
+
+-- Test 7: Write-write conflict detection via tidb_constraint_check_in_place
+SET SESSION tidb_constraint_check_in_place = ON;
+START TRANSACTION;
+UPDATE inventory SET stock = stock - 10 WHERE product_id = 1;
+COMMIT;
+
+SET SESSION tidb_constraint_check_in_place = OFF;
+
+-- Test 8: Check constraints (if supported)
+CREATE TABLE products (
+  id INT PRIMARY KEY,
+  price DECIMAL(10,2),
+  CHECK (price > 0)
+);
+INSERT INTO products VALUES (1, 100.00);
+INSERT INTO products VALUES (2, -50.00);
+
+-- Test 9: Deferred constraint check in transaction
+START TRANSACTION;
+INSERT INTO products VALUES (3, 0.01);
+UPDATE products SET price = -1 WHERE id = 3;
+COMMIT;
+
+-- Test 10: Unique constraint during transaction
+CREATE TABLE orders (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  order_no VARCHAR(50) UNIQUE,
+  amount DECIMAL(10,2)
+);
+
+START TRANSACTION;
+INSERT INTO orders (order_no, amount) VALUES ('ORD001', 100);
+INSERT INTO orders (order_no, amount) VALUES ('ORD002', 200);
+INSERT INTO orders (order_no, amount) VALUES ('ORD001', 300);
+ROLLBACK;
+
+-- Test 11: Foreign key check (if supported)
+CREATE TABLE customers (
+  id INT PRIMARY KEY,
+  name VARCHAR(100)
+);
+
+CREATE TABLE orders_fk (
+  id INT PRIMARY KEY,
+  customer_id INT,
+  FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
+INSERT INTO customers VALUES (1, 'Alice');
+INSERT INTO orders_fk VALUES (1, 1);
+INSERT INTO orders_fk VALUES (2, 999);
+
+-- Test 12: Cascading delete (if FK supported)
+DELETE FROM customers WHERE id = 1;
+SELECT COUNT(*) FROM orders_fk WHERE customer_id = 1;

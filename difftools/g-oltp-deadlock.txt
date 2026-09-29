@@ -1,0 +1,91 @@
+-- OLTP battery 10: deadlock and retry scenarios
+-- Focus: lock timeout, deadlock detection, txn retry
+
+DROP DATABASE IF EXISTS oltp10;
+CREATE DATABASE oltp10;
+USE oltp10;
+
+CREATE TABLE t1 (
+  id INT PRIMARY KEY,
+  val INT
+);
+
+INSERT INTO t1 VALUES (1, 100), (2, 200), (3, 300);
+
+-- check lock wait timeout
+SELECT @@innodb_lock_wait_timeout;
+SELECT @@lock_wait_timeout;
+
+-- basic lock timeout simulation (can't truly test with single session)
+BEGIN;
+SELECT * FROM t1 WHERE id = 1 FOR UPDATE;
+-- in real scenario, another session would block here
+COMMIT;
+
+-- check deadlock detection variables
+SELECT @@tidb_deadlock_history_capacity;
+SELECT @@tidb_deadlock_history_collect_retryable;
+
+-- check INFORMATION_SCHEMA deadlock tables
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.DEADLOCKS;
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.TIDB_TRX;
+
+-- optimistic lock retry count
+SELECT @@tidb_retry_limit;
+SELECT @@tidb_disable_txn_auto_retry;
+
+-- write conflict in optimistic mode
+SET SESSION tidb_txn_mode = 'optimistic';
+
+BEGIN;
+UPDATE t1 SET val = val + 1 WHERE id = 1;
+-- in real scenario, another concurrent txn updates id=1
+-- commit would detect conflict and auto-retry or fail
+COMMIT;
+
+SELECT * FROM t1 WHERE id = 1;
+
+-- pessimistic mode (no auto-retry, fail immediately)
+SET SESSION tidb_txn_mode = 'pessimistic';
+
+BEGIN;
+UPDATE t1 SET val = val + 10 WHERE id = 2;
+COMMIT;
+
+SELECT * FROM t1 WHERE id = 2;
+
+-- check transaction state after error
+BEGIN;
+SELECT * FROM nonexistent_table;
+-- transaction should be rolled back
+SELECT * FROM t1 WHERE id = 1;
+COMMIT;
+
+-- large transaction with many locks
+BEGIN;
+SELECT * FROM t1 WHERE id > 0 FOR UPDATE;
+UPDATE t1 SET val = val + 100;
+COMMIT;
+
+SELECT * FROM t1 ORDER BY id;
+
+-- check current running transactions
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.TIDB_TRX WHERE STATE = 'Running';
+
+-- test ROLLBACK after partial execution
+BEGIN;
+UPDATE t1 SET val = 999 WHERE id = 1;
+UPDATE t1 SET val = 888 WHERE id = 2;
+SELECT * FROM t1 WHERE id IN (1, 2) ORDER BY id;
+ROLLBACK;
+
+SELECT * FROM t1 WHERE id IN (1, 2) ORDER BY id;
+
+-- check tidb_txn_assertion_level (write conflict detection)
+SELECT @@tidb_txn_assertion_level;
+
+-- check tidb_constraint_check_in_place
+SELECT @@tidb_constraint_check_in_place;
+
+-- check pessimistic transaction timeout
+SELECT @@tidb_pessimistic_txn_fair_locking;

@@ -1,0 +1,124 @@
+-- OLTP battery 14: autocommit and implicit transaction behavior
+-- Focus: autocommit on/off, implicit commit triggers
+
+DROP DATABASE IF EXISTS oltp14;
+CREATE DATABASE oltp14;
+USE oltp14;
+
+CREATE TABLE t1 (
+  id INT PRIMARY KEY,
+  val INT
+);
+
+-- check default autocommit
+SELECT @@autocommit;
+SELECT @@tidb_disable_txn_auto_retry;
+
+-- autocommit on (default) - each statement auto-commits
+SET autocommit = 1;
+INSERT INTO t1 VALUES (1, 100);
+INSERT INTO t1 VALUES (2, 200);
+SELECT * FROM t1 ORDER BY id;
+
+-- autocommit off - statements require explicit commit
+SET autocommit = 0;
+INSERT INTO t1 VALUES (3, 300);
+SELECT * FROM t1 ORDER BY id;
+-- rollback should undo the insert
+ROLLBACK;
+SELECT * FROM t1 ORDER BY id;
+
+-- insert again and commit
+INSERT INTO t1 VALUES (3, 300);
+COMMIT;
+SELECT * FROM t1 ORDER BY id;
+
+-- multiple statements without explicit BEGIN
+UPDATE t1 SET val = 400 WHERE id = 1;
+UPDATE t1 SET val = 500 WHERE id = 2;
+SELECT * FROM t1 WHERE id IN (1, 2) ORDER BY id;
+ROLLBACK;
+SELECT * FROM t1 WHERE id IN (1, 2) ORDER BY id;
+
+-- commit the changes
+UPDATE t1 SET val = 400 WHERE id = 1;
+UPDATE t1 SET val = 500 WHERE id = 2;
+COMMIT;
+SELECT * FROM t1 WHERE id IN (1, 2) ORDER BY id;
+
+-- turn autocommit back on
+SET autocommit = 1;
+UPDATE t1 SET val = 111 WHERE id = 1;
+ROLLBACK;
+SELECT * FROM t1 WHERE id = 1;
+
+-- explicit BEGIN overrides autocommit
+BEGIN;
+UPDATE t1 SET val = 222 WHERE id = 1;
+SELECT * FROM t1 WHERE id = 1;
+ROLLBACK;
+SELECT * FROM t1 WHERE id = 1;
+
+-- implicit commit by DDL
+BEGIN;
+UPDATE t1 SET val = 333 WHERE id = 1;
+CREATE TABLE t2 (id INT);
+-- the UPDATE should have been auto-committed
+ROLLBACK;
+SELECT * FROM t1 WHERE id = 1;
+
+-- implicit commit by another DDL
+BEGIN;
+UPDATE t1 SET val = 444 WHERE id = 1;
+ALTER TABLE t1 ADD COLUMN extra VARCHAR(50);
+ROLLBACK;
+SELECT val FROM t1 WHERE id = 1;
+
+-- implicit commit by TRUNCATE
+BEGIN;
+INSERT INTO t2 VALUES (1), (2), (3);
+TRUNCATE TABLE t2;
+ROLLBACK;
+SELECT COUNT(*) FROM t2;
+
+-- implicit commit by DROP
+BEGIN;
+INSERT INTO t2 VALUES (1), (2);
+DROP TABLE t2;
+ROLLBACK;
+-- t2 should not exist
+CREATE TABLE t2 (id INT);
+
+-- implicit commit by LOCK TABLES
+CREATE TABLE t3 (id INT PRIMARY KEY);
+BEGIN;
+INSERT INTO t3 VALUES (1);
+LOCK TABLES t3 WRITE;
+UNLOCK TABLES;
+ROLLBACK;
+SELECT * FROM t3;
+
+-- autocommit with SELECT (no write)
+SET autocommit = 0;
+SELECT * FROM t1 WHERE id = 1;
+ROLLBACK;
+-- nothing to rollback
+INSERT INTO t1 VALUES (10, 1000);
+ROLLBACK;
+SELECT * FROM t1 WHERE id = 10;
+
+-- explicit COMMIT without BEGIN
+SET autocommit = 1;
+INSERT INTO t1 VALUES (11, 1100);
+COMMIT;
+SELECT * FROM t1 WHERE id = 11;
+
+-- check tidb_skip_isolation_level_check
+SELECT @@tidb_skip_isolation_level_check;
+
+-- restore autocommit
+SET autocommit = 1;
+SELECT @@autocommit;
+
+-- final state
+SELECT * FROM t1 ORDER BY id;

@@ -1,0 +1,37 @@
+(ok)
+(ok)
+(ok)
+=== DROP DATABASE IF EXISTS oltp_cte2
+(ok)
+=== CREATE DATABASE oltp_cte2
+(ok)
+=== USE oltp_cte2
+(ok)
+=== CREATE TABLE employees ( id INT PRIMARY KEY, name VARCHAR(50), manager_id INT, salary DECIMAL(10,2) )
+(ok)
+=== INSERT INTO employees VALUES (1, 'Alice', NULL, 10000), (2, 'Bob', 1, 8000), (3, 'Charlie', 1, 8500), (4, 'Dave', 2, 6000), (5, 'Eve', 2, 6500), (6, 'Frank', 3, 7000)
+(ok)
+=== WITH high_earners AS ( SELECT id, name, salary FROM employees WHERE salary > 7000 ) SELECT * FROM high_earners ORDER BY salary DESC
+(1, 'Alice', Decimal('10000.00')); (3, 'Charlie', Decimal('8500.00')); (2, 'Bob', Decimal('8000.00'))
+=== WITH dept_stats AS ( SELECT manager_id, COUNT(*) as team_size, AVG(salary) as avg_salary FROM employees WHERE manager_id IS NOT NULL GROUP BY manager_id ) SELECT e.name as manager, ds.team_size, ds.avg_salary FROM dept_stats ds JOIN employees e ON ds.manager_id = e.id ORDER BY ds.team_size DESC
+ERR (1054, "Unknown column 'ds.manager_id' in 'on clause'") | WARN Error:1054:Unknown column 'ds.manager_id' in 'on clause'
+=== WITH managers AS ( SELECT DISTINCT manager_id FROM employees WHERE manager_id IS NOT NULL ), reports AS ( SELECT manager_id, COUNT(*) as count FROM employees WHERE manager_id IS NOT NULL GROUP BY manager_id ) SELECT m.manager_id, COALESCE(r.count, 0) as direct_reports FROM managers m LEFT JOIN reports r ON m.manager_id = r.manager_id ORDER BY m.manager_id
+ERR (1054, "Unknown column 'm.manager_id' in 'on clause'") | WARN Error:1054:Unknown column 'm.manager_id' in 'on clause'
+=== WITH RECURSIVE emp_hierarchy AS ( SELECT id, name, manager_id, 1 as level FROM employees WHERE manager_id IS NULL UNION ALL SELECT e.id, e.name, e.manager_id, eh.level + 1 FROM employees e INNER JOIN emp_hierarchy eh ON e.manager_id = eh.id ) SELECT id, name, level FROM emp_hierarchy ORDER BY level, id
+ERR (1054, "Unknown column 'eh.id' in 'on clause'") | WARN Error:1054:Unknown column 'eh.id' in 'on clause'
+=== WITH RECURSIVE emp_path AS ( SELECT id, name, manager_id, CAST(name AS CHAR(200)) as path FROM employees WHERE manager_id IS NULL UNION ALL SELECT e.id, e.name, e.manager_id, CONCAT(ep.path, ' > ', e.name) FROM employees e INNER JOIN emp_path ep ON e.manager_id = ep.id ) SELECT id, name, path FROM emp_path ORDER BY id
+ERR (1054, "Unknown column 'ep.id' in 'on clause'") | WARN Error:1054:Unknown column 'ep.id' in 'on clause'
+=== WITH RECURSIVE nums AS ( SELECT 1 as n UNION ALL SELECT n + 1 FROM nums WHERE n < 5 ) SELECT n FROM nums
+(1,); (2,); (3,); (4,); (5,)
+=== WITH salary_stats AS ( SELECT AVG(salary) as avg_sal, MAX(salary) as max_sal FROM employees ) SELECT (SELECT avg_sal FROM salary_stats) as average, (SELECT max_sal FROM salary_stats) as maximum
+(Decimal('7666.666667'), Decimal('10000.00'))
+=== WITH outer_cte AS ( WITH inner_cte AS ( SELECT manager_id, COUNT(*) as cnt FROM employees WHERE manager_id IS NOT NULL GROUP BY manager_id ) SELECT manager_id, cnt FROM inner_cte WHERE cnt > 1 ) SELECT * FROM outer_cte ORDER BY cnt DESC
+(2, 2); (1, 2)
+=== WITH combined AS ( SELECT id, name, 'high' as category FROM employees WHERE salary > 8000 UNION SELECT id, name, 'low' as category FROM employees WHERE salary <= 8000 ) SELECT category, COUNT(*) as count FROM combined GROUP BY category ORDER BY category
+('high', 2); ('low', 4)
+=== WITH RECURSIVE countdown(n) AS ( SELECT 10 UNION ALL SELECT n - 1 FROM countdown WHERE n > 1 ) SELECT GROUP_CONCAT(n ORDER BY n SEPARATOR ', ') FROM countdown
+('1, 2, 3, 4, 5, 6, 7, 8, 9, 10',)
+=== SELECT e.name, e.salary FROM employees e WHERE e.salary > ( WITH avg_cte AS (SELECT AVG(salary) as avg_val FROM employees) SELECT avg_val FROM avg_cte ) ORDER BY e.salary DESC
+('Alice', Decimal('10000.00')); ('Charlie', Decimal('8500.00')); ('Bob', Decimal('8000.00'))
+=== WITH ranked AS ( SELECT name, salary, ROW_NUMBER() OVER (ORDER BY salary DESC) as salary_rank FROM employees ) SELECT * FROM ranked WHERE salary_rank <= 3 ORDER BY salary_rank
+('Alice', Decimal('10000.00'), 1); ('Charlie', Decimal('8500.00'), 2); ('Bob', Decimal('8000.00'), 3)

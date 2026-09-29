@@ -1,0 +1,106 @@
+-- OLTP battery 12: large transaction and size limits
+-- Focus: txn_total_size_limit, large batch operations
+
+DROP DATABASE IF EXISTS oltp12;
+CREATE DATABASE oltp12;
+USE oltp12;
+
+CREATE TABLE t1 (
+  id INT PRIMARY KEY,
+  data VARCHAR(1000)
+);
+
+-- check transaction size limit
+SELECT @@tidb_txn_entry_size_limit;
+SELECT @@tidb_txn_total_size_limit;
+
+-- small batch insert
+BEGIN;
+INSERT INTO t1 VALUES (1, REPEAT('a', 100));
+INSERT INTO t1 VALUES (2, REPEAT('b', 100));
+INSERT INTO t1 VALUES (3, REPEAT('c', 100));
+COMMIT;
+
+SELECT id, LENGTH(data) FROM t1 ORDER BY id;
+
+-- larger batch (1000 rows)
+BEGIN;
+INSERT INTO t1 SELECT 1000 + n, REPEAT('x', 50) FROM (
+  SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5
+) t1 CROSS JOIN (
+  SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5
+) t2 CROSS JOIN (
+  SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5
+) t3 CROSS JOIN (
+  SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5
+) t4 CROSS JOIN (
+  SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+) t5;
+COMMIT;
+
+SELECT COUNT(*) FROM t1;
+
+-- check mem tracker
+SELECT @@tidb_mem_quota_query;
+SELECT @@tidb_mem_oom_action;
+
+-- large single row (near entry size limit)
+BEGIN;
+INSERT INTO t1 VALUES (5000, REPEAT('z', 500));
+COMMIT;
+
+SELECT id, LENGTH(data) FROM t1 WHERE id = 5000;
+
+-- batch update
+BEGIN;
+UPDATE t1 SET data = REPEAT('y', 60) WHERE id >= 1000 AND id < 1100;
+COMMIT;
+
+SELECT COUNT(*) FROM t1 WHERE LENGTH(data) = 60;
+
+-- batch delete
+BEGIN;
+DELETE FROM t1 WHERE id >= 1100 AND id < 1200;
+COMMIT;
+
+SELECT COUNT(*) FROM t1;
+
+-- check transaction info
+SELECT @@autocommit;
+SELECT @@tidb_disable_txn_auto_retry;
+
+-- implicit commit on DDL
+BEGIN;
+INSERT INTO t1 VALUES (6000, 'test');
+CREATE TABLE t2 (id INT);
+SELECT * FROM t1 WHERE id = 6000;
+
+-- check if previous txn was committed
+SELECT COUNT(*) FROM t2;
+
+-- multi-statement transaction
+BEGIN;
+INSERT INTO t1 VALUES (7000, 'a');
+INSERT INTO t1 VALUES (7001, 'b');
+INSERT INTO t1 VALUES (7002, 'c');
+SELECT COUNT(*) FROM t1 WHERE id >= 7000;
+UPDATE t1 SET data = CONCAT(data, '_modified') WHERE id >= 7000 AND id <= 7002;
+SELECT data FROM t1 WHERE id = 7000;
+COMMIT;
+
+SELECT data FROM t1 WHERE id IN (7000, 7001, 7002) ORDER BY id;
+
+-- rollback large transaction
+BEGIN;
+INSERT INTO t1 SELECT 8000 + n, REPEAT('r', 40) FROM (
+  SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5
+) t1 CROSS JOIN (
+  SELECT 1 n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5
+) t2;
+SELECT COUNT(*) FROM t1 WHERE id >= 8000;
+ROLLBACK;
+
+SELECT COUNT(*) FROM t1 WHERE id >= 8000;
+
+-- check final count
+SELECT COUNT(*) FROM t1;
