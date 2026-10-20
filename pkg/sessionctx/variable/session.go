@@ -3935,10 +3935,10 @@ func (s *SessionVars) PessimisticLockEligible() bool {
 }
 
 // RemoveLockDDLJobs removes the DDL jobs which doesn't get the metadata lock from jobs.
+// Both user sessions and internal sessions are checked. Internal sessions only take MDL
+// for user tables (see tryLockMDLAndUpdateSchemaIfNecessary), so tables in the `mysql`
+// schema never block a DDL through them.
 func RemoveLockDDLJobs(sv *SessionVars, jobs map[int64]*mdldef.JobMDL, printLog bool) {
-	if sv.InRestrictedSQL {
-		return
-	}
 	sv.TxnCtxMu.Lock()
 	defer sv.TxnCtxMu.Unlock()
 	if sv.TxnCtx == nil {
@@ -3950,13 +3950,18 @@ func RemoveLockDDLJobs(sv *SessionVars, jobs map[int64]*mdldef.JobMDL, printLog 
 				delete(jobs, jobID)
 				elapsedTime := time.Since(oracle.GetTimeFromTS(sv.TxnCtx.StartTS))
 				logFn := logutil.BgLogger().Debug
-				if elapsedTime > time.Minute && printLog {
+				// Internal sessions have no connection ID, so this log is the only way to
+				// attribute a blocked DDL to them. Log those even when the transaction is short,
+				// otherwise a typical TTL or MV maintenance transaction would stay at Debug level.
+				if printLog && (elapsedTime > time.Minute || sv.ConnectionID == 0) {
 					logFn = logutil.BgLogger().Info
 				}
 				logFn("old running transaction block DDL",
 					zap.Int64("table ID", tblID.(int64)),
 					zap.Int64("jobID", jobID),
 					zap.Uint64("connection ID", sv.ConnectionID),
+					zap.Bool("internal", sv.InRestrictedSQL),
+					zap.Uint64("startTS", sv.TxnCtx.StartTS),
 					zap.Duration("elapsed time", elapsedTime))
 			}
 		}

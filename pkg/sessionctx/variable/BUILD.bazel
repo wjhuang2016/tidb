@@ -104,6 +104,7 @@ go_test(
     srcs = [
         "embedding_vars_test.go",
         "main_test.go",
+        "mdl_test.go",
         "mock_globalaccessor_test.go",
         "removed_test.go",
         "statusvar_test.go",
@@ -117,6 +118,7 @@ go_test(
         "//pkg/config",
         "//pkg/config/kerneltype",
         "//pkg/executor/join/joinversion",
+        "//pkg/infoschema/issyncer/mdldef",
         "//pkg/kv",
         "//pkg/parser/mysql",
         "//pkg/parser/terror",
@@ -128,6 +130,7 @@ go_test(
         "//pkg/util/traceevent",
         "@com_github_pingcap_failpoint//:failpoint",
         "@com_github_stretchr_testify//require",
+        "@com_github_tikv_client_go_v2//oracle",
         "@io_opencensus_go//stats/view",
         "@org_uber_go_goleak//:goleak",
     ],

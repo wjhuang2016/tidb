@@ -1299,8 +1299,6 @@ func setSystemTimeZoneVariable() {
 // CheckOldRunningTxn implements SessionManager interface.
 func (s *Server) CheckOldRunningTxn(jobs map[int64]*mdldef.JobMDL) {
 	s.rwlock.RLock()
-	defer s.rwlock.RUnlock()
-
 	printLog := false
 	if time.Since(s.printMDLLogTime) > 10*time.Second {
 		printLog = true
@@ -1310,6 +1308,25 @@ func (s *Server) CheckOldRunningTxn(jobs map[int64]*mdldef.JobMDL) {
 		se := client.ctx.Session
 		if se != nil {
 			variable.RemoveLockDDLJobs(se.GetSessionVars(), jobs, printLog)
+		}
+	}
+	s.rwlock.RUnlock()
+
+	// Internal sessions (TTL, MV maintenance, stats, ...) may access user tables too.
+	// They are registered while checked out from a session pool.
+	//
+	// Snapshot the list first and inspect sessions outside sessionMapMutex: inspecting one
+	// can block on its TxnCtxMu, and holding sessionMapMutex during that would block the
+	// pool's Store/DeleteInternalSession calls.
+	s.sessionMapMutex.Lock()
+	internalSessions := make([]any, 0, len(s.internalSessions))
+	for se := range s.internalSessions {
+		internalSessions = append(internalSessions, se)
+	}
+	s.sessionMapMutex.Unlock()
+	for _, se := range internalSessions {
+		if sv, ok := se.(interface{ GetSessionVars() *variable.SessionVars }); ok {
+			variable.RemoveLockDDLJobs(sv.GetSessionVars(), jobs, printLog)
 		}
 	}
 }
